@@ -91,6 +91,8 @@ def reverse_blast(master_file, organism):
         Reverse blast a fasta file of multiple sequences against the database
         of an organism.
     """
+    # grab just the name
+    filename = os.path.splitext(master_file)[0]
     fastas = split_fasta(master_file)
     print("Total number of sequences before blasting: " + str(len(fastas)))
     # Run individual blasts
@@ -102,7 +104,7 @@ def reverse_blast(master_file, organism):
         if found:
             good_fastas.append(f)
 
-    g = open(master_file + "_reversed.fasta", 'w')
+    g = open(filename + "_reversed.fasta", 'w')
     for fasta in good_fastas:
         f = open(fasta + ".fasta", "r")
         g.write(f.read())
@@ -110,9 +112,9 @@ def reverse_blast(master_file, organism):
     g.close()
     print("Final number of sequences after blasting: " + str(len(good_fastas)))
 
-    print(processes)
     for f in fastas:
         os.remove(f + ".fasta")
+        os.remove(f + "_blast.txt")
     print("Done!")
 
 
@@ -123,7 +125,6 @@ def main():
     # Build arguments and grab arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Input fasta filename")
-    parser.add_argument("output", help="Output filename")
     parser.add_argument("organism", help="Organism or taxa to reverse blast against.")
     args = parser.parse_args()
 
