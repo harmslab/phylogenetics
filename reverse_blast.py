@@ -6,6 +6,7 @@ import numpy as np
 from subprocess import call
 from collections import OrderedDict
 import argparse
+from fasta_tools import split_fasta
 
 def name_variants(name):
     """
