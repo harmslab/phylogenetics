@@ -26,6 +26,3 @@ def blast(fasta_input, output, db="nr", **kwargs):
     command += ["-remote"]
     return call(command)
 
-def blastp2fasta():
-    """"""
-    pass

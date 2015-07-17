@@ -54,7 +54,7 @@ class Homolog:
         # Record homolog definition and accession number
         self.definition = str(definition)
         self.accession = str(accession)
-        self.rank = sys.maxint
+        self.rank = sys.maxsize
 
         # Assign this homolog a unique name.
         self.unique_name = "%i" % (homolog_counter)
@@ -274,12 +274,12 @@ def parseBlastXML(blast_file,tag_list=("Hit_def","Hit_id")):
     return all_hits
 
 
-def downloadSequences(accession_list,out_file,db="protein",
+def downloadSequences(id_list,out_file,db="protein",
                       batch_download_size=50,force=False):
     """
     Download a list of accessions in fasta/xml format.
 
-    accession_list: list of ncbi accesion numbers
+    id_list: list of ncbi gid numbers
     out_file: file in which to write output in fasta/xml format
     db: database to use for accession
     batch_download_size: size of individual download packets
@@ -300,7 +300,7 @@ def downloadSequences(accession_list,out_file,db="protein",
     print("Posting list of unique accession numbers to NCBI...")
 
     # Upload the list of sequences to NCBI
-    to_download = ",".join([l.strip() for l in accession_list])
+    to_download = ",".join([l.strip() for l in id_list])
     post_xml = Entrez.read(Entrez.epost(db, id=to_download))
     webenv = post_xml["WebEnv"]
     query_key = post_xml["QueryKey"]
@@ -310,7 +310,7 @@ def downloadSequences(accession_list,out_file,db="protein",
     print("Downloading sequences.")
 
     # Now download the sequences (in fasta/xml format).
-    count = len(accession_list)
+    count = len(id_list)
     out_handle = open(out_file, "w")
     for start in range(0,count,batch_download_size):
         end = min(count, start+batch_download_size)

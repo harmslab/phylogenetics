@@ -7,8 +7,8 @@ def blast_seeds(input, output):
     # Split fastas into individual files
     fastas = split_fasta(input)
     processes = [blast(f + ".fasta", f +"_blast.txt") for f in fastas]
-
-
+    
+    
 def main():
 
 

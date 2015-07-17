@@ -37,7 +37,7 @@ def blast_organism(fasta_input, output, taxa):
         "-out": output,
         "-entrez_query": taxa,
         "-db": "nr",
-        "-outfmt": "6 salltitles"
+        "-outfmt": "5"
     })
     # Construct blast commandline call from arguments.
     command = ["blastp"]
@@ -100,10 +100,13 @@ def reverse_blast(master_file, organism):
     processes = [blast_organism(f + ".fasta", f +"_blast.txt", organism) for f in fastas]
 
     good_fastas = []
+    bad_fastas = []
     for f in fastas:
         found = organism_in_blast(organism, f+ "_blast.txt")
         if found:
             good_fastas.append(f)
+        else:
+            bad_fastas.append(f)
 
     g = open(filename + "_reversed.fasta", 'w')
     for fasta in good_fastas:
@@ -113,7 +116,7 @@ def reverse_blast(master_file, organism):
     g.close()
     print("Final number of sequences after blasting: " + str(len(good_fastas)))
 
-    for f in fastas:
+    for f in bad_fastas:
         os.remove(f + ".fasta")
         os.remove(f + "_blast.txt")
     print("Done!")
