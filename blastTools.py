@@ -70,7 +70,7 @@ class Homolog:
 
         self.ortholog_name = None
 
-    def loadSequence(self,sequence,length,taxid,organism):
+    def loadSequence(self,sequence,length,taxid,organism, ortholog_name=None):
         """
         Load sequence data for this homolog.
         """
@@ -79,6 +79,8 @@ class Homolog:
         self.length = length
         self.taxid = taxid
         self.organism = organism
+        if ortholog_name is not None:
+            self.ortholog_name = ortholog_name
 
     def formatFasta(self,seq_name=None):
         """
@@ -223,16 +225,21 @@ def parseFastaXML(sequence_file):
         definition = properties["TSeq_defline"].strip()
         definition = re.sub("\t"," ",definition)
         accession = properties["TSeq_gi"].strip()
+        
+        # Handle bracketed organism name
+        ortholog_name = definition[:definition.find("[")].strip()
 
         homolog_list.append(Homolog(definition,accession))
         homolog_list[-1].loadSequence(properties["TSeq_sequence"].strip(),
                                       int(properties["TSeq_length"]),
                                       int(properties["TSeq_taxid"]),
-                                      properties["TSeq_orgname"].strip())
+                                      properties["TSeq_orgname"].strip(),
+                                      ortholog_name = ortholog_name)
 
     print("DONE.")
 
     return homolog_list
+
 
 def parseBlastXML(blast_file,tag_list=("Hit_def","Hit_id")):
     """

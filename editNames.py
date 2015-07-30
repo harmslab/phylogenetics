@@ -13,6 +13,7 @@ __usage__ = "editTreeNames.py file_to_modify master_file key_col value_col"
 
 import os, sys, re
 
+
 class EditNamesError(Exception):
     """
     General error class for this module.
@@ -116,7 +117,6 @@ def readMasterFile(name_file,column_delimiter="\t"):
         err += "\n\n"
         
         raise EditNamesError(err)
-
     return names
   
 
@@ -164,7 +164,10 @@ def modifyFile(file_to_modify,names,key_column,value_column):
         k = re.compile(key)
         num_counts = len(k.findall(contents))
         contents = k.sub("%s" % name_dictionary[key],contents,count=num_counts)
-        
+    
+    f = open(file_to_modify, "w")
+    contents = f.write(contents)
+    f.close()
     return contents
 
 def main(argv=None):

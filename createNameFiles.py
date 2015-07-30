@@ -40,11 +40,20 @@ def parseGenericLine(line):
     out_line = line[1:].strip()
     out_line = re.sub(":","-",out_line)
     out_line = re.sub(",","-",out_line)
+    out_line = re.sub("-","~",out_line)
     out_line = re.sub("\(","\[",out_line)
     out_line = re.sub("\)","\]",out_line)
    
     return out_line, "unk" 
-   
+
+def parseCustomLine(line):
+    """ Grab name of sequence in nbci file"""
+    
+    out_line = line[1:].strip()
+    out_line = out_line.split("|")
+    ortholog = out_line[0]
+    organism = out_line[1]
+    return ortholog, organism
 
 def createMasterFile(fasta_file,delim="\t",parse_type="generic"):
     """
@@ -53,7 +62,8 @@ def createMasterFile(fasta_file,delim="\t",parse_type="generic"):
     """
 
     parsers = {"generic":parseGenericLine,
-               "uniprot":parseUniprotLine}
+               "uniprot":parseUniprotLine,
+               "custom":parseCustomLine}
 
     parser = parsers[parse_type]
 
@@ -106,7 +116,7 @@ def main(argv=None):
     except IndexError:
         parser_type = "generic"
 
-    name_out, fasta_out = createMasterFile(uniprot_fasta)
+    name_out, fasta_out = createMasterFile(uniprot_fasta, parse_type="custom")
 
     # Strip extension
     file_root =".".join( uniprot_fasta.split(".")[:-1])
