@@ -1,6 +1,6 @@
 # Python API with tools for doing phylogenetics
 
-This is the master repository for the `phylogenetics` Python package.
+This is the master repository for the `phylogenetics` Python package. Many of the modules included in this package are from Dr. [Mike Harms'](https://github.com/harmsm) `phylo_tools` and have been converted to API's. 
 
 ## Developers
 
@@ -35,6 +35,7 @@ git commit -a -m "<commit message>"
 git push upstream <branch-name>
 ```
 8. Pull request the branch on Github into this master repository on Github.
+
 ## Users
 
 Clone this repo locally:
