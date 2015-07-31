@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 __description__ = \
 """
-Create a name file and sanitized fasta file from a uniprot fasta file. 
+Create a name file and sanitized fasta file from a uniprot fasta file.
 
 A name file can be used in conjunction with editNames.py to convert the strings
 within text files between human-readable and phyml readable formats.  The
@@ -18,7 +18,7 @@ def parseUniprotLine(line):
     """
     Parse a uniprot fasta file line, returning the uniprot id and species.  This
     is a rather hacked parser that is brittle to changes in the default uniprot
-    fasta file header.  
+    fasta file header.
     """
 
     cols = line.split("|")
@@ -33,22 +33,21 @@ def parseUniprotLine(line):
 
 def parseGenericLine(line):
     """
-    Grab the name of a sequence without any (known) structure in the name.  
-    Clean it up so downstream newick files don't choke. 
+    Grab the name of a sequence without any (known) structure in the name.
+    Clean it up so downstream newick files don't choke.
     """
 
     out_line = line[1:].strip()
     out_line = re.sub(":","-",out_line)
     out_line = re.sub(",","-",out_line)
-    out_line = re.sub("-","~",out_line)
     out_line = re.sub("\(","\[",out_line)
     out_line = re.sub("\)","\]",out_line)
-   
-    return out_line, "unk" 
+
+    return out_line, "unk"
 
 def parseCustomLine(line):
     """ Grab name of sequence in nbci file"""
-    
+
     out_line = line[1:].strip()
     out_line = out_line.split("|")
     ortholog = out_line[0]
@@ -67,7 +66,7 @@ def createMasterFile(fasta_file,delim="\t",parse_type="generic"):
 
     parser = parsers[parse_type]
 
-    # Create output list    
+    # Create output list
     name_out = [delim.join(["number","id","species","internal_name","pretty_name"])]
     fasta_out = []
 
@@ -83,10 +82,10 @@ def createMasterFile(fasta_file,delim="\t",parse_type="generic"):
 
                 internal_name = "XX%s" % (str(counter).zfill(8))
                 pretty_name = "%s-%s" % (id_string,species)
-  
+
                 name_out.append(delim.join([str(counter),id_string,species,
                                        internal_name,pretty_name]))
-                
+
                 fasta_out.append(">%s" % pretty_name)
 
                 counter += 1
@@ -95,16 +94,16 @@ def createMasterFile(fasta_file,delim="\t",parse_type="generic"):
                 fasta_out.append(line.strip())
 
     return name_out, fasta_out
-    
+
 
 def main(argv=None):
     """
     Main function, parses command line and creates master file.
     """
- 
+
     if argv == None:
         argv = sys.argv[1:]
-    
+
     try:
         uniprot_fasta = argv[0]
     except IndexError:
@@ -134,4 +133,3 @@ def main(argv=None):
 # If this is called from the command line
 if __name__ == "__main__":
     main()
-

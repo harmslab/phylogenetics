@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def blast_ncbi(fasta_input, output, **kwargs):
+def ncbi(fasta_input, output, **kwargs):
     """
         Place NCBI against an organism using blastp command line tools.
     """
@@ -13,17 +13,17 @@ def blast_ncbi(fasta_input, output, **kwargs):
         "-db": "nr",
         "-outfmt": "5"
     })
-    
+
     # Add arguments from blast
     for kw in kwargs:
         args[kw] = kwargs[kw]
-    
+
     # Construct blast commandline call from arguments.
     command = ["blastp"]
     for a in args:
         command += [a, args[a]]
-    
+
     # Send query to Blast database using Python subprocess
     command += ["-remote"]
-    
+
     return call(command)

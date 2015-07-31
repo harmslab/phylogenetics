@@ -3,7 +3,7 @@ __description__ =\
 """
 editNames.py
 
-Goes through a file looking for a set of strings, replacing each one with a 
+Goes through a file looking for a set of strings, replacing each one with a
 specific counterpart.  The strings are defined in a delimited text file
 with columns naemd "key" and "value".
 """
@@ -18,7 +18,7 @@ class EditNamesError(Exception):
     """
     General error class for this module.
     """
-    
+
     pass
 
 class NameObject:
@@ -45,9 +45,9 @@ class NameObject:
             warning += "\n\n"
 
             sys.stderr.write(warning)
-    
+
         try:
-            self.columns = dict([(column_names[i],column_values[i]) 
+            self.columns = dict([(column_names[i],column_values[i])
                                  for i in range(len(column_names))])
         except IndexError:
             err = "There is an error in the following line:\n\n"
@@ -56,7 +56,7 @@ class NameObject:
 
             raise EditNamesError(err)
 
-        # make it so all column values can be accessed by a simple 
+        # make it so all column values can be accessed by a simple
         # s.internal_name nomenclature
         self.__dict__.update(self.columns)
 
@@ -68,7 +68,7 @@ def checkUniqueness(some_list):
     """
 
     unique_list = dict([(x,[]) for x in some_list]).keys()
-    repeated_entries = [u for u in unique_list 
+    repeated_entries = [u for u in unique_list
                         if len([s for s in some_list if s == u]) > 1]
 
     return repeated_entries
@@ -85,7 +85,7 @@ def readMasterFile(name_file,column_delimiter="\t"):
 
     # Parse the file
     lines = [l for l in lines if l[0] != "#" and l.strip() != ""]
-    
+
     # Create a dictionary that keys column names to column numbers
     column_names = [c.strip() for c in lines[0].split(column_delimiter)]
     column_dict = dict([(c,i) for i, c in enumerate(column_names)])
@@ -94,31 +94,31 @@ def readMasterFile(name_file,column_delimiter="\t"):
     if "internal_name" not in column_names:
         err = "\nYou must have an 'internal_name' column in this file!\n\n"
         raise EditNamesError(err)
- 
-    # Make sure column names are not repeated more than once 
+
+    # Make sure column names are not repeated more than once
     for k in column_dict.keys():
         num_col_in_file = len([c for c in column_names if c == k])
         if num_col_in_file > 1:
             err = "column '%s' occurs more than once in the file!\n" % k
             raise EditNamesError(err)
 
-    # Load all names 
+    # Load all names
     names = []
     for l in lines[1:]:
         names.append(NameObject(l,column_names,column_delimiter))
- 
-    # make sure all internal_names are unique 
+
+    # make sure all internal_names are unique
     internal_names = [n.internal_name for n in names]
     repeated_names = checkUniqueness(internal_names)
-    if len(repeated_names) != 0: 
+    if len(repeated_names) != 0:
         err = "internal_name column must have unique entry for every line!\n"
         err += "The following entries are repeated:\n\n"
         err += "\n".join(repeated_names)
         err += "\n\n"
-        
+
         raise EditNamesError(err)
     return names
-  
+
 
 def modifyFile(file_to_modify,names,key_column,value_column):
     """
@@ -164,7 +164,7 @@ def modifyFile(file_to_modify,names,key_column,value_column):
         k = re.compile(key)
         num_counts = len(k.findall(contents))
         contents = k.sub("%s" % name_dictionary[key],contents,count=num_counts)
-    
+
     f = open(file_to_modify, "w")
     contents = f.write(contents)
     f.close()
@@ -172,7 +172,7 @@ def modifyFile(file_to_modify,names,key_column,value_column):
 
 def main(argv=None):
     """
-    Read the command line and master file, then alter contents of 
+    Read the command line and master file, then alter contents of
     file_to_modify and print.
     """
 
