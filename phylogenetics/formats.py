@@ -1,10 +1,10 @@
-# Easily convert between different phylogenetics file formats.
+# Easily convert between different phylogenetics file formats.s
 #
-#
-
 # -------------------------------------------------
 # Fasta conversions
 # -------------------------------------------------
+
+from phylogenetics.base import Homolog, HomologSet
 
 class Fasta2PhylipError(Exception):
     """
@@ -52,3 +52,74 @@ def fasta2phylip(lines):
     final_out = "%i  %i\n\n%s\n" % (num_seq,num_columns-10,to_write)
 
     return final_out
+    
+    
+# ---------------------------------------------------
+# BLAST XML/fasta format
+# ---------------------------------------------------
+    
+def load_blast_xml(filename):
+    """ Load blast XML file as homolog objects. """
+
+    def substring(s, first, last):
+        """ Function for returning a substring between two tags
+        
+            Example:
+            -------
+            s = "letmeshowyousomethingcool"
+            first = "letme"
+            last = "somethingcool"
+            
+            Returns 
+            >>> "showyou", 0, 11
+            
+        """
+        start = s.index( first ) + len( first )
+        end = s.index( last, start )
+        return s[start:end], start, end
+
+    jump = 0
+    homologs = HomologSet(homolog_set=[])
+    
+    while jump < len(string):
+        # Search for the next instance of <TSeq> tag for sequence data
+        try:
+            # Find individual sequence data
+            sequence_data, start, end = substring(string[jump:], "<TSeq>", "</TSeq>")
+        
+            # Find all sequence info tags
+            seq_tags = list()
+            sub_jump = 0
+        
+            # Find all unique tag in sequence data.
+            while jump < len(sequence_data):
+                try:
+                    tag, sub_start, sub_end = substring(sequence_data[sub_jump:], "<TSeq_", ">")
+                    sub_jump += sub_end
+                    seq_tags.append(tag)
+                # Once no one new tags are found, break loop
+                except:
+                    break
+        
+            # Find and strip sequence data from sequence tags found previously
+            kwargs = {}
+            # ignore first xml tag, TSeq_seqtype
+            for t in seq_tags[1:]:
+                # Get data, x and y are junk for this purpose
+                data, x,y = substring(sequence_data, "<TSeq_" + t + ">", "</TSeq_" + t + ">")
+                kwargs[t] = data
+        
+            # Make a unique ID for this sequence
+            unique_id = "XX%08d" % counter
+        
+            # Add this homolog to a set of homologs
+            h = Homolog(unique_id, **kwargs)
+            homologs.add_homolog(h)
+        
+            # Update jump
+            jump += end
+        # Once no more tags are found, break loop
+        except:
+            break
+            
+    return homologs

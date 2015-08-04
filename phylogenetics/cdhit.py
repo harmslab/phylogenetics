@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
              keep_tmp=False):
