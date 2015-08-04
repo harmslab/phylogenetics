@@ -16,10 +16,6 @@ class Homolog(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
     
-    def mapping(self, key1, key2):
-        """ Return mapping between two attributes in homolog """
-        return dict(getattr(self, key1), getattr(self, key2))
-    
     # -----------------------------------
     # Output formats
     # -----------------------------------
