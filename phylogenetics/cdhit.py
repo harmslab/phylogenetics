@@ -85,3 +85,9 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
                                                               len(homolog_list)))
 
     return out
+
+
+
+def cdhit_homologs(homologs):
+    """ Run function that clusters homologs. """
+    pass 

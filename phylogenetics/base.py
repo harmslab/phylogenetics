@@ -72,7 +72,9 @@ class HomologSet(object):
         return self._homologs
     
     def get_map(self, attr1, attr2=None):
-        """ Return mapping between two attributes in homolog set."""
+        """ Return mapping between two attributes in homolog set, OR
+            if no second attribute is give, map attr1 to whole homolog.   
+        """
         m = dict()
         # If no second attribute is give, mapping is between first attribute
         # and the homolog object
@@ -85,12 +87,36 @@ class HomologSet(object):
                 m[getattr(h, attr1)] = getattr(h, attr2)
         return m
 
-    def add_homolog(self, homolog):
-        """ Append a homolog object to the set."""
-        if isinstance(homolog, Homolog): 
-            self._homologs.append(homolog)
-        else:
-            raise Exception("homolog must be an instance of Homolog class.")
+    def add_homologs(self, homologs):
+        """ Append a list of homolog objects to the set."""
+        
+        # If a single homolog is given, format it into a list
+        # for loop below.
+        if isinstance(homologs,list) == False:
+            homologs = [homologs]
+        
+        # Append each homolog to list if it's a homolog instance.
+        for i in range(len(homolog)):
+            if isinstance(homolog[i], Homolog): 
+                self._homologs.append(homolog[i])
+            else:
+                raise Exception("homolog must be an instance of Homolog class.")
+            
+    def rm_homolog(self, ids):
+        """ Remove a list of homologs from set of homologs."""
+        # If a single id is given, format it into a list
+        # for loop below.
+        if isinstance(ids,list) == False:
+            ids = [ids]
+        
+        # Get id map
+        homolog_dict = self.get_map("id")
+        
+        # Remove these homologs from system
+        for id in ids:
+            del homolog_dict[id]
+            
+        self._homologs = list(homolog_dict.values())            
                     
     # -----------------------------------
     # Output formats

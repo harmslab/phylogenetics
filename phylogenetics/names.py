@@ -17,3 +17,5 @@ def switch(file, homologs, current_name, new_name):
     f = open(new_file, "w")
     f.write(text)
     f.close()
+    
+    
