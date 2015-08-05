@@ -53,9 +53,10 @@ class Homolog(object):
         
             Default is fasta.
         """
+        write_format = {"fasta":"w", "pickle": "wb", "json":"w"}
         format_func = getattr(self, format)
-        f = open(filename, "w")
-        f.write(format_func(tags))
+        f = open(filename, write_format[format])
+        f.write(format_func(tags=tags))
         f.close()
         
         
@@ -118,7 +119,8 @@ class HomologSet(object):
         
             Default is fasta.
         """
+        write_format = {"fasta":"w", "pickle": "wb", "json":"w"}
         format_func = getattr(self, format)
-        f = open(filename, "w")
-        f.write(format_func(tags))
+        f = open(filename, write_format[format])
+        f.write(format_func(tags=tags))
         f.close()

@@ -9,7 +9,7 @@ def switch(file, homologs, current_name, new_name):
     text = f.read()
     f.close()
 
-    mapping = homologs.get_map(current, new)
+    mapping = homologs.get_map(current_name, new_name)
     for key in mapping:
         text = text.replace(key, mapping[key])
     
