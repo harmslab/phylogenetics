@@ -76,7 +76,6 @@ def load_blast_xml(filename):
         """
         start = s.index( first ) + len( first )
         end = s.index( last, start )
-        print(s[start:end], start, end)
         return s[start:end], start, end
 
     # load file
