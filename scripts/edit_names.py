@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+
 # ----------------------------------------------------
 # Blast a set of seed sequences in fasta file.
 # ----------------------------------------------------
 
 import argparse
-from phylogenetic.names import switch
+from phylogenetics.names import switch
 
 def main():
     """

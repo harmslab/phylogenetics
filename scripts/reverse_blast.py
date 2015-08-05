@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # ----------------------------------------------------
 # Simple script for running a reverse blast against an 
 # organism name

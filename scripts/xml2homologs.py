@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # ----------------------------------------------------
 # Load xml file and create set of homologs in pickle
 # ----------------------------------------------------
