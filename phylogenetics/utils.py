@@ -32,7 +32,9 @@ def concatenate_files(filenames, output):
                     
 def load_homologset(filename):
     """ Load a homologset. """
-    homologset = pickle.load(filename)
+    f = open(filename, "rb")
+    homlogset = pickle.load(f)
+    f.close()
     return homologset
     
 def get_fasta_names(filename):

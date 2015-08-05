@@ -102,7 +102,7 @@ class HomologSet(object):
             else:
                 raise Exception("homolog must be an instance of Homolog class.")
             
-    def rm_homolog(self, ids):
+    def rm_homologs(self, ids):
         """ Remove a list of homologs from set of homologs."""
         # If a single id is given, format it into a list
         # for loop below.
@@ -116,8 +116,24 @@ class HomologSet(object):
         for id in ids:
             del homolog_dict[id]
             
-        self._homologs = list(homolog_dict.values())            
-                    
+        self._homologs = list(homolog_dict.values())
+
+    
+    def subset_homologs(self, ids):
+        """ Returns a new Homologs object from subset of this homolog object. """
+        if isinstance(ids,list) == False:
+            ids = [ids]
+        
+        # Get id map
+        homolog_dict = self.get_map("id")
+        
+        # Remove these homologs from system
+        subset = list()
+        for id in ids:
+            subset.append(homolog_dict[id])
+            
+        return HomologSet(homolog_set=subset)
+         
     # -----------------------------------
     # Output formats
     # -----------------------------------            
