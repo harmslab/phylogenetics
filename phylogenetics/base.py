@@ -5,15 +5,19 @@ import pickle
 
 class Homolog(object):
 
-    def __init__(self, unique_id, sequence, **kwargs):
+    def __init__(self, unique_id, **kwargs):
         
         # Must set a unique ID and sequence
         self.id = unique_id
-        self.sequence = sequence
         
-        # Set the other attributes of 
+        # Set user specified attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
+    
+    def add_attributes(self, **kwargs):
+        """ Add attributes to homolog object. """
+        for key,value in kwargs.items():
+            setattr(self, key, values)
     
     # -----------------------------------
     # Output formats
@@ -66,13 +70,20 @@ class HomologSet(object):
         """ Get homolog set. """
         return self._homologs
     
-    def mapping(self, attr1, attr2):
+    def get_map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set."""
         m = dict()
-        for h in self._homologs:
-            m[getattr(h, attr1)] = getattr(h, attr2)
+        # If no second attribute is give, mapping is between first attribute
+        # and the homolog object
+        if attr2 is None:
+            for h in self._homologs:
+                m[getattr(h, attr1)] = h
+        # else, mapping from one attribute to another
+        else:
+            for h in self._homologs:
+                m[getattr(h, attr1)] = getattr(h, attr2)
         return m
-    
+
     def add_homolog(self, homolog):
         """ Append a homolog object to the set."""
         if isinstance(homolog, Homolog): 
@@ -80,6 +91,10 @@ class HomologSet(object):
         else:
             raise Exception("homolog must be an instance of Homolog class.")
                     
+    # -----------------------------------
+    # Output formats
+    # -----------------------------------            
+                
     def fasta(self, tags=None):
         """ Return string in fasta format for the set."""
         f = ""
