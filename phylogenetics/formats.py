@@ -78,6 +78,11 @@ def load_blast_xml(filename):
         end = s.index( last, start )
         return s[start:end], start, end
 
+    # load file
+    f = open(filename, "r")
+    string = f.read()
+    f.close()
+    
     jump = 0
     homologs = HomologSet(homolog_set=[])
     
