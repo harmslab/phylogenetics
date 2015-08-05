@@ -84,7 +84,7 @@ def load_blast_xml(filename):
     f.close()
     
     jump = 0
-    homologs = HomologSet(homolog_set=[])
+    homologs = list()
     
     while jump < len(string):
         # Search for the next instance of <TSeq> tag for sequence data
@@ -119,7 +119,7 @@ def load_blast_xml(filename):
         
             # Add this homolog to a set of homologs
             h = Homolog(unique_id, **kwargs)
-            homologs.add_homolog(h)
+            homologs.append(h)
         
             # Update jump
             jump += end

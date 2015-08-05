@@ -12,7 +12,6 @@ class Homolog(object):
         self.sequence = sequence
         
         # Set the other attributes of 
-        print(kwargs)
         for key, value in kwargs.items():
             setattr(self, key, value)
     
