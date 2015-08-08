@@ -74,17 +74,31 @@ class HomologSet(object):
     def get_map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR
             if no second attribute is give, map attr1 to whole homolog.   
+            
+            attr2 can be a list of other attributes -- which will return
+                a list of those attributes mapped to attr1.
         """
         m = dict()
+        
         # If no second attribute is give, mapping is between first attribute
         # and the homolog object
         if attr2 is None:
             for h in self._homologs:
                 m[getattr(h, attr1)] = h
+        
         # else, mapping from one attribute to another
         else:
-            for h in self._homologs:
-                m[getattr(h, attr1)] = getattr(h, attr2)
+            
+            # If attr2 is a list, return a list in mapping
+            if isinstance(attr2,list):        
+                for h in self._homologs:
+                    m[getattr(h, attr1)] = [getattr(h, a) for a in attr2]
+                 
+            # Else just return a single attr.
+            else: 
+                for h in self._homologs:
+                    m[getattr(h, attr1)] = getattr(h, attr)
+                    
         return m
 
     def add_homologs(self, homologs):
