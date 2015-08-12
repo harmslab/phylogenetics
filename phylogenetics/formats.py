@@ -1,5 +1,7 @@
 # Easily convert between different phylogenetics file formats.
 #
+# Authors: Dr. Mike Harms
+#          Zach Sailer
 # -------------------------------------------------
 # Fasta conversions
 # -------------------------------------------------
@@ -12,7 +14,6 @@ class Fasta2PhylipError(Exception):
     """
 
     pass
-
 
 def fasta2phylip(lines):
     """
@@ -52,27 +53,118 @@ def fasta2phylip(lines):
     final_out = "%i  %i\n\n%s\n" % (num_seq,num_columns-10,to_write)
 
     return final_out
-    
-    
+
+
 # ---------------------------------------------------
 # BLAST XML/fasta format
 # ---------------------------------------------------
+
+def flattenConcatenatedXML(input_file,key_tag):
+    """
+    Clean up naively concatenated XML files by deleting begin/end tags that
+    occur at the place where the two files were concatenated.
+    NOTE: This will break and break royally if the key_tags are on the same
+    lines as other important entries.
+    """
+
+    f = open(input_file,'r')
+    input = f.readlines()
+    f.close()
+
+    set_start = re.compile("<%s>" % key_tag)
+    set_end =   re.compile("</%s>" % key_tag)
+
+    # Find all beginning and end tags...
+    starts = [i for i, l in enumerate(input) if set_start.search(l) != None]
+
+    # If this tag occurs more than once...
+    if (len(starts) != 1):
+
+        # Keep the first start reverse so we are chewing from the bottom.
+        starts.pop(0)
+        starts.reverse()
+
+        # Remove all lines between each end and start, again chewing from the
+        # bottom.
+        for i in range(len(starts)):
+            e = starts[i]
+            while set_end.search(input[e]) == None:
+                input.pop(e),
+                e = e - 1
+            input.pop(e)
+
+    # Return freshly minted, clean XML
+    return "".join(input)
+
+def parseBlastXML(blast_file,tag_list=("Hit_def","Hit_id")):
+    """
+    Parse BLAST xml output, extracting tags specified in tag_list and putting
+    into a list.  E-value is always appended after the last requested tag.
+    """
+
+    # Fix screwed up XML if blasts were done in series...
+    blast_input = flattenConcatenatedXML(blast_file,"BlastOutput_iterations")
+
+    # Read blast file properties (in tag_list) into a list to dump out
+    blast_input = ET.XML(blast_input)
+
+    all_hits = []
+    for blast_output in blast_input:
+        if blast_output.tag != "BlastOutput_iterations":
+            continue
+
+        for iteration in blast_output:
+            if iteration.tag != "Iteration":
+                continue
+
+            for hits in iteration:
+                if hits.tag != "Iteration_hits":
+                    continue
+
+                for hit in hits:
+                    Hit_list = [t for t in tag_list if t[0:3] == "Hit"]
+                    Hsp_list = [t for t in tag_list if t[0:3] == "Hsp"]
+
+                    properties = dict([(h.tag,str(h.text)) for h in hit])
+                    all_hits.append([properties[t] for t in Hit_list])
+
+                    for property in hit:
+                        if property.tag == "Hit_hsps":
+                            for hsp in property:
+                                hsp_properties = dict([(p.tag,str(p.text))
+                                                       for p in hsp])
+
+                                # Append inner Hsp properties to list
+                                all_hits[-1] += ([hsp_properties[t] for t in Hsp_list])
+                                break
+
+    return all_hits
+
     
-def load_blast_xml(filename):
+def Blast_to_homologs(filename):
+    """ Load blast XML file as homolog objects. """
+
+
+
+
+
+
+
+def Blast_to_homologs(filename):
     """ Load blast XML file as homolog objects. """
 
     def substring(s, first, last):
         """ Function for returning a substring between two tags
-        
+
             Example:
             -------
             s = "letmeshowyousomethingcool"
             first = "letme"
             last = "somethingcool"
-            
-            Returns 
+
+            Returns
             >>> "showyou", 0, 11
-            
+
         """
         start = s.index( first ) + len( first )
         end = s.index( last, start )
@@ -82,16 +174,16 @@ def load_blast_xml(filename):
     f = open(filename, "r")
     string = f.read()
     f.close()
-    
+
     jump, counter = 0, 0
     homologs = list()
-    
+
     while jump < len(string):
         # Search for the next instance of <TSeq> tag for sequence data
         try:
             # Find individual sequence data
             sequence_data, start, end = substring(string[jump:], "<TSeq>", "</TSeq>")
-        
+
             # Find all sequence info tags
             seq_tags = list()
             sub_jump = 0
@@ -104,7 +196,7 @@ def load_blast_xml(filename):
                 # Once no one new tags are found, break loop
                 except ValueError:
                     sub_jump = len(sequence_data)
-            
+
             # Find and strip sequence data from sequence tags found previously
             kwargs = {}
             # ignore first xml tag, TSeq_seqtype
@@ -127,5 +219,5 @@ def load_blast_xml(filename):
         # Once no more tags are found, break loop
         except ValueError:
             jump = len(string)
-            
+
     return homologs
