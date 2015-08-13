@@ -1,12 +1,14 @@
-import os
+import os, shlex
 import subprocess
 
-def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
+from phylogenetics.base import rank_homologs
+
+def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
              keep_tmp=False):
     """
     Remove redundant homologs using cdhit.  After clustering with
     the redundancy cutoff, take the member of each cluster with the lowest
-    rank.  Return a subset of homolog_list.
+    rank.  Return the subset of homologlist.
     """
 
     # Write out the fasta file with a unique name for each sequence that goes
@@ -14,23 +16,29 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
     # homolog_list.
 
     # Don't do anything for empty list
-    if len(homolog_list) == 0:
+    if len(homolog_set.homologs) == 0:
         print("Warning: empty list passed to cdhit!  Ignoring.")
-        return homolog_list
+        return homolog_set
 
-    fasta_string = "".join([s.formatFasta(i) for i,s in enumerate(homolog_list)])
-    f = open("%s.fasta" % tmp_file_suffix,'w')
-    f.write(fasta_string)
-    f.close()
+    # Ranks homologs.
+    rank_homologs(homolog_set)
 
-    # Run cdhit
+    # Create a temporary fasta file from homologs as input to CDHIT.
+    fname = "%s.fasta" % tmp_file_suffix
+    homolog_set.write(fname, format="fasta", tage="id")
+
+    # Build cdhit command
     cdhit_cmd = "cdhit -i %s.fasta -o %s_cdhit -c %.3f" % (tmp_file_suffix,
                                                            tmp_file_suffix,
                                                            redund_cutoff)
+    # Format the command into list.
     args = shlex.split(cdhit_cmd)
 
+    # Run CDhit using args.
     run = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdoutdata, stderrdata = run.communicate()
+
+    # Check if CDHIT worked correctly.
     if run.returncode != 0:
         print(stdoutdata)
         err = "cdhit failed!\n"
@@ -40,7 +48,10 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
     # lowest rank
     f = open("%s_cdhit.clstr" % tmp_file_suffix,'r')
 
-    out = []
+    # Get a id-to-rank mapping dict from homolog_set
+    id_rank = homolog_set.get_map("id", "rank")
+
+    subset_ids = []
     in_cluster = []
     line = f.readline()
     while line != "":
@@ -52,9 +63,9 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
             if in_cluster != []:
 
                 # Take the member of in_cluster with the minimum rank
-                ranks = [homolog_list[c].rank for c in in_cluster]
-                best = in_cluster[ranks.index(min(ranks))]
-                out.append(homolog_list[best])
+                ranks = [id_rank[homolog_id] for homolog_id in in_cluster]
+                best_id = in_cluster[ranks.index(min(ranks))]
+                subset_ids.append(best_id)
 
             in_cluster = []
 
@@ -67,10 +78,9 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
         line = f.readline()
 
     # Grab the last cluster
-    ranks = [homolog_list[c].rank for c in in_cluster]
-    best = in_cluster[ranks.index(min(ranks))]
-    out.append(homolog_list[best])
-
+    ranks = [id_rank[homolog_id] for homolog_id in in_cluster]
+    best_id = in_cluster[ranks.index(min(ranks))]
+    subset_ids.append(best_id)
     f.close()
 
     # Delete temporary files
@@ -80,14 +90,6 @@ def runCdhit(homolog_list,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
         os.remove("%s_cdhit.clstr" % tmp_file_suffix)
         os.remove("%s_cdhit.bak.clstr" % tmp_file_suffix)
 
-    print("cdhit lowered redundancy @ %.3f, %i of %i kept" % (redund_cutoff,
-                                                              len(out),
-                                                              len(homolog_list)))
+    homolog_subset = homolog_set.subset_homologs(subset_ids)
 
-    return out
-
-
-
-def cdhit_homologs(homologs):
-    """ Run function that clusters homologs. """
-    pass 
+    return homolog_subset
