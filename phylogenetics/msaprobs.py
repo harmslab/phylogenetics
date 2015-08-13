@@ -44,3 +44,25 @@ def run_msaprobs(homolog_set, tmp_file_suffix="alignment", rm_tmp=True):
         os.remove("%s.fasta" % tmp_file_suffix)
 
     return homolog_set
+
+def alignment_to_homologs(homolog_set, alignment_file):
+    """ Load an alignment fasta file into a set of homologs. 
+    
+        This function is predominantly useful for loading an alignment
+        that was manually edited.
+    """
+    
+    data = read_fasta(aligment_file)
+  
+    # Get a map of homolog ids to their object
+    homolog_map = homolog_set.get_map("id")
+    
+    key = "alignment"
+    counter += 0
+    while hasattr(homolog_set.homologs[0], key) is True:
+        key = "alignment%d" % counter
+    
+    for d in data:
+        homolog_map[d].add_attributes({key:data[d]})
+
+    return homolog_set
