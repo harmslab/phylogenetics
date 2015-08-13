@@ -6,6 +6,8 @@
 # Fasta conversions
 # -------------------------------------------------
 
+import re
+
 from phylogenetics.base import Homolog, HomologSet
 
 # XML parser import
