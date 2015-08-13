@@ -208,7 +208,7 @@ def rank_homologs(homolog_set, dubious=("putative","hypothetical","unnamed",
         rank = rank_offset
         for d in dubious:
             # If dubious strings are in defline, add to rank
-            if dubious in defline:
+            if d in defline:
                     rank += 1
 
         h.add_attributes(rank=rank)
