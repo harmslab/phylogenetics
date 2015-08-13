@@ -8,11 +8,14 @@
 
 from phylogenetics.base import Homolog, HomologSet
 
+
+# XML parser import
+from xml.etree import ElementTree as ET
+
 class Fasta2PhylipError(Exception):
     """
     General error class for this module.
     """
-
     pass
 
 def fasta2phylip(lines):
@@ -59,7 +62,7 @@ def fasta2phylip(lines):
 # BLAST XML/fasta format
 # ---------------------------------------------------
 
-def flattenConcatenatedXML(input_file,key_tag):
+def flatten_concatenated_XML(input_file,key_tag):
     """
     Clean up naively concatenated XML files by deleting begin/end tags that
     occur at the place where the two files were concatenated.
@@ -96,19 +99,22 @@ def flattenConcatenatedXML(input_file,key_tag):
     # Return freshly minted, clean XML
     return "".join(input)
 
-def parseBlastXML(blast_file,tag_list=("Hit_def","Hit_id")):
+
+def parse_blast_XML(filename,tag_list=("Hit_def","Hit_id")):
     """
     Parse BLAST xml output, extracting tags specified in tag_list and putting
     into a list.  E-value is always appended after the last requested tag.
     """
 
     # Fix screwed up XML if blasts were done in series...
-    blast_input = flattenConcatenatedXML(blast_file,"BlastOutput_iterations")
+    blast_input = flatten_concatenated_XML(filename,"BlastOutput_iterations")
 
     # Read blast file properties (in tag_list) into a list to dump out
     blast_input = ET.XML(blast_input)
 
     all_hits = []
+
+    # Navigate to proper level in XML
     for blast_output in blast_input:
         if blast_output.tag != "BlastOutput_iterations":
             continue
@@ -122,102 +128,88 @@ def parseBlastXML(blast_file,tag_list=("Hit_def","Hit_id")):
                     continue
 
                 for hit in hits:
-                    Hit_list = [t for t in tag_list if t[0:3] == "Hit"]
-                    Hsp_list = [t for t in tag_list if t[0:3] == "Hsp"]
 
-                    properties = dict([(h.tag,str(h.text)) for h in hit])
-                    all_hits.append([properties[t] for t in Hit_list])
+                    # Separate the tag_list out from hits and hit specs.
+                    Hit_list = [t[4:] for t in tag_list if t[0:3] == "Hit"]
+                    Hsp_list = [t[4:] for t in tag_list if t[0:3] == "Hsp"]
+
+                    # Construct a dictionary of tags stripped from XML
+                    properties = dict([(h.tag[4:],str(h.text).strip()) for h in hit])
+                    subset = dict((k, properties[k]) for k in Hit_list)
+                    all_hits.append(subset)
 
                     for property in hit:
+
                         if property.tag == "Hit_hsps":
+
                             for hsp in property:
-                                hsp_properties = dict([(p.tag,str(p.text))
+
+                                # Construct a dictionary of tags stripped from XML
+                                hsp_properties = dict([(p.tag[4:],str(p.text).strip())
                                                        for p in hsp])
+                                subset = dict((k, hsp_properties[k]) for k in Hsp_list)
 
                                 # Append inner Hsp properties to list
-                                all_hits[-1] += ([hsp_properties[t] for t in Hsp_list])
+                                all_hits[-1].update(subset)
                                 break
 
     return all_hits
 
-    
-def Blast_to_homologs(filename):
-    """ Load blast XML file as homolog objects. """
+def parse_blast_fasta(filename):
+    """
+        Parse Blast's Fasta/XML formatted file, returning a list of each
+        sequence's data.
+
+        Args:
+        ----------
+        filename: str
+            Fasta/XML formatted file from Blast Output.
+
+        Returns:
+        -------
+        sequences: list of dicts
+            List of sequences data in their own lists.
+    """
+
+    # Fix screwed up XML because sequences downloaded and output concatenated
+    sequence_input = flatten_concatenated_XML(filename,"TSeqSet")
+
+    # Now we should have valid XML...
+    sequence_input = ET.XML(sequence_input)
+
+    # XML Tag prefix to strip
+    prefix = "TSeq_"
+
+    sequences = []
+    for i, sequence in enumerate(sequence_input):
+        # Rip out all properties of a sequence
+        properties = dict([(s.tag[len(prefix):],str(s.text).strip()) for s in sequence])
+
+        # Append to sequences.
+        sequences.append(properties)
+
+    return sequences
 
 
+def blast_to_homologset(filename, tag_list=()):
+    """ Load blast XML file as HomologSet. """
 
+    # Don't discriminate on the type of Blast XML file format, try both.
+    try:
+        # First, try blasting hits format.
+        hits = parse_blast_XML(filename, tag_list=tag_list)
+    except:
+        # Then, try blast fasta format
+        hits = parse_blast_fasta(filename)
 
+    homologs = []
+    for i in range(len(hits)):
+        # Make a unique id for each sequence.
+        unique_id = "XX%08d" % i
 
+        # Create homolog instance for each sequence.
+        homologs.append(Homolog(unique_id, **hits[i]))
 
-
-def Blast_to_homologs(filename):
-    """ Load blast XML file as homolog objects. """
-
-    def substring(s, first, last):
-        """ Function for returning a substring between two tags
-
-            Example:
-            -------
-            s = "letmeshowyousomethingcool"
-            first = "letme"
-            last = "somethingcool"
-
-            Returns
-            >>> "showyou", 0, 11
-
-        """
-        start = s.index( first ) + len( first )
-        end = s.index( last, start )
-        return s[start:end], start, end
-
-    # load file
-    f = open(filename, "r")
-    string = f.read()
-    f.close()
-
-    jump, counter = 0, 0
-    homologs = list()
-
-    while jump < len(string):
-        # Search for the next instance of <TSeq> tag for sequence data
-        try:
-            # Find individual sequence data
-            sequence_data, start, end = substring(string[jump:], "<TSeq>", "</TSeq>")
-
-            # Find all sequence info tags
-            seq_tags = list()
-            sub_jump = 0
-            # Find all unique tag in sequence data.
-            while sub_jump < len(sequence_data):
-                try:
-                    tag, sub_start, sub_end = substring(sequence_data[sub_jump:], "<TSeq_", ">")
-                    sub_jump += sub_end
-                    seq_tags.append(tag)
-                # Once no one new tags are found, break loop
-                except ValueError:
-                    sub_jump = len(sequence_data)
-
-            # Find and strip sequence data from sequence tags found previously
-            kwargs = {}
-            # ignore first xml tag, TSeq_seqtype
-            for t in seq_tags[1:]:
-                # Get data, x and y are junk for this purpose
-                data, x,y = substring(sequence_data, "<TSeq_" + t + ">", "</TSeq_" + t + ">")
-                kwargs[t] = data
-
-            # Make a unique ID for this sequence
-            unique_id = "XX%08d" % counter
-
-            # Add this homolog to a set of homologs
-            h = Homolog(unique_id, **kwargs)
-
-            homologs.append(h)
-
-            # Update jump
-            jump += end
-            counter += 1
-        # Once no more tags are found, break loop
-        except ValueError:
-            jump = len(string)
-
-    return homologs
+    # Build homolog set from xml file
+    homologset = HomologSet(homologs)
+    return homologset
