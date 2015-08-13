@@ -1,4 +1,4 @@
-import os, shlex
+import os, shlex, string 
 import subprocess
 
 from phylogenetics.base import rank_homologs
@@ -25,7 +25,7 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
 
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.fasta" % tmp_file_suffix
-    homolog_set.write(fname, format="fasta", tage="id")
+    homolog_set.write(fname, format="fasta", tags=["id"])
 
     # Build cdhit command
     cdhit_cmd = "cdhit -i %s.fasta -o %s_cdhit -c %.3f" % (tmp_file_suffix,
@@ -71,7 +71,7 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
 
         # If this is not a blank line, record the seq_id in in_cluster
         elif line[0] in string.digits:
-            seq_id = int(line.split(">")[1])
+            seq_id = line.split(">")[1][:10]
             in_cluster.append(seq_id)
 
         # Read the next line
@@ -85,10 +85,13 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
 
     # Delete temporary files
     if not keep_tmp:
-        os.remove("%s.fasta" % tmp_file_suffix)
-        os.remove("%s_cdhit" % tmp_file_suffix)
-        os.remove("%s_cdhit.clstr" % tmp_file_suffix)
-        os.remove("%s_cdhit.bak.clstr" % tmp_file_suffix)
+        try:
+            os.remove("%s.fasta" % tmp_file_suffix)
+            os.remove("%s_cdhit" % tmp_file_suffix)
+            os.remove("%s_cdhit.clstr" % tmp_file_suffix)
+            os.remove("%s_cdhit.bak.clstr" % tmp_file_suffix)
+        except:
+            pass
 
     homolog_subset = homolog_set.subset_homologs(subset_ids)
 

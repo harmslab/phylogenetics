@@ -107,7 +107,7 @@ class HomologSet(object):
             # Else just return a single attr.
             else:
                 for h in self._homologs:
-                    m[getattr(h, attr1)] = getattr(h, attr)
+                    m[getattr(h, attr1)] = getattr(h, attr2)
 
         return m
 
