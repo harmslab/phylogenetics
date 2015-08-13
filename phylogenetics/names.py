@@ -3,8 +3,6 @@
 # -------------------------------------------------------
 from os.path import splitext
 
-FORMATS = {".nwk":newick_names, ".fasta":fasta_names}
-
 def newick_names(name):
     """ Quality controll for changing names in newick file. """
     name = name.strip()
@@ -16,6 +14,8 @@ def newick_names(name):
 def fasta_names(name):
     """ """
     return name
+
+FORMATS = {".nwk":newick_names, ".fasta":fasta_names}
 
 def switch(filename, homologs, current_name, new_name, format=""):
     """ Switch between names. New name can be a list
