@@ -102,8 +102,22 @@ def flatten_concatenated_XML(input_file,key_tag):
 
 def parse_blast_XML(filename,tag_list=("Hit_def","Hit_id")):
     """
-    Parse BLAST xml output, extracting tags specified in tag_list and putting
-    into a list.  E-value is always appended after the last requested tag.
+        Parse XML file of hits returned after BLASTing a sequence
+        against a database.
+
+        Args:
+        ----
+        filename: str
+            XML filename returned from BLAST
+        tag_list: tuple
+            Tuple of XML tags that will be included in output data for
+            each sequence.
+
+        Returns:
+        -------
+        all_hits: list of dicts
+            List of sequence data for all hits in XML file (with key,values
+            given by tag_list).
     """
 
     # Fix screwed up XML if blasts were done in series...
