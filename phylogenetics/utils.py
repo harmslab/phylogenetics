@@ -52,3 +52,23 @@ def get_fasta_names(filename):
             names.append(l[1:].rstrip())
 
     return names
+
+
+def read_fasta(filename):
+    """ Reads in a fasta file, returning a dict with defline 
+        as key and sequence as value.
+    """
+    f = open(filename, "r")
+    lines = f.readlines()
+    f.close()
+    
+    keys = []
+    vals = []
+    for l in lines:
+        val = ""
+        if l[0] == ">":
+            keys.append(l[1:].strip())
+            vals.append("")
+        else:
+            vals[-1] += "".join(l.strip())
+    return dict(zip(keys, vals))
