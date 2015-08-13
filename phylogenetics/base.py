@@ -10,7 +10,13 @@ import pickle
 class Homolog(object):
 
     def __init__(self, unique_id, **kwargs):
+        """ Create a single Homolog object.
 
+            Args:
+            ----
+            unique_id: str
+                ID number for homolog, unique from any set.
+        """
         # Must set a unique ID and sequence
         self.id = unique_id
 
@@ -192,12 +198,11 @@ class HomologSet(object):
 def rank_homologs(homolog_set, dubious=("putative","hypothetical","unnamed",
                     "possible", "predicted","unknown","uncharacterized",
                     "mutant","isoform"), rank_offset=0):
-    """
-        Rank homologs based on dubious descriptions in their defline.
-    """
+
+    """ Rank homologs based on dubious descriptions in their defline. """
 
     for h in homolog_set.homologs:
-        defline = h["defline"]
+        defline = h.defline
 
         # Does one of the dubious entries occur on this line?
         rank = rank_offset

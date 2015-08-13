@@ -65,10 +65,10 @@ def fasta2phylip(lines):
 
 def flatten_concatenated_XML(input_file,key_tag):
     """
-    Clean up naively concatenated XML files by deleting begin/end tags that
-    occur at the place where the two files were concatenated.
-    NOTE: This will break and break royally if the key_tags are on the same
-    lines as other important entries.
+        Clean up naively concatenated XML files by deleting begin/end tags that
+        occur at the place where the two files were concatenated.
+        NOTE: This will break and break royally if the key_tags are on the same
+        lines as other important entries.
     """
 
     f = open(input_file,'r')
@@ -169,6 +169,7 @@ def parse_blast_XML(filename,tag_list=("Hit_def","Hit_id")):
                                 break
 
     return all_hits
+
 
 def parse_blast_fasta(filename):
     """
