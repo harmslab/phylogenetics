@@ -49,7 +49,25 @@ class Homolog(object):
         # New line with full sequence string
         f += "\n" + self.sequence +"\n"
         return f
-
+    
+    def phylip(self, tags=None):
+        """ Return a PhyML formatted string to write to file. 
+            
+            Only allowed when Homolog has alignment attribute
+        """
+        # Check that an alignment attribute exists in homolog.
+        if hasattr(self, "alignment") is False:
+            raise Exception("Homolog must have an alignment attribute to write phylip.")
+        
+        # Use specified alignment key
+        if tags is not None:
+            alignment = getattr(self, tags)
+        else:
+            alignment = self.alignment
+        
+        f = "%s\n%s\n" % (self.id, alignment)
+        return f
+        
     def json(self, **kwargs):
         """ Return json formatted string. """
         return json.dumps(self.__dict__)
@@ -168,6 +186,26 @@ class HomologSet(object):
         for h in self._homologs:
             f += h.fasta(tags)
         return f
+    
+    def phylip(self, tags=None):
+        """ Return string of sequences in phylip format. """
+        
+        # Check that an alignment attribute exists in homolog.
+        if hasattr(self.homologs[0], "alignment") is False:
+            raise Exception("Homolog must have an alignment attribute to write phylip.")
+        
+        f = ""
+        for h in self.homologs:
+            f += h.phylip(tags)
+      
+        n_homologs = len(self.homologs)
+        n_col = len(getattr(self.homologs[0], tags))
+        
+        num_seq = len(split_out)
+        num_columns = lengths.keys()[0]
+
+        out = "%i  %i\n\n%s\n" % (n_homologs,n_col,f)
+        return out
 
     def json(self, **kwargs):
         """ Return json string of homolog set."""
