@@ -33,7 +33,7 @@ class Homolog(object):
     # Output formats
     # -----------------------------------
 
-    def fasta(self,tags=None):
+    def fasta(self, tags=None):
         """ Return fasta formatted string with named tags (in order given).
 
             If no tags are given, prints id with sequence.
@@ -46,8 +46,10 @@ class Homolog(object):
             f += "|".join([str(getattr(self, t)) for t in tags])
         else:
             f += self.id
-        # New line with full sequence string
+        
+        # New line with full sequence string (aligned if told to)
         f += "\n" + self.sequence +"\n"
+        
         return f
     
     def phylip(self, tags=None):
@@ -56,14 +58,14 @@ class Homolog(object):
             Only allowed when Homolog has alignment attribute
         """
         # Check that an alignment attribute exists in homolog.
-        if hasattr(self, "alignment") is False:
+        if hasattr(self, "latest_align") is False:
             raise Exception("Homolog must have an alignment attribute to write phylip.")
         
         # Use specified alignment key
         if tags is not None:
             alignment = getattr(self, tags)
         else:
-            alignment = self.alignment
+            alignment = self.latest_align
         
         f = "%s\n%s\n" % (self.id, alignment)
         return f
@@ -81,10 +83,15 @@ class Homolog(object):
 
             Default is fasta.
         """
-        write_format = {"fasta":"w", "pickle": "wb", "json":"w"}
+        # Different writing formats that are possible
+        write_format = {"fasta":"w", 
+                        "pickle": "wb", 
+                        "json":"w", 
+                        "phylip":"w"}
+        
         format_func = getattr(self, format)
         f = open(filename, write_format[format])
-        f.write(format_func(tags=tags))
+        f.write(format_func(tags=tags, aligned=aligned))
         f.close()
 
 
@@ -190,19 +197,16 @@ class HomologSet(object):
     def phylip(self, tags=None):
         """ Return string of sequences in phylip format. """
         
-        # Check that an alignment attribute exists in homolog.
-        if hasattr(self.homologs[0], "alignment") is False:
-            raise Exception("Homolog must have an alignment attribute to write phylip.")
+        # Get the latest align if other alignment isn't specified
+        if tags is None:
+            tags = "latest_align"
         
         f = ""
         for h in self.homologs:
             f += h.phylip(tags)
-      
+
         n_homologs = len(self.homologs)
         n_col = len(getattr(self.homologs[0], tags))
-        
-        num_seq = len(split_out)
-        num_columns = lengths.keys()[0]
 
         out = "%i  %i\n\n%s\n" % (n_homologs,n_col,f)
         return out
@@ -223,7 +227,12 @@ class HomologSet(object):
 
             Default is fasta.
         """
-        write_format = {"fasta":"w", "pickle": "wb", "json":"w"}
+        # Different writing formats that are possible
+        write_format = {"fasta":"w", 
+                        "pickle": "wb", 
+                        "json":"w", 
+                        "phylip":"w"}
+        
         format_func = getattr(self, format)
         f = open(filename, write_format[format])
         f.write(format_func(tags=tags))

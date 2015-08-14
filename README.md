@@ -2,6 +2,11 @@
 
 This is the master repository for the `phylogenetics` Python package. Many of the modules included in this package are from Dr. [Mike Harms'](https://github.com/harmsm) `phylo_tools` and have been converted to API's. 
 
+## Setup
+
+The list of necessary dependencies and installations can be found on the Wiki Page for this repo.
+
+
 ## Developers
 
 Git must be installed to clone and contribute to this project

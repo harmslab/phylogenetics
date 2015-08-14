@@ -2,7 +2,32 @@
 # Useful tools for handling fasta files.
 # --------------------------------------
 import pickle
+import subprocess
 
+def run_subprocess(base, *args, **kwargs):
+    """ Run a subprocess command with given set of args and kwargs.
+        and handle errors.
+        
+    """ 
+    f = [base]
+    # Add positional arguments
+    for a in args:
+        f.append(a)
+    # Add keyword arguments
+    for kw in kwargs:
+        f.append("-" + kw)
+        f.append(kwargs[kw])
+    
+    # Run msaprobs using args.
+    run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    stdoutdata, stderrdata = run.communicate()
+
+    # Check if alignment worked correctly.
+    if run.returncode != 0:
+        print(stdoutdata)
+        err = base + " failed!\n"
+        raise Exception(err)
+    
 def split_fasta(master_fasta):
     """
         Split a fasta into multiple single sequence fastas.
