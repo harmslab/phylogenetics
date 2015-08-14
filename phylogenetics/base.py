@@ -233,7 +233,7 @@ class HomologSet(object):
 # Functions to manage and maintain homologs.
 # -----------------------------------------------------
 
-def rank_homologs(homolog_set, dubious=("putative","hypothetical","unnamed",
+def rank_homologs(homolog_set, positive=(), negative=("putative","hypothetical","unnamed",
                     "possible", "predicted","unknown","uncharacterized",
                     "mutant","isoform"), rank_offset=0):
 
@@ -244,9 +244,15 @@ def rank_homologs(homolog_set, dubious=("putative","hypothetical","unnamed",
 
         # Does one of the dubious entries occur on this line?
         rank = rank_offset
-        for d in dubious:
-            # If dubious strings are in defline, add to rank
-            if d in defline:
-                    rank += 1
+  
+        for p in positive:
+            # If positive strings are in defline, subtract from rank
+            if p in defline:
+                rank -= 1
+        
+        for n in negative:
+            # If negative strings are in defline, add to rank
+            if n in defline:
+                rank += 1
 
         h.add_attributes(rank=rank)
