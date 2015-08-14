@@ -17,7 +17,7 @@ def run_subprocess(base, *args, **kwargs):
     for kw in kwargs:
         f.append("-" + kw)
         f.append(kwargs[kw])
-    
+    print(f)
     # Run msaprobs using args.
     run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdoutdata, stderrdata = run.communicate()
