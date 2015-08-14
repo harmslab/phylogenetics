@@ -7,7 +7,6 @@ import subprocess
 def run_subprocess(base, *args, **kwargs):
     """ Run a subprocess command with given set of args and kwargs.
         and handle errors.
-        
     """ 
     f = [base]
     # Add positional arguments
@@ -17,9 +16,10 @@ def run_subprocess(base, *args, **kwargs):
     for kw in kwargs:
         f.append("-" + kw)
         f.append(kwargs[kw])
-    print(f)
+
     # Run msaprobs using args.
-    run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+    run.stdin.write('Y')
     stdoutdata, stderrdata = run.communicate()
 
     # Check if alignment worked correctly.
