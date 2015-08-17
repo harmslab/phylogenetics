@@ -33,7 +33,7 @@ class Homolog(object):
     # Output formats
     # -----------------------------------
 
-    def fasta(self, tags=None):
+    def fasta(self, tags=None, aligned=False):
         """ Return fasta formatted string with named tags (in order given).
 
             If no tags are given, prints id with sequence.
@@ -48,7 +48,10 @@ class Homolog(object):
             f += self.id
         
         # New line with full sequence string (aligned if told to)
-        f += "\n" + self.sequence +"\n"
+        if aligned:
+            f += "\n" + self.latest_align +"\n"
+        else:
+            f += "\n" + self.sequence +"\n"
         
         return f
     
@@ -77,8 +80,19 @@ class Homolog(object):
     def pickle(self, **kwargs):
         """ Returns pickle string. """
         return pickle.dumps(self)
+    
+    def csv(self, tags=None, header=True, delimiter=","):
+        """ write csv string. """ 
+        # Add header is specified
+        if header:
+            f = delimiter.join(tags)
+        else:
+            f = ""
+        
+        f += delimiter.join([str(getattr(self, t)) for t in tags]) + "\n"
+        return f
 
-    def write(self, filename, format="fasta", tags=None):
+    def write(self, filename, format="fasta", tags=None, aligned=False):
         """ Write to file with given format.
 
             Default is fasta.
@@ -187,11 +201,11 @@ class HomologSet(object):
     # Output formats
     # -----------------------------------
 
-    def fasta(self, tags=None):
+    def fasta(self, tags=None, aligned=False):
         """ Return string in fasta format for the set."""
         f = ""
         for h in self._homologs:
-            f += h.fasta(tags)
+            f += h.fasta(tags, aligned=aligned)
         return f
     
     def phylip(self, tags=None):
@@ -221,8 +235,17 @@ class HomologSet(object):
     def pickle(self, **kwargs):
         """ Return pickle string of homolog set. """
         return pickle.dumps(self)
+    
+    def csv(self, tags=None, delimiter=","):
+        """ Return csv string. """
+        f = delimiter.join(tags)
+        f += "\n"
+        for h in self._homologs:
+            f += h.csv(tags=tags, header=False, delimiter=delimiter)
+        return f
+        
 
-    def write(self, filename, format="fasta", tags=None):
+    def write(self, filename, format="fasta", tags=None, aligned=False):
         """ Write to file with given format.
 
             Default is fasta.
@@ -231,11 +254,12 @@ class HomologSet(object):
         write_format = {"fasta":"w", 
                         "pickle": "wb", 
                         "json":"w", 
-                        "phylip":"w"}
+                        "phylip":"w",
+                        "csv": "w"}
         
         format_func = getattr(self, format)
         f = open(filename, write_format[format])
-        f.write(format_func(tags=tags))
+        f.write(format_func(tags=tags, aligned=aligned))
         f.close()
 
 # -----------------------------------------------------
