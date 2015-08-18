@@ -4,6 +4,36 @@ This is the master repository for the `phylogenetics` Python package. This packa
 
 The foundation of this API are the `Homolog` and `HomologSet` objects. These objects offer a simple datastructure that manages the metadata for a set of sequences in a phylogenetics/reconstruction project. These objects are easily queried, updated, and saved into many formats (i.e. fasta, csv, phylip, pickle, and json). 
 
+An metadata inside a homolog (__dict__ attribute) might look might look like this:
+
+```python
+>>> print(homolog.__dict__)
+
+{
+    "id" : "XX00000000", 
+    "species" : "S100A5",
+    "organism" : "human",
+    "length" : 180,
+    "sequence" : "ASKFAFELGSKADGKASEKA...",
+    "latest_align" : "----ASK---F-AFELG--SKA---DGKASEK-A---...",
+    "align_1" : "--------------ASK-------F-AFELG-----SKA--DFLASEK--A--...",
+    
+    .
+    .
+    .
+}
+
+>>> homolog.fasta()
+
+>XX00000000
+ASKFAFELGSKADGKASEKA...
+
+
+>>> homolog.write("homolog.fasta", format="fasta")  # writes to file "homolog.fasta"
+```
+
+
+
 ## Installation
 
 Clone this repo locally:
