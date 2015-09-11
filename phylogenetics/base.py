@@ -1,4 +1,4 @@
-# Base classes for Homolog objects
+#Base classes for Homolog objects
 #
 #
 
@@ -55,7 +55,7 @@ class Homolog(object):
         
         return f
     
-    def phylip(self, tags=None):
+    def phylip(self, tags=None, **kwargs):
         """ Return a PhyML formatted string to write to file. 
             
             Only allowed when Homolog has alignment attribute
@@ -81,7 +81,7 @@ class Homolog(object):
         """ Returns pickle string. """
         return pickle.dumps(self)
     
-    def csv(self, tags=None, header=True, delimiter=","):
+    def csv(self, tags=None, header=True, delimiter=",", **kwargs):
         """ write csv string. """ 
         # Add header is specified
         if header:
@@ -208,7 +208,7 @@ class HomologSet(object):
             f += h.fasta(tags, aligned=aligned)
         return f
     
-    def phylip(self, tags=None):
+    def phylip(self, tags=None, **kwargs):
         """ Return string of sequences in phylip format. """
         
         # Get the latest align if other alignment isn't specified
@@ -236,7 +236,7 @@ class HomologSet(object):
         """ Return pickle string of homolog set. """
         return pickle.dumps(self)
     
-    def csv(self, tags=None, delimiter=","):
+    def csv(self, tags=None, delimiter=",", **kwargs):
         """ Return csv string. """
         f = delimiter.join(tags)
         f += "\n"

@@ -19,7 +19,8 @@ def run_subprocess(base, *args, **kwargs):
 
     # Run msaprobs using args.
     run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
-    run.stdin.write('Y')
+    #Answer Y to continue after initial pass. May need more quality check for this.
+    run.stdin.write(bytes('Y', "ascii"))
     stdoutdata, stderrdata = run.communicate()
 
     # Check if alignment worked correctly.

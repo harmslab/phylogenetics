@@ -7,7 +7,11 @@ from phylogenetics.utils import read_fasta, run_subprocess
 
 def run_phyml(homolog_set, outfile_prefix, dtype="aa", rm_tmp=False, *args, **kwargs):
     """ Construct a maximum likelihood tree using PhyML.
-    
+
+		__Arguments__:
+
+		`homolog_set` : Homologset Object with homologs to construct tree.
+
     """
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.phy" % outfile_prefix
