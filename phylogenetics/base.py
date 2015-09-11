@@ -83,13 +83,25 @@ class Homolog(object):
     
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
         """ write csv string. """ 
+        # Get all attributes if tags are not specified
+        if tags is None:
+            tags = list(vars(self).keys())
+
         # Add header is specified
         if header:
             f = delimiter.join(tags)
         else:
             f = ""
         
-        f += delimiter.join([str(getattr(self, t)) for t in tags]) + "\n"
+        # Try to print tag. If it doesnt exist, then leave blank
+        vals = list()
+        for t in tags:
+            try:
+                vals.append(str(getattr(self,t)))
+            except:
+                vals.append("")
+        f += delimiter.join(vals) + "\n"
+
         return f
 
     def write(self, filename, format="fasta", tags=None, aligned=False):
@@ -256,6 +268,10 @@ class HomologSet(object):
     
     def csv(self, tags=None, delimiter=",", **kwargs):
         """ Return csv string. """
+        # If tags is not specified, get all tags.
+        if tags is None:
+            tags = list(self.homologs[0].__dict__.keys())
+        
         f = delimiter.join(tags)
         f += "\n"
         for h in self._homologs:
