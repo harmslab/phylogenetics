@@ -197,6 +197,24 @@ class HomologSet(object):
 
         return HomologSet(homolog_set=subset)
 
+    def find_homolog(self, id):
+        """ Returns the metadata dictionary of homolog with id. """
+        mapping = self.get_map("id")
+        return mapping[id].__dict__
+	
+    def print_homolog(self, id, keys=None):
+        """ Print the metadata dictionary of homolog with id. """
+        
+        # Homolog dictionary
+        homolog_dict = self.find_homolog(id)
+        if keys is None:
+            keys = list(homolog_dict.keys())	
+
+        # Print in table
+        print(id + ":\n" + "-----------\n")
+        for key in keys:
+            print(key+" : " + str(homolog_dict[key]) + "\n")	
+
     # -----------------------------------
     # Output formats
     # -----------------------------------
@@ -242,8 +260,7 @@ class HomologSet(object):
         f += "\n"
         for h in self._homologs:
             f += h.csv(tags=tags, header=False, delimiter=delimiter)
-        return f
-        
+        return f        
 
     def write(self, filename, format="fasta", tags=None, aligned=False):
         """ Write to file with given format.

@@ -49,7 +49,7 @@ def fasta2phylip(lines):
         raise Fasta2PhylipError(err)
 
     num_seq = len(split_out)
-    num_columns = lengths.keys()[0]
+    num_columns = list(lengths.keys())[0]
 
     to_write = ["%s\n%s\n" % (o[:10],o[10:]) for o in split_out]
     to_write = "".join(to_write)
