@@ -5,6 +5,7 @@ from subprocess import call
 from collections import OrderedDict
 
 from phylogenetics.utils import split_fasta
+from phylogenetics.formats import  blast_to_homologset
 
 # ----------------------------------------------------
 # Python interface for standard commandline call to
@@ -37,14 +38,33 @@ def ncbi(fasta_input, output, **kwargs):
 
     return call(command)
 
-def seeds(fasta, **kwargs):
+def seeds(fasta, **kwargs, to_homologset=True):
     """ Blast a set of seed sequences. """
     # grab just the name
     filename = os.path.splitext(fasta)[0]
     fastas = split_fasta(fasta)
     print("Total number of sequences before blasting: " + str(len(fastas)))
+
     # Run individual blasts
     processes = [ncbi(f + ".fasta", f +"_blast.txt", **kwargs) for f in fastas]
+
+    # If homolog_set should be made, return homolog_set
+    if to_homologset:
+        # Instance of HomologSet
+        full_set = HomologSet()
+
+        for fname in glob.glob("*_blast.txt"):
+            # Convert blast results to homologSet objects
+            homolog_set = blast_to_homologset(filename,
+                        tag_list=("Hit_id", "Hit_def", "Hit_accession",
+                        "Hit_len", "Hsp_hseq"))
+
+            # Get list of homologs and add them to the set.
+            subset = homolog_set.homologs
+            full_set.add_homologs(subset)
+
+        return full_set
+
 
 # ------------------------------------------------------
 # Reverse Blasting Tools

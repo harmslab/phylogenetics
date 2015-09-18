@@ -22,7 +22,11 @@ class Homolog(object):
 
         # Set user specified attributes
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            # Protect from overwriting Python native attributes
+            if key == "def":
+                setattr(self, "defline", value)
+            else:
+                setattr(self, key, value)
 
     def add_attributes(self, **kwargs):
         """ Add attributes to homolog object. """
