@@ -38,7 +38,7 @@ def ncbi(fasta_input, output, **kwargs):
 
     return call(command)
 
-def seeds(fasta, **kwargs, to_homologset=True):
+def seeds(fasta, to_homologset=True, **kwargs):
     """ Blast a set of seed sequences. """
     # grab just the name
     filename = os.path.splitext(fasta)[0]
