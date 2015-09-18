@@ -46,33 +46,33 @@ class Homolog(object):
             f += "|".join([str(getattr(self, t)) for t in tags])
         else:
             f += self.id
-        
+
         # New line with full sequence string (aligned if told to)
         if aligned:
             f += "\n" + self.latest_align +"\n"
         else:
             f += "\n" + self.sequence +"\n"
-        
+
         return f
-    
+
     def phylip(self, tags=None, **kwargs):
-        """ Return a PhyML formatted string to write to file. 
-            
+        """ Return a PhyML formatted string to write to file.
+
             Only allowed when Homolog has alignment attribute
         """
         # Check that an alignment attribute exists in homolog.
         if hasattr(self, "latest_align") is False:
             raise Exception("Homolog must have an alignment attribute to write phylip.")
-        
+
         # Use specified alignment key
         if tags is not None:
             alignment = getattr(self, tags)
         else:
             alignment = self.latest_align
-        
+
         f = "%s\n%s\n" % (self.id, alignment)
         return f
-        
+
     def json(self, **kwargs):
         """ Return json formatted string. """
         return json.dumps(self.__dict__)
@@ -80,9 +80,9 @@ class Homolog(object):
     def pickle(self, **kwargs):
         """ Returns pickle string. """
         return pickle.dumps(self)
-    
+
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
-        """ write csv string. """ 
+        """ write csv string. """
         # Get all attributes if tags are not specified
         if tags is None:
             tags = list(vars(self).keys())
@@ -92,7 +92,7 @@ class Homolog(object):
             f = delimiter.join(tags)
         else:
             f = ""
-        
+
         # Try to print tag. If it doesnt exist, then leave blank
         vals = list()
         for t in tags:
@@ -110,11 +110,11 @@ class Homolog(object):
             Default is fasta.
         """
         # Different writing formats that are possible
-        write_format = {"fasta":"w", 
-                        "pickle": "wb", 
-                        "json":"w", 
+        write_format = {"fasta":"w",
+                        "pickle": "wb",
+                        "json":"w",
                         "phylip":"w"}
-        
+
         format_func = getattr(self, format)
         f = open(filename, write_format[format])
         f.write(format_func(tags=tags, aligned=aligned))
@@ -213,19 +213,19 @@ class HomologSet(object):
         """ Returns the metadata dictionary of homolog with id. """
         mapping = self.get_map("id")
         return mapping[id].__dict__
-	
+
     def print_homolog(self, id, keys=None):
         """ Print the metadata dictionary of homolog with id. """
-        
+
         # Homolog dictionary
         homolog_dict = self.find_homolog(id)
         if keys is None:
-            keys = list(homolog_dict.keys())	
+            keys = list(homolog_dict.keys())
 
         # Print in table
         print(id + ":\n" + "-----------\n")
         for key in keys:
-            print(key+" : " + str(homolog_dict[key]) + "\n")	
+            print(key+" : " + str(homolog_dict[key]) + "\n")
 
     # -----------------------------------
     # Output formats
@@ -237,14 +237,14 @@ class HomologSet(object):
         for h in self._homologs:
             f += h.fasta(tags, aligned=aligned)
         return f
-    
+
     def phylip(self, tags=None, **kwargs):
         """ Return string of sequences in phylip format. """
-        
+
         # Get the latest align if other alignment isn't specified
         if tags is None:
             tags = "latest_align"
-        
+
         f = ""
         for h in self.homologs:
             f += h.phylip(tags)
@@ -265,18 +265,18 @@ class HomologSet(object):
     def pickle(self, **kwargs):
         """ Return pickle string of homolog set. """
         return pickle.dumps(self)
-    
+
     def csv(self, tags=None, delimiter=",", **kwargs):
         """ Return csv string. """
         # If tags is not specified, get all tags.
         if tags is None:
             tags = list(self.homologs[0].__dict__.keys())
-        
+
         f = delimiter.join(tags)
         f += "\n"
         for h in self._homologs:
             f += h.csv(tags=tags, header=False, delimiter=delimiter)
-        return f        
+        return f
 
     def write(self, filename, format="fasta", tags=None, aligned=False):
         """ Write to file with given format.
@@ -284,12 +284,12 @@ class HomologSet(object):
             Default is fasta.
         """
         # Different writing formats that are possible
-        write_format = {"fasta":"w", 
-                        "pickle": "wb", 
-                        "json":"w", 
+        write_format = {"fasta":"w",
+                        "pickle": "wb",
+                        "json":"w",
                         "phylip":"w",
                         "csv": "w"}
-        
+
         format_func = getattr(self, format)
         f = open(filename, write_format[format])
         f.write(format_func(tags=tags, aligned=aligned))
@@ -310,12 +310,12 @@ def rank_homologs(homolog_set, positive=(), negative=("putative","hypothetical",
 
         # Does one of the dubious entries occur on this line?
         rank = rank_offset
-  
+
         for p in positive:
             # If positive strings are in defline, subtract from rank
             if p in defline:
                 rank -= 1
-        
+
         for n in negative:
             # If negative strings are in defline, add to rank
             if n in defline:

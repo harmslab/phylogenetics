@@ -1,10 +1,13 @@
 # Useful functions for handling queries to NCBI Blast.
-
+import os
 import numpy as np
 from subprocess import call
+from collections import OrderedDict
+
+from phylogenetics.utils import split_fasta
 
 # ----------------------------------------------------
-# Python interface for standard commandline call to 
+# Python interface for standard commandline call to
 # NCBI Blast servers
 # ----------------------------------------------------
 
