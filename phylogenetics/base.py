@@ -25,6 +25,8 @@ class Homolog(object):
             # Protect from overwriting Python native attributes
             if key == "def":
                 setattr(self, "defline", value)
+            elif key == "id":
+                setattr(self, "gid", value)
             else:
                 setattr(self, key, value)
 
