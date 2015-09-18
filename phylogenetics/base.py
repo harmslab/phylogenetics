@@ -171,9 +171,9 @@ class HomologSet(object):
             homologs = [homologs]
 
         # Append each homolog to list if it's a homolog instance.
-        for i in range(len(homolog)):
-            if isinstance(homolog[i], Homolog):
-                self._homologs.append(homolog[i])
+        for i in range(len(homologs)):
+            if isinstance(homologs[i], Homolog):
+                self._homologs.append(homologs[i])
             else:
                 raise Exception("homolog must be an instance of Homolog class.")
 
