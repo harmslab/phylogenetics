@@ -332,7 +332,7 @@ def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","
             access = h.accession
             for a in accession:
                 if a in access:
-                    rank += 100
+                    rank -= 100
         except:
             pass
 
