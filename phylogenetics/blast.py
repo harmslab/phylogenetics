@@ -4,6 +4,7 @@ import numpy as np
 from subprocess import call
 from collections import OrderedDict
 
+from phylogenetics.base import HomologSet
 from phylogenetics.utils import split_fasta
 from phylogenetics.formats import  blast_to_homologset
 
