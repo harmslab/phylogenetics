@@ -1,5 +1,8 @@
 # Python API with tools for doing phylogenetics
 
+Test out the API in notebooks -- click on the badge:
+[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Zsailer/phylogenetics)
+
 This is the master repository for the `phylogenetics` Python package. This package includes a lightweight, simple-to-use API for managing and processing phylogenetic data. Many of the modules included in this package originated from Dr. [Mike Harms'](https://github.com/harmsm) `phylo_tools` and have been converted to API's. Read the Wiki to learn more about the internal structure. 
 
 The foundation of this API are the `Homolog` and `HomologSet` objects. These objects offer a simple datastructure that manages the metadata for a set of sequences in a phylogenetics/reconstruction project. These objects are easily queried, updated, and saved into many formats (i.e. fasta, csv, phylip, pickle, and json). 
