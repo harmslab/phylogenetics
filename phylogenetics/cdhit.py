@@ -1,10 +1,10 @@
-import os, shlex, string 
+import os, shlex, string
 import subprocess
 
 from phylogenetics.base import rank_homologs
 
 def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
-             keep_tmp=False, positive=(), negative=("putative","hypothetical",
+             keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
              "unnamed", "possible", "predicted", "unknown", "uncharacterized",
              "mutant", "isoform")):
     """
@@ -23,7 +23,7 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
         return homolog_set
 
     # Ranks homologs.
-    rank_homologs(homolog_set, positive=positive, negative=negative)
+    rank_homologs(homolog_set, accession=accession, positive=positive, negative=negative)
 
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.fasta" % tmp_file_suffix

@@ -305,7 +305,7 @@ class HomologSet(object):
 # Functions to manage and maintain homologs.
 # -----------------------------------------------------
 
-def rank_homologs(homolog_set, positive=(), negative=("putative","hypothetical","unnamed",
+def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
                     "possible", "predicted","unknown","uncharacterized",
                     "mutant","isoform"), rank_offset=0):
 
@@ -326,5 +326,14 @@ def rank_homologs(homolog_set, positive=(), negative=("putative","hypothetical",
             # If negative strings are in defline, add to rank
             if n in defline:
                 rank += 1
+
+        # If accession is given, it should supercede all other ranks.
+        try:
+            access = h.accession
+            for a in accession:
+                if a in access:
+                    rank += 100
+        except:
+            pass
 
         h.add_attributes(rank=rank)
