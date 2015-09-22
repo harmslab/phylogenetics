@@ -93,6 +93,6 @@ def alignment_to_homologs(homolog_set, alignment_file):
 
     # Add new alignment to homolog.
     for h in homolog_set._homologs:
-		h.add_attributes( **{ key:data[h.id] } ) 
-	
+        h.add_attributes( **{ key:data[h.id] } ) 
+
     return homolog_set
