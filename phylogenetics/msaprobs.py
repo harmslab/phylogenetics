@@ -75,9 +75,6 @@ def alignment_to_homologs(homolog_set, alignment_file):
 
     data = read_fasta(alignment_file)
 
-    # Get a map of homolog ids to their object
-    homolog_map = homolog_set.get_map("id")
-
     key = "latest_align"
 
     # If an alignment already exists in homologs, store it under
@@ -91,11 +88,11 @@ def alignment_to_homologs(homolog_set, alignment_file):
             counter += 1
 
         # Move old alignment to new attribute in homolog
-        for h in homolog_set.homologs:
+        for h in homolog_set._homologs:
             h.add_attributes(** { key2 : h.latest_align })
 
     # Add new alignment to homolog.
-    for d in data:
-        homolog_map[d].add_attributes( **{key:data[d]})
-
+    for h in homolog_set._homologs:
+		h.add_attributes( **{ key:data[h.id] } ) 
+	
     return homolog_set
