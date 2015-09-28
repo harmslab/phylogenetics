@@ -4,7 +4,7 @@
 from os.path import splitext
 
 def newick_names(name):
-    """ Quality controll for changing names in newick file. """
+    """ Quality control for changing names in newick file. """
     name = name.strip()
     name = name.replace("(", "[")
     name = name.replace(")", "]")

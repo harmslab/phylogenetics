@@ -13,6 +13,16 @@ from phylogenetics.base import Homolog, HomologSet
 # XML parser import
 from xml.etree import ElementTree as ET
 
+# ----------------------------------------------------
+# Defaults BLAST XML parsing tags.
+# ----------------------------------------------------
+
+DEFAULTS = ("Hit_id", "Hit_def", "Hit_len","Hit_accession", "Hsp_hseq")
+
+# ----------------------------------------------------
+# Methods for parsing different file formats
+# ----------------------------------------------------
+
 class Fasta2PhylipError(Exception):
     """
     General error class for this module.
@@ -101,7 +111,7 @@ def flatten_concatenated_XML(input_file,key_tag):
     return "".join(input)
 
 
-def parse_blast_XML(filename,tag_list=("Hit_def","Hit_id")):
+def parse_blast_XML(filename,tag_list=DEFAULTS):
     """
         Parse XML file of hits returned after BLASTing a sequence
         against a database.
@@ -207,7 +217,7 @@ def parse_blast_fasta(filename):
     return sequences
 
 
-def blast_to_homologset(filename, tag_list=()):
+def blast_to_homologset(filename, tag_list=DEFAULTS):
     """ Load blast XML file as HomologSet. """
 
     # Don't discriminate on the type of Blast XML file format, try both.
