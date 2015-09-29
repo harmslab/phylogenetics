@@ -168,8 +168,21 @@ class HomologSet(object):
 
         return m
 
+    def renumber_homologs(self):
+        """ Renumber the ID numbers for homologs in the set, starting at
+            0 to len(homologs).
+        """
+        n = len(self.homologs)
+        for i in range(n):
+            unique_id = "XX%08d" % i
+            self._homologs[i].id = unique_id
+
     def add_homologs(self, homologs):
-        """ Append a list of homolog objects to the set."""
+        """ Append a list of homolog objects to the set.
+
+            NOTE: does not renumber the homolog set. this must be called
+            manually.
+        """
 
         # If a single homolog is given, format it into a list
         # for loop below.
@@ -184,7 +197,10 @@ class HomologSet(object):
                 raise Exception("homolog must be an instance of Homolog class.")
 
     def rm_homologs(self, ids):
-        """ Remove a list of homologs from set of homologs."""
+        """ Remove a list of homologs from set of homologs.
+
+            NOTE: this does not renumber the homolog set. must be done manually.
+        """
         # If a single id is given, format it into a list
         # for loop below.
         if isinstance(ids,list) == False:
