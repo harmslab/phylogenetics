@@ -215,27 +215,3 @@ def parse_blast_fasta(filename):
         sequences.append(properties)
 
     return sequences
-
-
-def blast_to_homologset(filename, tag_list=DEFAULTS):
-    """ Load blast XML file as HomologSet. """
-
-    # Don't discriminate on the type of Blast XML file format, try both.
-    try:
-        # First, try blasting hits format.
-        hits = parse_blast_XML(filename, tag_list=tag_list)
-    except:
-        # Then, try blast fasta format
-        hits = parse_blast_fasta(filename)
-
-    homologs = []
-    for i in range(len(hits)):
-        # Make a unique id for each sequence.
-        unique_id = "XX%08d" % i
-
-        # Create homolog instance for each sequence.
-        homologs.append(Homolog(unique_id, **hits[i]))
-
-    # Build homolog set from xml file
-    homologset = HomologSet(homologs)
-    return homologset

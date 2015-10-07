@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from phylogenetics.base import HomologSet
 from phylogenetics.utils import split_fasta
-from phylogenetics.formats import  blast_to_homologset
+from phylogenetics.formats import parse_blast_fasta, parse_blast_XML
 
 # ----------------------------------------------------
 # Python interface for standard commandline call to
@@ -66,6 +66,45 @@ def seeds(fasta, to_homologset=True, **kwargs):
 
         return full_set
 
+def to_homologset(filenames, tag_list=DEFAULTS):
+    """ Turn multiple blast hit XML files into homolog object
+
+        Arguments:
+        ---------
+        filenames: string or list
+            list of filenames for several blast results to compile into a homologset
+        tag_list: tuple
+            XML tags to strip from blast results and make attributes in homolog objects
+
+        Returns:
+        -------
+        homologset: HomologSet object
+    """
+    # If only given one filename, don't stress! just load that file
+    if type(filenames) != list:
+        filenames = [filenames]
+
+    hits = []
+    for f in filename:
+        # Don't discriminate on the type of Blast XML file format, try both.
+        try:
+            # First, try blasting hits format.
+            hits += parse_blast_XML(filename, tag_list=tag_list)
+        except:
+            # Then, try blast fasta format
+            hits += parse_blast_fasta(filename)
+
+    homologs = []
+    for i in range(len(hits)):
+        # Make a unique id for each sequence.
+        unique_id = "XX%08d" % i
+
+        # Create homolog instance for each sequence.
+        homologs.append(Homolog(unique_id, **hits[i]))
+
+    # Build homolog set from xml file
+    homologset = HomologSet(homologs)
+    return homologset
 
 # ------------------------------------------------------
 # Reverse Blasting Tools
