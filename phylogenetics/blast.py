@@ -1,6 +1,7 @@
 # Useful functions for handling queries to NCBI Blast.
 import os
 import numpy as np
+import glob
 from subprocess import call
 from collections import OrderedDict
 
@@ -85,14 +86,14 @@ def to_homologset(filenames, tag_list=DEFAULTS):
         filenames = [filenames]
 
     hits = []
-    for f in filename:
+    for f in filenames:
         # Don't discriminate on the type of Blast XML file format, try both.
         try:
             # First, try blasting hits format.
-            hits += parse_blast_XML(filename, tag_list=tag_list)
+            hits += parse_blast_XML(f, tag_list=tag_list)
         except:
             # Then, try blast fasta format
-            hits += parse_blast_fasta(filename)
+            hits += parse_blast_fasta(f)
 
     homologs = []
     for i in range(len(hits)):
