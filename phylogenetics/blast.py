@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from phylogenetics.base import HomologSet
 from phylogenetics.utils import split_fasta
-from phylogenetics.formats import parse_blast_fasta, parse_blast_XML
+from phylogenetics.formats import parse_blast_fasta, parse_blast_XML, DEFAULTS
 
 # ----------------------------------------------------
 # Python interface for standard commandline call to
@@ -39,7 +39,7 @@ def ncbi(fasta_input, output, **kwargs):
 
     return call(command)
 
-def seeds(fasta, to_homologset=True, **kwargs):
+def seeds(fasta, as_homologset=True, **kwargs):
     """ Blast a set of seed sequences. """
     # grab just the name
     filename = os.path.splitext(fasta)[0]
@@ -50,7 +50,7 @@ def seeds(fasta, to_homologset=True, **kwargs):
     processes = [ncbi(f + ".fasta", f +"_blast.txt", **kwargs) for f in fastas]
 
     # If homolog_set should be made, return homolog_set
-    if to_homologset:
+    if as_homologset:
         # Instance of HomologSet
         full_set = HomologSet()
 
