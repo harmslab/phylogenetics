@@ -5,7 +5,7 @@ import glob
 from subprocess import call
 from collections import OrderedDict
 
-from phylogenetics.base import HomologSet
+from phylogenetics.base import Homolog, HomologSet
 from phylogenetics.utils import split_fasta
 from phylogenetics.formats import parse_blast_fasta, parse_blast_XML, DEFAULTS
 
