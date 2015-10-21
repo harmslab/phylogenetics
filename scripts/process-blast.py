@@ -18,14 +18,16 @@ def main():
     Take XML files in the current directory and turn them into a Homolog object
     """)
 
-    parser.add_argument("extension", help="File extension for all blast results to grab", dtype=str)
-    parser.add_argument("output", help="Output filename, no extension. Will return .pickle", dtype=str)
+    parser.add_argument("extension", help="File extension for all blast results to grab", type=str)
+    parser.add_argument("output", help="Output filename, no extension. Will return .pickle", type=str)
     args = parser.parse_args()
 
     # get the blast result files in current directory
     cwd = os.getcwd()
-    path = os.path.join(cwd, "*", args.extension)
+    name = "*"+args.extension
+    path = os.path.join(cwd, name)
     files = glob.glob(path)
+    print(path)
 
     # Convert to homologset
     hs = to_homologset(files)

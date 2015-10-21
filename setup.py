@@ -12,7 +12,11 @@ setup(name = 'phylogenetics',
     scripts = ['scripts/blast_seeds.py',
             'scripts/edit_names.py',
             'scripts/reverse_blast.py',
-            'scripts/xml2homologs.py'
+            'scripts/process-blast.py',
+            'scripts/phylo-add-align.py',
+            'scripts/phylo-align.py',
+            'scripts/phylo-cdhit.py',
+            'scripts/phylo-tree.py'
     ],
     install_requires=[
         'numpy',

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from phylogenetics.utils import load_homologset
 from phylogenetics.msaprobs import run_msaprobs

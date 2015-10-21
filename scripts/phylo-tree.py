@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from phylogenetics.utils import load_homologset
 from phylogenetics.phyml import run_phyml
@@ -11,7 +13,7 @@ def main():
 
     parser.add_argument("-i", "--input", help="Input pickle file containing homologset.", type=str)
     parser.add_argument("-o", "--output", help="Output pickle filename. (No extension needed, returns .pickle)", type=str)
-    parser.add_argument("--labels", help="List of tree labels", dtype=list, default=["id"])
+    parser.add_argument("--labels", help="List of tree labels", type=list, default=["id"])
     args = parser.parse_args()
 
     hs = load_homologset(args.input)
