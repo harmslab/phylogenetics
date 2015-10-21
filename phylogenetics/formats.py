@@ -8,7 +8,7 @@
 
 import re
 
-from phylogenetics.base import Homolog, HomologSet
+from phylogenetics.homologs import Homolog, HomologSet
 
 # XML parser import
 from xml.etree import ElementTree as ET

@@ -6,6 +6,64 @@ import numpy as np
 import json
 import pickle
 
+# ---------------------------------------------------
+# Things that you often do with HomologSets
+# ---------------------------------------------------
+
+def unique_id(n):
+    """ Returns a set of unique names """
+    return ["XX%08d" % i for i in range(n)]
+
+def concat_homolog_set(hs1, hs2, renumber=False):
+    """ Concatenate two homolog set"""
+    total_set = hs1 + hs2
+    total_hs = HomologSet(total_set)
+    if renumber:
+        total_set.renumber_homologs()
+    return total_hs
+
+def remove_repeats(homolog_set, key="accession"):
+    """ Remove repetitive homologs in a set."""
+    homs = homolog_set.homologs
+    for i in range(len(homs)):
+        
+
+def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
+                    "possible", "predicted","unknown","uncharacterized",
+                    "mutant","isoform"), rank_offset=0):
+
+    """ Rank homologs based on dubious descriptions in their defline. """
+
+    for h in homolog_set.homologs:
+        defline = h.defline
+
+        # Does one of the dubious entries occur on this line?
+        rank = rank_offset
+
+        for p in positive:
+            # If positive strings are in defline, subtract from rank
+            if p in defline:
+                rank -= 1
+
+        for n in negative:
+            # If negative strings are in defline, add to rank
+            if n in defline:
+                rank += 1
+
+        # If accession is given, it should supercede all other ranks.
+        try:
+            access = h.accession
+            for a in accession:
+                if a in access:
+                    rank -= 100
+        except:
+            pass
+
+        h.add_attributes(rank=rank)
+
+# ---------------------------------------------------
+# Main Homolog objects for package
+# ---------------------------------------------------
 
 class Homolog(object):
 
@@ -320,36 +378,3 @@ class HomologSet(object):
 # -----------------------------------------------------
 # Functions to manage and maintain homologs.
 # -----------------------------------------------------
-
-def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
-                    "possible", "predicted","unknown","uncharacterized",
-                    "mutant","isoform"), rank_offset=0):
-
-    """ Rank homologs based on dubious descriptions in their defline. """
-
-    for h in homolog_set.homologs:
-        defline = h.defline
-
-        # Does one of the dubious entries occur on this line?
-        rank = rank_offset
-
-        for p in positive:
-            # If positive strings are in defline, subtract from rank
-            if p in defline:
-                rank -= 1
-
-        for n in negative:
-            # If negative strings are in defline, add to rank
-            if n in defline:
-                rank += 1
-
-        # If accession is given, it should supercede all other ranks.
-        try:
-            access = h.accession
-            for a in accession:
-                if a in access:
-                    rank -= 100
-        except:
-            pass
-
-        h.add_attributes(rank=rank)

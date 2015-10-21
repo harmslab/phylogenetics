@@ -1,7 +1,7 @@
 import os, shlex, string
 import subprocess
 
-from phylogenetics.base import rank_homologs
+from phylogenetics.homologs import rank_homologs
 
 def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit",
              keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
