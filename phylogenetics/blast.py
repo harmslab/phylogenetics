@@ -16,7 +16,8 @@ from phylogenetics.formats import parse_blast_fasta, parse_blast_XML, DEFAULTS
 
 def ncbi(fasta_input, output, **kwargs):
     """
-        BLAST NCBI using blastp command line tools.
+        Construct the NCBI Blast command for blast+ application. Send this command
+        to the subprocess command.
     """
     # blastp -query input_file -out output_file -db nr -entrez_query taxa -remote
     args = OrderedDict({
@@ -40,32 +41,44 @@ def ncbi(fasta_input, output, **kwargs):
 
     return call(command)
 
-def seeds(fasta, as_homologset=True, **kwargs):
-    """ Blast a set of seed sequences. """
+def seeds(fasta, as_homologset=True, rm_blast=False, **kwargs):
+    """ Blast a set of seed sequences.
+
+        Arguments:
+        ---------
+        fasta : str
+            filename for fasta containing seed sequences.
+        as_homologset: bool [default=true]
+            Convert blast results to homolog set.
+
+        kwargs are passed to blasting method.
+    """
     # grab just the name
     filename = os.path.splitext(fasta)[0]
     fastas = split_fasta(fasta)
     print("Total number of sequences before blasting: " + str(len(fastas)))
 
+    # Make a directory for storing the blast results.
+    cwd = os.getcwd()
+    blastpath = os.path.join(cwd, "blast")
+    os.mkdir(blastpath)
+
     # Run individual blasts
-    processes = [ncbi(f + ".fasta", f +"_blast.txt", **kwargs) for f in fastas]
+    outnames = []
+    for f in fastas:
+        # Make filenames
+        iname = f+".fasta"
+        oname = os.path.join(blastpath, f+"_blast.txt")
+
+        # Send query to NCBI
+        process = ncbi(iname, oname, kwargs)
+        outnames.append(oname)
 
     # If homolog_set should be made, return homolog_set
     if as_homologset:
-        # Instance of HomologSet
-        full_set = HomologSet()
-
-        for fname in glob.glob("*_blast.txt"):
-            # Convert blast results to homologSet objects
-            homolog_set = blast_to_homologset(filename,
-                        tag_list=("Hit_id", "Hit_def", "Hit_accession",
-                        "Hit_len", "Hsp_hseq"))
-
-            # Get list of homologs and add them to the set.
-            subset = homolog_set.homologs
-            full_set.add_homologs(subset)
-
-        return full_set
+        # Convert to homologset
+        homologset = to_homologset(outnames, tag_list=DEFAULTS)
+        return homologset
 
 def to_homologset(filenames, tag_list=DEFAULTS):
     """ Turn multiple blast hit XML files into homolog object
@@ -113,7 +126,7 @@ def to_homologset(filenames, tag_list=DEFAULTS):
 
 def name_variants(name):
     """
-    create all variants of camelcase names.
+        Create all variants of camelcase names.
     """
     variants = []
     variants.append(name.upper()) # all upper case
