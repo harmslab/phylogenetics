@@ -6,13 +6,6 @@
 # Fasta conversions
 # -------------------------------------------------
 
-import re
-
-from phylogenetics.homologs import Homolog, HomologSet
-
-# XML parser import
-from xml.etree import ElementTree as ET
-
 
 # ----------------------------------------------------
 # Methods for parsing different file formats

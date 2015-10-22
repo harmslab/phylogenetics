@@ -8,7 +8,7 @@ import os
 import argparse
 import pickle
 from phylogenetics.blast import download
-from phylogenetics.utils import load_homologset
+from phylogenetics.homologs import load_homologset
 
 def main():
     """ Download the full sequences for a set of homologs from NCBI.
@@ -16,28 +16,28 @@ def main():
 
     # Initialize the argument parser
     parser = argparse.ArgumentParser(
-        descriptions="Downloads the full sequences for a set of homologs from NCBI.",
+        description="Downloads the full sequences for a set of homologs from NCBI.",
     )
 
     # Type of arguments
     parser.add_argument("input",
-                        help="pickle filename containing a homolog set to download."
+                        help="pickle filename containing a homolog set to download.",
                         type=str)
 
     parser.add_argument("output",
                         help="filename to save the resulting homologset with sequences (no extension).",
                         type=str)
 
-    parser.add_argument("email"
-                        help="Email to send to Entrez. Required by NCBI's Entrez."
+    parser.add_argument("email",
+                        help="Email to send to Entrez. Required by NCBI's Entrez.",
                         default=str)
 
     parser.add_argument("--db",
-                        help="database to pull sequences from. See NCBI for this. [default=protein]"
+                        help="database to pull sequences from. See NCBI for this. [default=protein]",
                         type=str,
                         default="protein")
 
-    parser.add_argument("--xml"
+    parser.add_argument("--xml",
                         help="If True, will write the downloaded xml out to a file.",
                         type=bool,
                         default=False)
@@ -57,7 +57,7 @@ def main():
 
     # Add sequences to homologset
     for h in hs.homologs:
-        h.add_attributes(seq=sequence_data[h.accession])
+        h.add_attributes(sequence=sequence_data[h.accession])
 
     hs.write(args.output + ".pickle", format="pickle")
 

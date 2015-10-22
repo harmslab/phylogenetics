@@ -35,12 +35,12 @@ def main():
 
     # If just grabbing named files
     elif args.fnames is not None:
-        files = arg.fnames
+        files = args.fnames
     # Else, glob the given extension
     else:
         # get the blast result files in current directory
         cwd = os.getcwd()
-        name = "*"+args.extension
+        name = "*"+args.ext
         path = os.path.join(cwd, name)
         files = glob.glob(path)
 

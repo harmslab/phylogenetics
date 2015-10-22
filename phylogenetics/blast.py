@@ -1,9 +1,13 @@
 # Useful functions for handling queries to NCBI Blast.
 import os
-import numpy as np
 import glob
+import re
+import numpy as np
 from subprocess import call
 from collections import OrderedDict
+
+# XML parser import
+from xml.etree import ElementTree as ET
 
 from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.utils import split_fasta
@@ -76,7 +80,7 @@ def download(accession_list, email, out_file, db="protein",
     sequence_data = parse_blast_fasta(total_xml)
 
     # Map accession list to their sequences
-    mapping = dict(zip(accession_list, sequence_data))
+    mapping = dict([(accession_list[i], sequence_data[i]["sequence"]) for i in range(len(accession_list))])
 
     return mapping
 
@@ -313,7 +317,6 @@ def parse_blast_fasta(xml_string):
         sequences: list of dicts
             List of sequences data in their own lists.
     """
-
     # Fix screwed up XML because sequences downloaded and output concatenated
     sequence_input = flatten_concatenated_XML(xml_string, "TSeqSet")
 
@@ -354,16 +357,20 @@ def to_homologset(filenames, tag_list=DEFAULTS):
 
     hits = []
     for f in filenames:
+        # Open file and read.
+        yup = open(f, "r")
+        f = yup.read()
+        yup.close()
+
         # Don't discriminate on the type of Blast XML file format, try both.
         try:
             # First, try blasting hits format.
             data, parent = parse_blast_XML(f, tag_list=tag_list)
             hits += data
-        except:
+        except Exception as e:
             # Then, try blast fasta format
             hits += parse_blast_fasta(f)
             parent=None
-
     homologs = []
     for i in range(len(hits)):
         # Make a unique id for each sequence.
