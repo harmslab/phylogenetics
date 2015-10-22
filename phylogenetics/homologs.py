@@ -1,6 +1,4 @@
-#Base classes for Homolog objects
-#
-#
+# API for working with Homolog sets in a phylogenetics project
 
 import numpy as np
 import json
@@ -10,23 +8,67 @@ import pickle
 # Things that you often do with HomologSets
 # ---------------------------------------------------
 
-def unique_id(n):
+def unique_id(start, end=None):
     """ Returns a set of unique names """
-    return ["XX%08d" % i for i in range(n)]
+    if end is None:
+        end = int(start)
+        start = 0
+    return ["XX%08d" % i for i in range(start, end+1)]
 
-def concat_homolog_set(hs1, hs2, renumber=False):
-    """ Concatenate two homolog set"""
+def load_homologset(filename):
+    """ Load a homologset from pickle file.
+
+        Note: only need to give the filename.
+    """
+    f = open(filename, "rb")
+    homologset = pickle.load(f)
+    f.close()
+    return homologset
+
+def concat_homolog_sets(hs1, hs2, renumber=False):
+    """ Concatenate two homolog set. If told, will renumber the `id` attributes
+        in the merged set.
+    """
     total_set = hs1 + hs2
     total_hs = HomologSet(total_set)
     if renumber:
         total_set.renumber_homologs()
     return total_hs
 
-def remove_repeats(homolog_set, key="accession"):
-    """ Remove repetitive homologs in a set."""
+def rm_repeats_homologs(homolog_set, attribute="accession", renumber=False):
+    """ Remove and repetitive homologs in a set with
+        respect to a given attribute.
+
+        Arguments:
+        ---------
+        homolog_set: HomologSet object
+            Set to search through.
+        attribute: str (default="accession")
+            Attribute for using to search repeats in set
+
+    """
+    # Get homologs from set
     homs = homolog_set.homologs
+    # Get the attibutes in the order of the homologs
+    attributes = [getattr(h,attribute) for h in homs]
+
+    seen = set() # a set for keeping already seen attributes
+    unique_homologs = [] # The list for storing homolog subset
+
+    # Iterate through list and find unique homologs
     for i in range(len(homs)):
-        
+        if attributes[i] not in seen:
+            unique_homologs.append(homs[i])
+            seen.add(attributes[i])
+
+    # Build a new set of homologs
+    hs = HomologSet(unique_homologs)
+
+    # renumber ID's if told to.
+    if renumber:
+        hs.renumber_homologs()
+    return hs
+
 
 def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
                     "possible", "predicted","unknown","uncharacterized",
@@ -374,7 +416,3 @@ class HomologSet(object):
         f = open(filename, write_format[format])
         f.write(format_func(tags=tags, aligned=aligned))
         f.close()
-
-# -----------------------------------------------------
-# Functions to manage and maintain homologs.
-# -----------------------------------------------------
