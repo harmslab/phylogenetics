@@ -16,7 +16,7 @@ def main():
 
     # Initialize the argument parser
     parser = argparse.ArgumentParser(
-        descriptions="Blast a set of inition sequences from an input file.",
+        description="Blast a set of inition sequences from an input file.",
     )
 
     # Type of arguments
@@ -42,7 +42,7 @@ def main():
     # Run reverse blast
     hs = seeds(args.input, as_homologset=as_hs, rm_blast=args.rmblast)
 
-    # If pickle name is given, save to pickle file. 
+    # If pickle name is given, save to pickle file.
     if as_hs:
         cwd = os.getcwd()
         fname = os.path.join(cwd, arg.pickle)

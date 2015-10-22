@@ -1,11 +1,111 @@
-#Base classes for Homolog objects
-#
-#
+# API for working with Homolog sets in a phylogenetics project
 
 import numpy as np
 import json
 import pickle
 
+# ---------------------------------------------------
+# Things that you often do with HomologSets
+# ---------------------------------------------------
+
+def unique_id(start, end=None):
+    """ Returns a set of unique names """
+    if end is None:
+        end = int(start)
+        start = 0
+    return ["XX%08d" % i for i in range(start, end+1)]
+
+def load_homologset(filename):
+    """ Load a homologset from pickle file.
+
+        Note: only need to give the filename.
+    """
+    f = open(filename, "rb")
+    homologset = pickle.load(f)
+    f.close()
+    return homologset
+
+def concat_homolog_sets(hs1, hs2, renumber=False):
+    """ Concatenate two homolog set. If told, will renumber the `id` attributes
+        in the merged set.
+    """
+    total_set = hs1 + hs2
+    total_hs = HomologSet(total_set)
+    if renumber:
+        total_set.renumber_homologs()
+    return total_hs
+
+def rm_repeats_homologs(homolog_set, attribute="accession", renumber=False):
+    """ Remove and repetitive homologs in a set with
+        respect to a given attribute.
+
+        Arguments:
+        ---------
+        homolog_set: HomologSet object
+            Set to search through.
+        attribute: str (default="accession")
+            Attribute for using to search repeats in set
+
+    """
+    # Get homologs from set
+    homs = homolog_set.homologs
+    # Get the attibutes in the order of the homologs
+    attributes = [getattr(h,attribute) for h in homs]
+
+    seen = set() # a set for keeping already seen attributes
+    unique_homologs = [] # The list for storing homolog subset
+
+    # Iterate through list and find unique homologs
+    for i in range(len(homs)):
+        if attributes[i] not in seen:
+            unique_homologs.append(homs[i])
+            seen.add(attributes[i])
+
+    # Build a new set of homologs
+    hs = HomologSet(unique_homologs)
+
+    # renumber ID's if told to.
+    if renumber:
+        hs.renumber_homologs()
+    return hs
+
+
+def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
+                    "possible", "predicted","unknown","uncharacterized",
+                    "mutant","isoform"), rank_offset=0):
+
+    """ Rank homologs based on dubious descriptions in their defline. """
+
+    for h in homolog_set.homologs:
+        defline = h.defline
+
+        # Does one of the dubious entries occur on this line?
+        rank = rank_offset
+
+        for p in positive:
+            # If positive strings are in defline, subtract from rank
+            if p in defline:
+                rank -= 1
+
+        for n in negative:
+            # If negative strings are in defline, add to rank
+            if n in defline:
+                rank += 1
+
+        # If accession is given, it should supercede all other ranks.
+        try:
+            access = h.accession
+            for a in accession:
+                if a in access:
+                    rank -= 100
+        except:
+            pass
+
+        h.add_attributes(rank=rank)
+
+# ---------------------------------------------------
+# Main Homolog objects for package
+# ---------------------------------------------------
 
 class Homolog(object):
 
@@ -316,40 +416,3 @@ class HomologSet(object):
         f = open(filename, write_format[format])
         f.write(format_func(tags=tags, aligned=aligned))
         f.close()
-
-# -----------------------------------------------------
-# Functions to manage and maintain homologs.
-# -----------------------------------------------------
-
-def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
-                    "possible", "predicted","unknown","uncharacterized",
-                    "mutant","isoform"), rank_offset=0):
-
-    """ Rank homologs based on dubious descriptions in their defline. """
-
-    for h in homolog_set.homologs:
-        defline = h.defline
-
-        # Does one of the dubious entries occur on this line?
-        rank = rank_offset
-
-        for p in positive:
-            # If positive strings are in defline, subtract from rank
-            if p in defline:
-                rank -= 1
-
-        for n in negative:
-            # If negative strings are in defline, add to rank
-            if n in defline:
-                rank += 1
-
-        # If accession is given, it should supercede all other ranks.
-        try:
-            access = h.accession
-            for a in accession:
-                if a in access:
-                    rank -= 100
-        except:
-            pass
-
-        h.add_attributes(rank=rank)

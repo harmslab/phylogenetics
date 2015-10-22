@@ -7,7 +7,7 @@ import subprocess
 def run_subprocess(base, *args, **kwargs):
     """ Run a subprocess command with given set of args and kwargs.
         and handle errors.
-    """ 
+    """
     f = [base]
     # Add positional arguments
     for a in args:
@@ -28,7 +28,7 @@ def run_subprocess(base, *args, **kwargs):
         print(stdoutdata)
         err = base + " failed!\n"
         raise Exception(err)
-    
+
 def split_fasta(master_fasta):
     """
         Split a fasta into multiple single sequence fastas.
@@ -56,13 +56,6 @@ def concatenate_files(filenames, output):
                 for line in infile:
                     outfile.write(line)
 
-def load_homologset(filename):
-    """ Load a homologset. """
-    f = open(filename, "rb")
-    homologset = pickle.load(f)
-    f.close()
-    return homologset
-
 def get_fasta_names(filename):
     """ Get everthing after the `>` in a fasta file (without the sequence)"""
     f = open(filename, "r")
@@ -81,13 +74,13 @@ def get_fasta_names(filename):
 
 
 def read_fasta(filename):
-    """ Reads in a fasta file, returning a dict with defline 
+    """ Reads in a fasta file, returning a dict with defline
         as key and sequence as value.
     """
     f = open(filename, "r")
     lines = f.readlines()
     f.close()
-    
+
     keys = []
     vals = []
     for l in lines:
