@@ -6,7 +6,7 @@
 # ----------------------------------------------------
 
 import os, glob, argparse
-from phylogenetics.base import Homolog, HomologSet
+from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.blast import to_homologset
 
 def main():
