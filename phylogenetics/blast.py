@@ -9,15 +9,76 @@ from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.utils import split_fasta
 from phylogenetics.formats import parse_blast_fasta, parse_blast_XML, DEFAULTS
 
+def download(accession_list, email, out_file, db="protein",
+                      batch_download_size=50, write=False):
+    """
+    Download the Entrez sequences from a list of accessions.
+
+    Arguments :
+    ---------
+    accession_list: list
+        list of ncbi accesion numbers
+    out_file:
+        file in which to write output in fasta/xml format
+    db:
+        database to use for accession
+    batch_download_size:
+        size of individual download packets
+    force:  True/False.
+        Overwrite existing download file. If False, the program
+        throws a notice that an old file is being used rather than re-
+        downloading.
+    """
+    # Biopython is imported here...  I realize this is a bit overkill for now.
+    from Bio import Entrez
+
+    Entrez.email = email
+
+    #first get GI for query accesions
+    query  = " ".join(accession_list)
+    handle = Entrez.esearch( db=db,term=query,retmax=10**9 )
+    giList = Entrez.read(handle)['IdList']
+
+    #post GID list to NCBI
+    search_handle = Entrez.epost(db=db, id=",".join(giList))
+    search_results = Entrez.read(search_handle)
+    webenv,query_key = search_results["WebEnv"], search_results["QueryKey"]
+
+    # Now download the sequences (in fasta/xml format).
+    count = len(accession_list)
+    total_xml = ""
+    for start in range(0,count,batch_download_size):
+        end = min(count, start+batch_download_size)
+        fetch_handle = Entrez.efetch(db=db, rettype="fasta",
+                                     retmode="xml",retstart=start,
+                                     retmax=batch_download_size,
+                                     webenv=webenv,query_key=query_key)
+        data = fetch_handle.read()
+        fetch_handle.close()
+        total_xml += data + "\n"
+
+    # Write to file is interested.
+    if write:
+        out_handle = open(out_file, "w")
+        out_handle.write(data)
+        out_handle.close()
+
+    # parse the xml and get sequence data as list
+    sequence_data = parse_blast_fasta(total_xml)
+
+    # Map accession list to their sequences
+    mapping = dict(zip(accession_list, sequence_data))
+
+    return mapping
+
+
 # ----------------------------------------------------
 # Python interface for standard commandline call to
 # NCBI Blast servers
 # ----------------------------------------------------
 
-def ncbi(fasta_input, output, **kwargs):
-    """
-        Construct the NCBI Blast command for blast+ application. Send this command
-        to the subprocess command.
+def query(fasta_input, output, remote=True, **kwargs):
+    """ Construct Blast+ application command. Send this command to subprocess.
     """
     # blastp -query input_file -out output_file -db nr -entrez_query taxa -remote
     args = OrderedDict({
@@ -37,7 +98,8 @@ def ncbi(fasta_input, output, **kwargs):
         command += [a, args[a]]
 
     # Send query to Blast database using Python subprocess
-    command += ["-remote"]
+    if remote:
+        command += ["-remote"]
 
     return call(command)
 
@@ -71,7 +133,7 @@ def seeds(fasta, as_homologset=True, rm_blast=False, **kwargs):
         oname = os.path.join(blastpath, f+"_blast.txt")
 
         # Send query to NCBI
-        process = ncbi(iname, oname, kwargs)
+        process = query(iname, oname, kwargs)
         outnames.append(oname)
 
     # If homolog_set should be made, return homolog_set
@@ -103,10 +165,12 @@ def to_homologset(filenames, tag_list=DEFAULTS):
         # Don't discriminate on the type of Blast XML file format, try both.
         try:
             # First, try blasting hits format.
-            hits += parse_blast_XML(f, tag_list=tag_list)
+            data, parent = parse_blast_XML(f, tag_list=tag_list)
+            hits += data
         except:
             # Then, try blast fasta format
             hits += parse_blast_fasta(f)
+            parent=None
 
     homologs = []
     for i in range(len(hits)):
@@ -114,7 +178,7 @@ def to_homologset(filenames, tag_list=DEFAULTS):
         unique_id = "XX%08d" % i
 
         # Create homolog instance for each sequence.
-        homologs.append(Homolog(unique_id, **hits[i]))
+        homologs.append(Homolog(unique_id, blast_query=parent, **hits[i]))
 
     # Build homolog set from xml file
     homologset = HomologSet(homologs)
@@ -173,7 +237,7 @@ def reverse(master_file, organism):
     fastas = split_fasta(master_file)
     print("Total number of sequences before blasting: " + str(len(fastas)))
     # Run individual blasts
-    processes = [ncbi(f + ".fasta", f +"_blast.txt", entrez_query=organism) for f in fastas]
+    processes = [query(f + ".fasta", f +"_blast.txt", entrez_query=organism) for f in fastas]
 
     good_fastas = []
     bad_fastas = []

@@ -17,7 +17,8 @@ from xml.etree import ElementTree as ET
 # Defaults BLAST XML parsing tags.
 # ----------------------------------------------------
 
-DEFAULTS = ("Hit_id", "Hit_def", "Hit_len","Hit_accession", "Hsp_hseq")
+DEFAULTS = ("Hit_id", "Hit_def", "Hit_len","Hit_accession",
+            "Hsp_hseq", "Hsp_evalue")
 
 # ----------------------------------------------------
 # Methods for parsing different file formats
@@ -73,18 +74,14 @@ def fasta2phylip(lines):
 # BLAST XML/fasta format
 # ---------------------------------------------------
 
-def flatten_concatenated_XML(input_file,key_tag):
+def flatten_concatenated_XML(xml_string,key_tag):
     """
         Clean up naively concatenated XML files by deleting begin/end tags that
         occur at the place where the two files were concatenated.
         NOTE: This will break and break royally if the key_tags are on the same
         lines as other important entries.
     """
-
-    f = open(input_file,'r')
-    input = f.readlines()
-    f.close()
-
+    input = xml_string.split("\n")
     set_start = re.compile("<%s>" % key_tag)
     set_end =   re.compile("</%s>" % key_tag)
 
@@ -111,7 +108,7 @@ def flatten_concatenated_XML(input_file,key_tag):
     return "".join(input)
 
 
-def parse_blast_XML(filename,tag_list=DEFAULTS):
+def parse_blast_XML(xml_string, tag_list=DEFAULTS):
     """
         Parse XML file of hits returned after BLASTing a sequence
         against a database.
@@ -132,14 +129,14 @@ def parse_blast_XML(filename,tag_list=DEFAULTS):
     """
 
     # Fix screwed up XML if blasts were done in series...
-    blast_input = flatten_concatenated_XML(filename,"BlastOutput_iterations")
+    blast_input = flatten_concatenated_XML(xml_string,"BlastOutput_iterations")
 
     # Read blast file properties (in tag_list) into a list to dump out
     blast_input = ET.XML(blast_input)
 
     all_hits = []
 
-    # Navigate to proper level in XML
+    # Navigate to proper level in XML to grab hits
     for blast_output in blast_input:
         if blast_output.tag != "BlastOutput_iterations":
             continue
@@ -149,6 +146,10 @@ def parse_blast_XML(filename,tag_list=DEFAULTS):
                 continue
 
             for hits in iteration:
+                # Catch the parent id
+                if hits.tag == "Iteration_query-ID":
+                    parent_id = str(hits.text).strip()
+
                 if hits.tag != "Iteration_hits":
                     continue
 
@@ -178,18 +179,18 @@ def parse_blast_XML(filename,tag_list=DEFAULTS):
                                 all_hits[-1].update(subset)
                                 break
 
-    return all_hits
+    return all_hits, parent_id
 
 
-def parse_blast_fasta(filename):
+def parse_blast_fasta(xml_string):
     """
         Parse Blast's Fasta/XML formatted file, returning a list of each
         sequence's data.
 
         Args:
         ----------
-        filename: str
-            Fasta/XML formatted file from Blast Output.
+        xml_string: str
+            Fasta/XML formatted string from Blast Output.
 
         Returns:
         -------
@@ -198,7 +199,7 @@ def parse_blast_fasta(filename):
     """
 
     # Fix screwed up XML because sequences downloaded and output concatenated
-    sequence_input = flatten_concatenated_XML(filename,"TSeqSet")
+    sequence_input = flatten_concatenated_XML(xml_string, "TSeqSet")
 
     # Now we should have valid XML...
     sequence_input = ET.XML(sequence_input)
