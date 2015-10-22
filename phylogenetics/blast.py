@@ -7,7 +7,16 @@ from collections import OrderedDict
 
 from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.utils import split_fasta
-from phylogenetics.formats import parse_blast_fasta, parse_blast_XML, DEFAULTS
+
+# ----------------------------------------------------
+# Defaults BLAST XML parsing tags.
+# ----------------------------------------------------
+
+DEFAULTS = ("Hit_id", "Hit_def", "Hit_len","Hit_accession", "Hsp_evalue")
+
+# ----------------------------------------------------
+# Functions for talking to NCBI servers
+# ----------------------------------------------------
 
 def download(accession_list, email, out_file, db="protein",
                       batch_download_size=50, write=False):
@@ -71,12 +80,6 @@ def download(accession_list, email, out_file, db="protein",
 
     return mapping
 
-
-# ----------------------------------------------------
-# Python interface for standard commandline call to
-# NCBI Blast servers
-# ----------------------------------------------------
-
 def query(fasta_input, output, remote=True, **kwargs):
     """ Construct Blast+ application command. Send this command to subprocess.
     """
@@ -102,6 +105,11 @@ def query(fasta_input, output, remote=True, **kwargs):
         command += ["-remote"]
 
     return call(command)
+
+
+# ----------------------------------------------------
+# Various Python functions for BLASTing
+# ----------------------------------------------------
 
 def seeds(fasta, as_homologset=True, rm_blast=False, **kwargs):
     """ Blast a set of seed sequences.
@@ -141,6 +149,190 @@ def seeds(fasta, as_homologset=True, rm_blast=False, **kwargs):
         # Convert to homologset
         homologset = to_homologset(outnames, tag_list=DEFAULTS)
         return homologset
+
+
+def reverse(master_file, organism):
+    """
+        Reverse blast a fasta file of multiple sequences against the database
+        of an organism.
+    """
+    # grab just the name
+    filename = os.path.splitext(master_file)[0]
+    fastas = split_fasta(master_file)
+    print("Total number of sequences before blasting: " + str(len(fastas)))
+    # Run individual blasts
+    processes = [query(f + ".fasta", f +"_blast.txt", entrez_query=organism) for f in fastas]
+
+    good_fastas = []
+    bad_fastas = []
+    for f in fastas:
+        found = organism_in_blast(organism, f+ "_blast.txt")
+        if found:
+            good_fastas.append(f)
+        else:
+            bad_fastas.append(f)
+
+    g = open(filename + "_reversed.fasta", 'w')
+    for fasta in good_fastas:
+        f = open(fasta + ".fasta", "r")
+        g.write(f.read())
+        f.close()
+    g.close()
+    print("Final number of sequences after blasting: " + str(len(good_fastas)))
+
+    for f in bad_fastas:
+        os.remove(f + ".fasta")
+        os.remove(f + "_blast.txt")
+    print("Done!")
+
+# ----------------------------------------------------
+# Functions for working with Blast results
+# ----------------------------------------------------
+
+
+def flatten_concatenated_XML(xml_string,key_tag):
+    """
+        Clean up naively concatenated XML files by deleting begin/end tags that
+        occur at the place where the two files were concatenated.
+        NOTE: This will break and break royally if the key_tags are on the same
+        lines as other important entries.
+    """
+    input = xml_string.split("\n")
+    set_start = re.compile("<%s>" % key_tag)
+    set_end =   re.compile("</%s>" % key_tag)
+
+    # Find all beginning and end tags...
+    starts = [i for i, l in enumerate(input) if set_start.search(l) != None]
+
+    # If this tag occurs more than once...
+    if (len(starts) != 1):
+
+        # Keep the first start reverse so we are chewing from the bottom.
+        starts.pop(0)
+        starts.reverse()
+
+        # Remove all lines between each end and start, again chewing from the
+        # bottom.
+        for i in range(len(starts)):
+            e = starts[i]
+            while set_end.search(input[e]) == None:
+                input.pop(e),
+                e = e - 1
+            input.pop(e)
+
+    # Return freshly minted, clean XML
+    return "".join(input)
+
+
+def parse_blast_XML(xml_string, tag_list=DEFAULTS):
+    """
+        Parse XML file of hits returned after BLASTing a sequence
+        against a database.
+
+        Args:
+        ----
+        filename: str
+            XML filename returned from BLAST
+        tag_list: tuple
+            Tuple of XML tags that will be included in output data for
+            each sequence.
+
+        Returns:
+        -------
+        all_hits: list of dicts
+            List of sequence data for all hits in XML file (with key,values
+            given by tag_list).
+    """
+
+    # Fix screwed up XML if blasts were done in series...
+    blast_input = flatten_concatenated_XML(xml_string,"BlastOutput_iterations")
+
+    # Read blast file properties (in tag_list) into a list to dump out
+    blast_input = ET.XML(blast_input)
+
+    all_hits = []
+
+    # Navigate to proper level in XML to grab hits
+    for blast_output in blast_input:
+        if blast_output.tag != "BlastOutput_iterations":
+            continue
+
+        for iteration in blast_output:
+            if iteration.tag != "Iteration":
+                continue
+
+            for hits in iteration:
+                # Catch the parent id
+                if hits.tag == "Iteration_query-ID":
+                    parent_id = str(hits.text).strip()
+
+                if hits.tag != "Iteration_hits":
+                    continue
+
+                for hit in hits:
+
+                    # Separate the tag_list out from hits and hit specs.
+                    Hit_list = [t[4:] for t in tag_list if t[0:3] == "Hit"]
+                    Hsp_list = [t[4:] for t in tag_list if t[0:3] == "Hsp"]
+
+                    # Construct a dictionary of tags stripped from XML
+                    properties = dict([(h.tag[4:],str(h.text).strip()) for h in hit])
+                    subset = dict((k, properties[k]) for k in Hit_list)
+                    all_hits.append(subset)
+
+                    for property in hit:
+
+                        if property.tag == "Hit_hsps":
+
+                            for hsp in property:
+
+                                # Construct a dictionary of tags stripped from XML
+                                hsp_properties = dict([(p.tag[4:],str(p.text).strip())
+                                                       for p in hsp])
+                                subset = dict((k, hsp_properties[k]) for k in Hsp_list)
+
+                                # Append inner Hsp properties to list
+                                all_hits[-1].update(subset)
+                                break
+
+    return all_hits, parent_id
+
+
+def parse_blast_fasta(xml_string):
+    """
+        Parse Blast's Fasta/XML formatted file, returning a list of each
+        sequence's data.
+
+        Args:
+        ----------
+        xml_string: str
+            Fasta/XML formatted string from Blast Output.
+
+        Returns:
+        -------
+        sequences: list of dicts
+            List of sequences data in their own lists.
+    """
+
+    # Fix screwed up XML because sequences downloaded and output concatenated
+    sequence_input = flatten_concatenated_XML(xml_string, "TSeqSet")
+
+    # Now we should have valid XML...
+    sequence_input = ET.XML(sequence_input)
+
+    # XML Tag prefix to strip
+    prefix = "TSeq_"
+
+    sequences = []
+    for i, sequence in enumerate(sequence_input):
+        # Rip out all properties of a sequence
+        properties = dict([(s.tag[len(prefix):],str(s.text).strip()) for s in sequence])
+
+        # Append to sequences.
+        sequences.append(properties)
+
+    return sequences
+
 
 def to_homologset(filenames, tag_list=DEFAULTS):
     """ Turn multiple blast hit XML files into homolog object
@@ -184,10 +376,6 @@ def to_homologset(filenames, tag_list=DEFAULTS):
     homologset = HomologSet(homologs)
     return homologset
 
-# ------------------------------------------------------
-# Reverse Blasting Tools
-# ------------------------------------------------------
-
 def name_variants(name):
     """
         Create all variants of camelcase names.
@@ -226,37 +414,3 @@ def organism_in_blast(name, filename):
         if found:
             break
     return found
-
-def reverse(master_file, organism):
-    """
-        Reverse blast a fasta file of multiple sequences against the database
-        of an organism.
-    """
-    # grab just the name
-    filename = os.path.splitext(master_file)[0]
-    fastas = split_fasta(master_file)
-    print("Total number of sequences before blasting: " + str(len(fastas)))
-    # Run individual blasts
-    processes = [query(f + ".fasta", f +"_blast.txt", entrez_query=organism) for f in fastas]
-
-    good_fastas = []
-    bad_fastas = []
-    for f in fastas:
-        found = organism_in_blast(organism, f+ "_blast.txt")
-        if found:
-            good_fastas.append(f)
-        else:
-            bad_fastas.append(f)
-
-    g = open(filename + "_reversed.fasta", 'w')
-    for fasta in good_fastas:
-        f = open(fasta + ".fasta", "r")
-        g.write(f.read())
-        f.close()
-    g.close()
-    print("Final number of sequences after blasting: " + str(len(good_fastas)))
-
-    for f in bad_fastas:
-        os.remove(f + ".fasta")
-        os.remove(f + "_blast.txt")
-    print("Done!")
