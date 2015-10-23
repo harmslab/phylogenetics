@@ -2,7 +2,6 @@
 import os
 import glob
 import re
-import numpy as np
 from subprocess import call
 from collections import OrderedDict
 

@@ -6,24 +6,59 @@ from phylogenetics.cdhit import run_cdhit
 
 def main():
 
+    # ---------------------------------------------------
+    # command-line arg parsing
+    # ---------------------------------------------------
+
     parser = argparse.ArgumentParser(description="""
     Build a tree from homologset via PhyML.
     """)
 
     # command line arguments
-    parser.add_argument("-i", "--input", help="Input pickle file containing homologset.", type=str)
-    parser.add_argument("-o", "--output", help="Output pickle filename. (No extension needed, returns .pickle)", type=str)
-    parser.add_argument("-c", "--cutoff", help="Redundancy cutoff for overlapping clusters.", type=float)
-    parser.add_argument("--accession", help="Accessions to make representative in cluster.", type=set, default=())
-    parser.add_argument("--positive", help="Keywords to make representative in cluster.", type=set, default=())
+    parser.add_argument("-i", "--input",
+            help="Input pickle file containing homologset.",
+            type=str,
+            required=True)
+
+    parser.add_argument("-o", "--output",
+            help="Output pickle filename.",
+            type=str,
+            required=True)
+
+    parser.add_argument("-c", "--cutoff",
+            help="Redundancy cutoff for overlapping clusters.",
+            type=float,
+            required=True)
+
+    parser.add_argument("--accession",
+            help="Accessions to make representative in cluster.",
+            type=set,
+            default=())
+
+    parser.add_argument("--positive",
+            help="Keywords to make representative in cluster.",
+            type=set,
+            default=())
 
     # Parse the arguments
     args = parser.parse_args()
 
+    if args.cutoff > 1.0 or args. cutoff <= 0.0:
+        raise Exception("""Invalid redundancy cutoff value for overlapping clusters.
+                        Should be between 0 and 1.""")
+
+    # ---------------------------------------------------
+    # Run cdhit!
+    # ---------------------------------------------------
+
     # Open homologset and run cdhit
     hs = load_homologset(args.input)
+
+    # Run cdhit
     hs2 = run_cdhit(hs, redund_cutoff=args.cutoff, accession=args.accession, positive=args.positive)
-    hs2.write(args.output + ".pickle", format="pickle")
+
+    # write to a pickle file.
+    hs2.write(args.output, format="pickle")
 
 if __name__ == "__main__":
     main()

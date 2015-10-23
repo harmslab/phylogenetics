@@ -13,6 +13,9 @@ from phylogenetics.homologs import load_homologset
 def main():
     """ Download the full sequences for a set of homologs from NCBI.
     """
+    # ---------------------------------------------------
+    # command-line arg parsing
+    # ---------------------------------------------------
 
     # Initialize the argument parser
     parser = argparse.ArgumentParser(
@@ -20,30 +23,37 @@ def main():
     )
 
     # Type of arguments
-    parser.add_argument("input",
-                        help="pickle filename containing a homolog set to download.",
-                        type=str)
+    parser.add_argument("-i", "--input",
+            help="pickle filename containing a homolog set to download.",
+            type=str,
+            required=True)
 
-    parser.add_argument("output",
-                        help="filename to save the resulting homologset with sequences (no extension).",
-                        type=str)
+    parser.add_argument("-o", "--output",
+            help="filename to save the resulting homologset with sequences (no extension).",
+            type=str,
+            required=True)
 
-    parser.add_argument("email",
-                        help="Email to send to Entrez. Required by NCBI's Entrez.",
-                        default=str)
+    parser.add_argument("-e","--email",
+            help="Email to send to Entrez. Required by NCBI's Entrez.",
+            default=str,
+            required=True)
 
     parser.add_argument("--db",
-                        help="database to pull sequences from. See NCBI for this. [default=protein]",
-                        type=str,
-                        default="protein")
+            help="database to pull sequences from. See NCBI for this. [default=protein]",
+            type=str,
+            default="protein")
 
     parser.add_argument("--xml",
-                        help="If True, will write the downloaded xml out to a file.",
-                        type=bool,
-                        default=False)
+            help="If True, will write the downloaded xml out to a file.",
+            type=bool,
+            default=False)
 
     # Parse the argument
     args = parser.parse_args()
+
+    # ---------------------------------------------------
+    # Main code for downloading sequences
+    # ---------------------------------------------------
 
     # Get the accession numbers from homologset
     hs = load_homologset(args.input)
@@ -59,7 +69,7 @@ def main():
     for h in hs.homologs:
         h.add_attributes(sequence=sequence_data[h.accession])
 
-    hs.write(args.output + ".pickle", format="pickle")
+    hs.write(args.output, format="pickle")
 
 if __name__ == "__main__":
     main()

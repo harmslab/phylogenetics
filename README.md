@@ -59,4 +59,10 @@ Navigate to this directory, and install this python package with
 python setup.py install
 ```
 
+If you'd like to work in development mode,
+
+```
+pip install -e .
+```
+
 **NOTE:** Many of modules in this API require other software packages to work.

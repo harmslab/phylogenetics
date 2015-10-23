@@ -6,21 +6,51 @@
 
 import argparse
 from phylogenetics.names import switch
+from phylogenetics.homologs import load_homologset
 
 def main():
     """
-        Run reverse blast.
+        Edit the labels in a tree to show any attributes in the homologset.
     """
+
+    # ---------------------------------------------------
+    # command-line arg parsing
+    # ---------------------------------------------------
+
     # Build arguments and grab arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("input", help="File to change names.")
-    parser.add_argument("homologs", help="homologs .pickle that holds info for sequences")
-    parser.add_argument("old_name", help="Type of previous name")
-    parser.add_argument("new_name", help="Type of new name to use.")
+    parser.add_argument("-i", "--input",
+        help="File to change names.",
+        type=str,
+        required=True)
+
+    parser.add_argument("--homset",
+        help="homologs .pickle that holds info for sequences",
+        type=str,
+        required=True)
+
+    parser.add_argument("--old",
+        help="Type of previous name",
+        type=str,
+        required=True)
+
+    parser.add_argument("--new",
+        help="List of attributes to include (ex name orgname`)",
+        nargs='+',
+        type=str,
+        required=True)
+
     args = parser.parse_args()
 
-    # Run reverse blast
-    switch(args[0], args[1], args[2], args[3])
+    # ---------------------------------------------------
+    # Swap labels in homologset
+    # ---------------------------------------------------
+    
+    # Load the homologset
+    hs = load_homologset(args.homset)
+
+    # Switch the names in the treefile
+    switch(args.input, hs, args.old, args.new)
 
 if __name__ == "__main__":
     main()

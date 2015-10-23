@@ -21,10 +21,14 @@ def main():
 
     # Type of arguments
     parser.add_argument("-i", "--input",
-                        help="Input fasta filename")
+                        help="Input fasta filename",
+                        type=str,
+                        required=True)
 
-    parser.add_argument("-p, --pickle",
-                        help="Save the blast results to a pickled HomologSet object")
+    parser.add_argument("-o, --output",
+                        help="Save the blast results to a pickled HomologSet object",
+                        type=str,
+                        required=True)
 
     parser.add_argument("--rmblast",
                         help="Remove the blast results directory. Only works if pickle object exists."
@@ -34,7 +38,7 @@ def main():
     args = parser.parse_args()
 
     # If pickle option is given, set homologset to true.
-    if args.pickle is not None:
+    if args.output is not None:
         as_hs = True
     else:
         as_hs = False
@@ -44,11 +48,7 @@ def main():
 
     # If pickle name is given, save to pickle file.
     if as_hs:
-        cwd = os.getcwd()
-        fname = os.path.join(cwd, arg.pickle)
-        f = open(fname, "wb")
-        pickle.dump(f)
-        f.close()
+        hs.write(output, format="pickle")
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,5 @@
 # API for working with Homolog sets in a phylogenetics project
 
-import numpy as np
 import json
 import pickle
 

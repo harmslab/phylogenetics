@@ -21,10 +21,27 @@ def main():
     parser = argparse.ArgumentParser(description="""
     Take XML files in the current directory and turn them into a Homolog object.
     """)
-    parser.add_argument("output", help="Output filename, no extension. Will return .pickle", type=str)
-    parser.add_argument("--fnames", help="(optional), a list of blast files to process", type=list, default=None)
-    parser.add_argument("--ext", help="(option) if fname is not give, all files with this extension will be processed.", type=str, default=None)
-    parser.add_argument("--fmt", help="output formats (always outputs pickle); 1=fasta, 2=csv, 3=json, 4=phylip", type=int, default=0)
+
+    parser.add_argument("-o","--output",
+            help="Output filename, no extension. Will return .pickle",
+            type=str)
+
+    parser.add_argument("--fnames",
+            help="(optional), a list of blast files to process",
+            nargs='+',
+            type=str,
+            default=None)
+
+    parser.add_argument("--ext",
+            help="(option) if fname is not give, all files with this extension will be processed.",
+            type=str,
+            default=None)
+
+    parser.add_argument("--fmt",
+            help="output formats (always outputs pickle); 1=fasta, 2=csv, 3=json, 4=phylip",
+            type=int,
+            default=0)
+
     args = parser.parse_args()
 
     # Catch improper input.
@@ -50,16 +67,19 @@ def main():
 
     # Convert to homologset
     hs = to_homologset(files)
-    hs.write(args.output + ".pickle", format="pickle")
+    hs.write(args.output, format="pickle")
+
+    # Split the output filename from extension
+    oname, oext = os.path.splitext(args.output)
 
     if args.fmt == 1:
-        hs.write(args.output + ".fasta", format="fasta")
+        hs.write(oname + ".fasta", format="fasta")
     elif args.fmt == 2:
-        hs.write(args.output + ".csv", format="csv")
+        hs.write(oname + ".csv", format="csv")
     elif args.fmt == 3:
-        hs.write(args.output + ".json", format="json")
+        hs.write(oname + ".json", format="json")
     elif args.fmt == 4:
-        hs.write(args.output + ".phylip", format="phylip")
+        hs.write(oname + ".phylip", format="phylip")
 
 
 if __name__ == "__main__":
