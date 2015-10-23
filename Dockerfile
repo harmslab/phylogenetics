@@ -37,3 +37,5 @@ RUN export PATH
 RUN export PATH=$HOME/cdhit:$PATH
 RUN export PATH=$HOME/msaprobs:$PATH
 RUN export PATH=$HOME/phyml-20120412:$PATH
+
+RUN pip install phylogenetics
