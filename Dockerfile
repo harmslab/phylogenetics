@@ -22,20 +22,20 @@ RUN  cd phyml \
     make
 
 # Download sip
-RUN curl -L http://www.riverbankcomputing.com/software/sip/download > sip.tar.gz
-RUN tar -xzvf sip.tar.gz
-RUN cd sip \
-    python configure.py \
-    make \
-    make install \
+#RUN curl -L http://www.riverbankcomputing.com/software/sip/download > sip.tar.gz
+#RUN tar -xzvf sip.tar.gz
+#RUN cd sip \
+#    python configure.py \
+#    make \
+#    make install \
 
 # Download pyqt4
-RUN curl -L http://www.riverbankcomputing.com/software/pyqt/download >pyqt.tar.gz
-RUN tar -xzvf pyqt.tar.gz
-RUN cd pyqt \
-    python configure.py \
-    make \
-    make install \
+#RUN curl -L http://www.riverbankcomputing.com/software/pyqt/download >pyqt.tar.gz
+#RUN tar -xzvf pyqt.tar.gz
+#RUN cd pyqt \
+#    python configure.py \
+#    make \
+#    make install \
 
 RUN cd $HOME
 
@@ -53,4 +53,4 @@ RUN export PATH=$HOME/msaprobs:$PATH
 RUN export PATH=$HOME/phyml-20120412:$PATH
 
 # Install phylogenetics
-RUN pip install phylogenetics ete2 numpy 
+RUN pip install phylogenetics ete2 numpy
