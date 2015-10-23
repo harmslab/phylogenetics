@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name = 'phylogenetics',
-    version = '0.2.0a1',
+    version = '0.2.0a2',
     description = 'Python API that provides simple tools for doing phylogenetics.',
     author = 'Zach Sailer',
     author_email = 'zachsailer@gmail.com',
