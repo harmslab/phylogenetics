@@ -21,6 +21,16 @@ RUN  cd phyml \
     ./configure \
     make
 
+# Download sip
+RUN curl -L http://www.riverbankcomputing.com/software/sip/download > sip.tar.gz
+RUN tar -xzvf sip.tar.gz
+RUN python sip/configure.py
+
+# Download pyqt4
+RUN curl -L http://www.riverbankcomputing.com/software/pyqt/download >pyqt.tar.gz
+RUN tar -xzvf pyqt.tar.gz
+RUN python pyqt/configure.py
+
 RUN cd $HOME
 
 # Download and build
@@ -36,9 +46,5 @@ RUN export PATH=$HOME/cdhit:$PATH
 RUN export PATH=$HOME/msaprobs:$PATH
 RUN export PATH=$HOME/phyml-20120412:$PATH
 
-# clone and install phylogenetics
-RUN git clone https://github.com/Zsailer/phylogenetics
-
-RUN cd phylogenetics \
-    python3 setup.py install \
-    python2 setup.py install
+# Install phylogenetics
+RUN pip install phylogenetics
