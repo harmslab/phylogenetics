@@ -28,10 +28,10 @@ def concat_homolog_sets(hs1, hs2, renumber=False):
     """ Concatenate two homolog set. If told, will renumber the `id` attributes
         in the merged set.
     """
-    total_set = hs1 + hs2
+    total_set = hs1.homologs + hs2.homologs
     total_hs = HomologSet(total_set)
     if renumber:
-        total_set.renumber_homologs()
+        total_hs.renumber_homologs()
     return total_hs
 
 def rm_repeats_homologs(homolog_set, attribute="accession", renumber=False):
