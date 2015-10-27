@@ -7,7 +7,7 @@
 import os
 import argparse
 import pickle
-from phylogenetics.blast import download
+from phylogenetics.entrez import download
 from phylogenetics.homologs import load_homologset
 
 def main():
