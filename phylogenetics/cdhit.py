@@ -3,7 +3,7 @@ import subprocess
 
 from phylogenetics.homologs import rank_homologs
 
-def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5,
+def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
              keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
              "unnamed", "possible", "predicted", "unknown", "uncharacterized",
              "mutant", "isoform")):
@@ -33,15 +33,17 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_si
     # If the threshold is below 0.4, must use psi-cd-hit command. This requires
     # blast legacy to be installed and the psi-cd-hit directory be exported to PATH
     if redund_cutoff < 0.4:
-        cdhit_cmd = "psi-cd-hit.pl -i %s.fasta -o %s_cdhit -c %.3f" % (tmp_file_suffix,
+        cdhit_cmd = "psi-cd-hit.pl -i %s.fasta -o %s_cdhit -c %.3f --core %d" % (tmp_file_suffix,
                                                                tmp_file_suffix,
-                                                               redund_cutoff)
+                                                               redund_cutoff,
+                                                               cores)
     # Above the 0.4 threshold, we can use the typical cdhit
     else:
-        cdhit_cmd = "cdhit -i %s.fasta -o %s_cdhit -c %.3f -n %d" % (tmp_file_suffix,
+        cdhit_cmd = "cdhit -i %s.fasta -o %s_cdhit -c %.3f -n %d -T %d" % (tmp_file_suffix,
                                                             tmp_file_suffix,
                                                             redund_cutoff,
-                                                            word_size)
+                                                            word_size,
+                                                            cores)
     # Format the command into list.
     args = shlex.split(cdhit_cmd)
 
