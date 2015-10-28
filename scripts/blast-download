@@ -63,7 +63,7 @@ def main():
 
     # download sequences
     sequence_data = download(accessions, args.email, args.output, db=args.db,
-                          batch_download_size=50, write=args.xml)
+                          batch_download_size=100, write=args.xml)
 
     # Add sequences to homologset
     for h in hs.homologs:

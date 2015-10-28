@@ -1,8 +1,8 @@
 # --------------------------------------
 # Useful tools for handling fasta files.
 # --------------------------------------
-import pickle
-import subprocess
+
+import re, pickle, subprocess
 
 def run_subprocess(base, *args, **kwargs):
     """ Run a subprocess command with given set of args and kwargs.
@@ -24,7 +24,7 @@ def run_subprocess(base, *args, **kwargs):
         run.stdin.write(bytes('Y', "ascii"))
     except TypeError:
         run.stdin.write('Y')
-        
+
     stdoutdata, stderrdata = run.communicate()
 
     # Check if alignment worked correctly.
@@ -95,3 +95,37 @@ def read_fasta(filename):
         else:
             vals[-1] += "".join(l.strip())
     return dict(zip(keys, vals))
+
+
+def flatten_concatenated_XML(xml_string,key_tag):
+    """
+        Clean up naively concatenated XML files by deleting begin/end tags that
+        occur at the place where the two files were concatenated.
+        NOTE: This will break and break royally if the key_tags are on the same
+        lines as other important entries.
+    """
+    input = xml_string.split("\n")
+    set_start = re.compile("<%s>" % key_tag)
+    set_end =   re.compile("</%s>" % key_tag)
+
+    # Find all beginning and end tags...
+    starts = [i for i, l in enumerate(input) if set_start.search(l) != None]
+
+    # If this tag occurs more than once...
+    if (len(starts) != 1):
+
+        # Keep the first start reverse so we are chewing from the bottom.
+        starts.pop(0)
+        starts.reverse()
+
+        # Remove all lines between each end and start, again chewing from the
+        # bottom.
+        for i in range(len(starts)):
+            e = starts[i]
+            while set_end.search(input[e]) == None:
+                input.pop(e),
+                e = e - 1
+            input.pop(e)
+
+    # Return freshly minted, clean XML
+    return "".join(input)
