@@ -33,7 +33,7 @@ def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_si
     # If the threshold is below 0.4, must use psi-cd-hit command. This requires
     # blast legacy to be installed and the psi-cd-hit directory be exported to PATH
     if redund_cutoff < 0.4:
-        cdhit_cmd = "psi-cd-hit.pl -i %s.fasta -o %s_cdhit -c %.3f --core %d" % (tmp_file_suffix,
+        cdhit_cmd = "psi-cd-hit.pl -i %s.fasta -o %s_cdhit -c %.3f -core %d" % (tmp_file_suffix,
                                                                tmp_file_suffix,
                                                                redund_cutoff,
                                                                cores)

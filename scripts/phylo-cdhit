@@ -35,6 +35,11 @@ def main():
             type=int,
             default=5)
 
+    parser.add_argument("--cores",
+            help="Number of cores to use.",
+            type=int,
+            default=1)
+
     parser.add_argument("--accession",
             help="Accessions to make representative in cluster.",
             nargs="+",
@@ -64,7 +69,7 @@ def main():
     print("Number of homologs before clustering: " + str(len(hs.homologs)))
 
     # Run cdhit
-    hs2 = run_cdhit(hs, redund_cutoff=args.cutoff, accession=set(args.accession), positive=set(args.positive), word_size=args.word_size)
+    hs2 = run_cdhit(hs, redund_cutoff=args.cutoff, accession=set(args.accession), positive=set(args.positive), word_size=args.word_size, cores=args.cores)
 
     print("Number of homologs after clustering: " + str(len(hs2.homologs)))
 
