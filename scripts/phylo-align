@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse
+import argparse, os
 from phylogenetics.homologs import load_homologset
 from phylogenetics.msaprobs import run_msaprobs
 
