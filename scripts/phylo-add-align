@@ -15,9 +15,13 @@ def main():
     """)
 
     # command line arguments
-    parser.add_argument("--homset",
+    parser.add_argument("-i", "--input",
         help="Input pickle file containing homologset.",
         type=str,
+        required=True)
+
+    parser.add_argument("-o", "--output",
+        help="Output pickle file containing new homologset",
         required=True)
 
     parser.add_argument("--alignment",
@@ -33,7 +37,7 @@ def main():
     # ---------------------------------------------------
 
     # Open homologset
-    hs = load_homologset(args.homset)
+    hs = load_homologset(args.input)
 
     # Add alignment to homologset
     hs2 = alignment_to_homologs(hs, args.alignment)

@@ -17,6 +17,7 @@ setup(name = 'phylogenetics',
         'scripts/phylo-align',
         'scripts/phylo-cdhit',
         'scripts/phylo-edit-names',
+        'scripts/phylo-rm',
         'scripts/phylo-tree'],
     zip_safe = False
 )
