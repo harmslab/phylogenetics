@@ -299,6 +299,8 @@ class HomologSet(object):
         """ Remove a list of homologs from set of homologs.
 
             NOTE: this does not renumber the homolog set. must be done manually.
+
+            Also, note that this changes the homolog set in place!
         """
         # If a single id is given, format it into a list
         # for loop below.

@@ -52,7 +52,7 @@ def run_msaprobs(homolog_set, tmp_file_suffix="alignment", rm_tmp=True):
 
     return homolog_subset
 
-def alignment_to_homologs(homolog_set, alignment_file):
+def alignment_to_homologs(homolog_set, alignment_file, alignment_keys="id"):
     """ Load an alignment fasta file and add as `latest_align` attribute
         to a set of homologs.
 
@@ -72,9 +72,27 @@ def alignment_to_homologs(homolog_set, alignment_file):
         homolog_set: HomologSet object
 
     """
-
+    # Read the alignment file
     data = read_fasta(alignment_file)
 
+    # Get the ids of all homologs in a set
+    mapping = homolog_set.get_map(alignment_keys)
+    in_homologset = list(mapping.keys())
+
+    # Find an homologs that were removed from this homolog set in alignment
+    in_alignment = list(data.keys())
+
+    # Initialize a list of ids not in the alignment
+    not_in_alignment = list()
+    for h in in_homologset:
+        # If this id is in homologset and not in alignment, append to list
+        if h not in in_alignment:
+            not_in_alignment.append(h)
+
+    # Remove all sequences not in alignment from homolog set
+    homolog_set.rm_homologs(not_in_alignment)
+
+    ### Add alignments to each homolog in the set ###
     key = "latest_align"
 
     # If an alignment already exists in homologs, store it under
@@ -93,6 +111,6 @@ def alignment_to_homologs(homolog_set, alignment_file):
 
     # Add new alignment to homolog.
     for h in homolog_set._homologs:
-        h.add_attributes( **{ key:data[h.id] } ) 
+        h.add_attributes( **{ key:data[h.id] } )
 
     return homolog_set
