@@ -2,7 +2,7 @@
 
 import argparse
 from phylogenetics.homologs import load_homologset
-from phylogenetics.msaprobs import run_msaprobs
+from phylogenetics.msaprobs import run_msaprobs, alignment_to_homologs
 
 def main():
 
