@@ -43,7 +43,7 @@ def main():
     hs2 = alignment_to_homologs(hs, args.alignment)
 
     # Write homologset to file
-    hs2.write(args.output + ".pickle", format="pickle")
+    hs2.write(args.output, format="pickle")
 
 if __name__ == "__main__":
     main()
