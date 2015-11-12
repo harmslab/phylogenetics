@@ -18,33 +18,27 @@ def fasta_names(name):
     """ """
     return name
 
-FORMATS = {".nwk":newick_names, ".fasta":fasta_names}
+FORMATS = {"newick":newick_names, "fasta":fasta_names}
 
-def switch(filename, homologs, current_name, new_name, format=""):
+def switch(homologset, current_name, new_names, format="newick"):
     """ Switch between names. New name can be a list
         of keys in the homolog object (might be necessary
         for unique name in newick).
     """
-    # Load file and split filename for later.
-    f = open(filename, "r")
-    text = f.read()
-    f.close()
-
-    prefix = splitext(filename)[0]
-    ext = splitext(filename)[1]
+    tree = homologset.tree
 
     # Construct mapping for name replace.
-    mapping = homologs.get_map(current_name, new_name)
+    mapping = homologset.get_map(current_name, new_names)
 
     # If new_name was a list.
-    if isinstance(new_name,list):
+    if isinstance(new_names,list):
         for m in mapping:
             mapping[m] = " - ".join(mapping[m])
 
     # Any quality control for the given file?
     # If so, format name accordingly
     try:
-        func = FORMATS[ext]
+        func = FORMATS[format]
         for m in mapping:
             name = mapping[m]
             name = func(name)
@@ -54,9 +48,6 @@ def switch(filename, homologs, current_name, new_name, format=""):
 
     # Replace the old name with this new constructed name
     for key in mapping:
-        text = text.replace(key, mapping[key])
+        tree = tree.replace(key, mapping[key])
 
-    new_file = prefix + "_names" + ext
-    f = open(new_file, "w")
-    f.write(text)
-    f.close()
+    return tree

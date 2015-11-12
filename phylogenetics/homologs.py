@@ -2,6 +2,7 @@
 
 import json
 import pickle
+from phylogenetics.names import switch
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -401,6 +402,13 @@ class HomologSet(object):
             f += h.csv(tags=tags, header=False, delimiter=delimiter)
         return f
 
+    def newick(self, tags, **kwargs):
+        """ Write a tree to file. """
+        old_name = "id"
+        new_names = tags
+        tree = switch(self, "id", new_names, format="newick")
+        return tree
+
     def write(self, filename, format="fasta", tags=None, aligned=False):
         """ Write to file with given format.
 
@@ -411,7 +419,8 @@ class HomologSet(object):
                         "pickle": "wb",
                         "json":"w",
                         "phylip":"w",
-                        "csv": "w"}
+                        "csv": "w",
+                        "newick": "w"}
 
         format_func = getattr(self, format)
         f = open(filename, write_format[format])

@@ -56,7 +56,7 @@ def main():
     hs2 = run_phyml(hs, oname, dtype=args.dtype, tree_file=args.newick, rm_tmp=True)
 
     # Change the names in the phyml output to specified labels.
-    switch(oname+".nwk", hs2, "id",args.labels)
+    hs2.write(oname + ".nwk", format="tree", tags=args.labels)
 
     # Write this out to a pickle file.
     hs2.write(args.output, format="pickle")

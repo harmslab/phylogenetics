@@ -45,12 +45,29 @@ def main():
     # ---------------------------------------------------
     # Swap labels in homologset
     # ---------------------------------------------------
-    
+    filename = args.input
+
+    # Load file and split filename for later.
+    f = open(filename, "r")
+    text = f.read()
+    f.close()
+
+    # Get filename specs
+    prefix = splitext(filename)[0]
+    ext = splitext(filename)[1]
+
     # Load the homologset
     hs = load_homologset(args.homset)
 
     # Switch the names in the treefile
-    switch(args.input, hs, args.old, args.new)
+    tree = switch(hs.tree, hs, args.old, args.new)
+
+    # Write to a file
+    new_file = prefix + "_names" + ext
+    f = open(new_file, "w")
+    f.write(tree)
+    f.close()
+
 
 if __name__ == "__main__":
     main()

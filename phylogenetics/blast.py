@@ -20,6 +20,10 @@ DEFAULTS = ("Hit_id", "Hit_def", "Hit_len","Hit_accession", "Hsp_evalue")
 # Functions for talking to NCBI servers
 # ----------------------------------------------------
 
+def get_organism(defline):
+    """ Get the organism in a BLAST output defline """
+    return defline[defline.find("[")+1:defline.find("]")]
+
 def query(fasta_input, output, remote=True, **kwargs):
     """ Construct Blast+ application command. Send this command to subprocess.
     """
@@ -236,8 +240,14 @@ def to_homologset(filenames, tag_list=DEFAULTS):
         # Make a unique id for each sequence.
         unique_id = "XX%08d" % i
 
+        # Strip organism name from BLAST's defline argument
+        try:
+            organism = get_organism(hits[i]["defline"])
+        except:
+            organism = "NA"
+
         # Create homolog instance for each sequence.
-        homologs.append(Homolog(unique_id, blast_query=parent, **hits[i]))
+        homologs.append(Homolog(unique_id, blast_query=parent, organism=organism, **hits[i]))
 
     # Build homolog set from xml file
     homologset = HomologSet(homologs)
