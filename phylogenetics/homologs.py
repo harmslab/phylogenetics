@@ -119,6 +119,7 @@ class Homolog(object):
         """
         # Must set a unique ID and sequence
         self.id = unique_id
+        self.latest_align = ""
 
         # Set user specified attributes
         for key, value in kwargs.items():
@@ -129,6 +130,16 @@ class Homolog(object):
                 setattr(self, "gid", value)
             else:
                 setattr(self, key, value)
+
+    @property
+    def seqlen(self):
+        """ Get the length of sequence """
+        return len(self.sequence)
+
+    @property
+    def alignedlen(self):
+        """ Get the length of the aligned sequence. """
+        return len(self.latest_align) - self.latest_align.count('-')
 
     def add_attributes(self, **kwargs):
         """ Add attributes to homolog object. """
@@ -237,6 +248,11 @@ class HomologSet(object):
     def homologs(self):
         """ Get homolog set. """
         return self._homologs
+
+    @property
+    def id_list(self):
+        """ Return ID list. """
+        return [h.id for h in self._homologs]
 
     def get_map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR

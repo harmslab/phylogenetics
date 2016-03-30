@@ -113,4 +113,7 @@ def alignment_to_homologs(homolog_set, alignment_file, alignment_keys="id"):
     for h in homolog_set._homologs:
         h.add_attributes( **{ key:data[h.id] } )
 
+    # Add the Alignment object to homologset
+    homolog_set.Alignment = Alignment(homologet_set)
+
     return homolog_set
