@@ -39,7 +39,7 @@ class Tree(dendropy.datamodel.treemodel.Tree):
             ancestor = "Anc" + str(ancestor)
 
         # Find the node with the given label
-        node = self.find_node(lambda n: n.taxon.label==ancestor)
+        node = self.find_node(lambda n: n.annotations.get_value("name")==ancestor)
 
         if node is None:
             raise Exception(""" No ancestor with the given name. """)
