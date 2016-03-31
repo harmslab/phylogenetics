@@ -17,11 +17,10 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         # Create an instance
         instance._homologset = homologset
 
-        # Label the ancestral nodes
-        ancestral_labels(instance)
-
-        # Add metadata to tree homologs.
-        instance._homolog_metadata()
+        # Add metadata to tree homologs and nodes
+        instance._tip_metadata()
+        instance._node_metadata()
+        instance._edge_metadata()
 
         # Return instance
         return instance
@@ -54,9 +53,9 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         # Remove homologs from homolog_set
         self._homologset.rm_homologs(ids)
 
-    def _homolog_metadata(self, attributes=("accession", "organism", "alignedlen")):
+    def _tip_metadata(self, attributes=("accession", "organism", "alignedlen")):
         """
-            Set the metadata of the taxa.
+            Set the metadata of the tips of the tree.
         """
         # Iterate through the attributes given
         for a in attributes:
@@ -70,6 +69,34 @@ class Tree(dendropy.datamodel.treemodel.Tree):
                     taxon.annotations.add_new(a, mapping[id])
             except:
                 pass
+
+
+    def _node_metadata(self):
+        """
+            Get metadata for internal nodes
+        """
+        # Get the nodess
+        nodes = self.nodes()
+
+        # Iterate through nodes and look for nodes with node labels
+        for i in range(len(nodes)):
+
+            # If the node taxon is None, then create Taxon object
+            if nodes[i].taxon is None:
+                # Add taxon object
+                nodes[i].annotations.add_new("name","Anc" + str(i))
+
+    def _edge_metadata(self):
+        """
+            Set the metadata of the edges
+        """
+        # Get the nodess
+        edges = self.edges()
+
+        # Iterate through nodes and look for nodes with node labels
+        for i in range(len(edges)):
+            edges[i].annotations.add_new("name", str(i))
+
 
     def color_homologs(self, ids, color):
         """
