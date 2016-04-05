@@ -284,6 +284,16 @@ class HomologSet(object):
 
         return m
 
+    def subset(self, ids):
+        """ Get a subset of the homologs from an ID list. """
+        mapping = self.get_map("id")
+
+        homologs = []
+        for id in ids:
+            homologs.append(mapping[id])
+
+        return HomologSet(homologs)
+
     def renumber_homologs(self):
         """ Renumber the ID numbers for homologs in the set, starting at
             0 to len(homologs).

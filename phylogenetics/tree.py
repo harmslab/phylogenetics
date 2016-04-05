@@ -1,9 +1,21 @@
 import dendropy
 
+class Ancestor:
+
+    @property
+    def posteriors(self):
+        return self._posteriors
+
+    @property
+    def mlsequence(self):
+        return self._mlsequence
+
+
+
 class Tree(dendropy.datamodel.treemodel.Tree):
     """
         Subclass of Dendropy's Tree object including extra methods for
-        unifying with homologsets.
+        connectiong to HomologSet object.
     """
 
     @classmethod
@@ -52,6 +64,46 @@ class Tree(dendropy.datamodel.treemodel.Tree):
 
         # Remove homologs from homolog_set
         self._homologset.rm_homologs(ids)
+
+        # Prune subtree
+        self.prune_subtree(node)
+
+    def subtree(self, ancestor):
+        """ Get a subtree. """
+        # Find the node with the given label
+        node = self.find_node(lambda n: n.annotations.get_value("name")==ancestor)
+
+        if node is None:
+            raise Exception(""" No ancestor with the given name. """)
+
+        # Get list of child homologs for this node
+        homologs = node.leaf_nodes()
+
+        # Read their ids
+        ids = [h.taxon.label for h in homologs]
+
+        non_interesting_ids = self.homologs.id_list
+
+        # Remove interesting ids
+        for id in ids:
+            non_interesting_ids.remove(id)
+
+        # Sadly, this logic is a little confusing and inefficient --
+        # not sure how to make it better.
+        # 1. Clone tree
+        Tree = self.clone(depth=2)
+        # 2. Prune tree with labels
+        Tree.prune_taxa_with_labels(non_interesting_ids)
+        # 3. Get newick string
+        tree = Tree.as_string(schema="newick")
+        # 4. Construct a new homologset
+        self._homologset.subset(ids)
+        # 5. Add the trees to homologetset.
+        self._homologset.tree = tree
+        self._homologset.Tree = Tree
+
+        return self._homologset
+
 
     def _tip_metadata(self, attributes=("accession", "organism", "alignedlen")):
         """

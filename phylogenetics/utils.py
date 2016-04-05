@@ -12,9 +12,13 @@ def run_subprocess(base, *args, **kwargs):
     # Add positional arguments
     for a in args:
         f.append(a)
+    
     # Add keyword arguments
     for kw in kwargs:
-        f.append("-" + kw)
+        if len(kw) > 1:
+            f.append("--"+kw)
+        else:
+            f.append("-" + kw)
         f.append(kwargs[kw])
 
     # Run msaprobs using args.
