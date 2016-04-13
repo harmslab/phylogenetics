@@ -1,6 +1,15 @@
 import dendropy
+import copy
+
+from phylogenetics.homologs import HomologSet
 
 class Ancestor:
+
+    def __init__(self, Tree, data):
+
+        ## Quality control name!
+        self._Tree = Tree
+        self._data = data
 
     @property
     def posteriors(self):
@@ -11,6 +20,24 @@ class Ancestor:
         return self._mlsequence
 
 
+class AncestorSet(object):
+
+    def __init__(self, Tree, Ancestors=None):
+        """ Object that holds a set of ancestor object. """
+
+        self._Tree = Tree
+
+        if Ancestors is not None:
+            for a in Ancestors:
+                self.add(a)
+
+    def add(self, Ancestor):
+        """ Add Ancestor to set. """
+        setattr(self, Ancestors.name, Ancestors)
+
+    def rm(self, Ancestor):
+        """ Remove the Ancestor from a set. """
+        delattr(self, Ancestor.name)
 
 class Tree(dendropy.datamodel.treemodel.Tree):
     """
@@ -19,7 +46,7 @@ class Tree(dendropy.datamodel.treemodel.Tree):
     """
 
     @classmethod
-    def get_from_homologset(cls, homologset):
+    def get_from_homologset(cls, homologset, attributes=("accession")):
         """
             Get from src.
         """
@@ -30,9 +57,9 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         instance._homologset = homologset
 
         # Add metadata to tree homologs and nodes
-        instance._tip_metadata()
-        instance._node_metadata()
-        instance._edge_metadata()
+        instance.add_tip_metadata(attributes)
+        instance.add_node_metadata()
+        instance.add_edge_metadata()
 
         # Return instance
         return instance
@@ -68,21 +95,21 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         # Prune subtree
         self.prune_subtree(node)
 
-    def subtree(self, ancestor):
+    def subtree(self, node_name):
         """ Get a subtree. """
         # Find the node with the given label
-        node = self.find_node(lambda n: n.annotations.get_value("name")==ancestor)
+        node = self.find_node(lambda n: n.annotations.get_value("name")==node_name)
 
         if node is None:
             raise Exception(""" No ancestor with the given name. """)
 
         # Get list of child homologs for this node
-        homologs = node.leaf_nodes()
+        tips = node.leaf_nodes()
 
         # Read their ids
-        ids = [h.taxon.label for h in homologs]
+        ids = [h.taxon.label for h in tips]
 
-        non_interesting_ids = self.homologs.id_list
+        non_interesting_ids = self._homologset.id_list
 
         # Remove interesting ids
         for id in ids:
@@ -91,21 +118,21 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         # Sadly, this logic is a little confusing and inefficient --
         # not sure how to make it better.
         # 1. Clone tree
-        Tree = self.clone(depth=2)
+        Tree = copy.deepcopy(self)
         # 2. Prune tree with labels
         Tree.prune_taxa_with_labels(non_interesting_ids)
         # 3. Get newick string
         tree = Tree.as_string(schema="newick")
         # 4. Construct a new homologset
-        self._homologset.subset(ids)
+        homologset = self._homologset.subset(ids)
         # 5. Add the trees to homologetset.
-        self._homologset.tree = tree
-        self._homologset.Tree = Tree
+        homologset.tree = tree
+        homologset.Tree = Tree
 
-        return self._homologset
+        return homologset
 
 
-    def _tip_metadata(self, attributes=("accession", "organism", "alignedlen")):
+    def add_tip_metadata(self, attributes):
         """
             Set the metadata of the tips of the tree.
         """
@@ -123,7 +150,7 @@ class Tree(dendropy.datamodel.treemodel.Tree):
                 pass
 
 
-    def _node_metadata(self):
+    def add_node_metadata(self):
         """
             Get metadata for internal nodes
         """
@@ -137,8 +164,11 @@ class Tree(dendropy.datamodel.treemodel.Tree):
             if nodes[i].taxon is None:
                 # Add taxon object
                 nodes[i].annotations.add_new("name","Anc" + str(i))
+            else:
+                # Initialize annotations
+                nodes[i].annotations.add_new("name","Tip" + str(i))
 
-    def _edge_metadata(self):
+    def add_edge_metadata(self):
         """
             Set the metadata of the edges
         """
@@ -168,34 +198,3 @@ def add_tree_to_homologset(homologset, newick):
     """
     homologset.Tree = Tree.get_from_homologset(homologset)
     return homologset
-
-
-def ancestral_labels(dendrotree):
-    """
-        Labels the ancestral nodes with 'Anc##'.
-
-        Does this by looking for nodes with no taxa. Not the most
-        intelligent way to do this yet.
-
-        Arguments:
-        ---------
-        dendrotree: dendropy.datamodel.treemodel
-            Dendropy Tree object
-
-        Returns:
-        -------
-        dendrotree:
-            Tree with new taxon labels.
-    """
-    # Get the nodess
-    nodes = dendrotree.nodes()
-
-    # Iterate through nodes and look for nodes with node labels
-    for i in range(len(nodes)):
-
-        # If the node taxon is None, then create Taxon object
-        if nodes[i].taxon is None:
-            # Add taxon object
-            nodes[i].annotations.add_new("ancestor_label","Anc" + str(i))
-
-    return dendrotree
