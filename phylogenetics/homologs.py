@@ -4,6 +4,8 @@ import json
 import pickle
 from phylogenetics.names import switch
 
+from phylogenetics.dataio.write import Write, WriteSet
+
 # ---------------------------------------------------
 # Things that you often do with HomologSets
 # ---------------------------------------------------
@@ -121,15 +123,25 @@ class Homolog(object):
         self.id = unique_id
         self.latest_align = ""
 
+        # Attach Write-ing object
+        self.Write = Write(self)
+
+        self.__tags = {}
         # Set user specified attributes
         for key, value in kwargs.items():
             # Protect from overwriting Python native attributes
             if key == "def":
-                setattr(self, "defline", value)
+                self.__tags["defline"] = value
             elif key == "id":
-                setattr(self, "gid", value)
+                self.__tags["defline"] = value
             else:
-                setattr(self, key, value)
+                self.__tags[key] = value
+
+
+    @property
+    def __tags__(self):
+        """ """
+        return self.__tags
 
     @property
     def seqlen(self):
@@ -146,103 +158,15 @@ class Homolog(object):
         for key,value in kwargs.items():
             setattr(self, key, value)
 
-    # -----------------------------------
-    # Output formats
-    # -----------------------------------
-
-    def fasta(self, tags=None, aligned=False):
-        """ Return fasta formatted string with named tags (in order given).
-
-            If no tags are given, prints id with sequence.
-        """
-        f = ">"
-        if tags is not None:
-            # Remove sequence if its an elements
-            if "sequence" in tags:
-                tags.remove("sequence")
-            f += "|".join([str(getattr(self, t)) for t in tags])
-        else:
-            f += self.id
-
-        # New line with full sequence string (aligned if told to)
-        if aligned:
-            f += "\n" + self.latest_align +"\n"
-        else:
-            f += "\n" + self.sequence +"\n"
-
-        return f
-
-    def phylip(self, tags=None, **kwargs):
-        """ Return a PhyML formatted string to write to file.
-
-            Only allowed when Homolog has alignment attribute
-        """
-        # Check that an alignment attribute exists in homolog.
-        if hasattr(self, "latest_align") is False:
-            raise Exception("Homolog must have an alignment attribute to write phylip.")
-
-        # Use specified alignment key
-        if tags is not None:
-            alignment = getattr(self, tags)
-        else:
-            alignment = self.latest_align
-
-        f = "%s\n%s\n" % (self.id, alignment)
-        return f
-
-    def json(self, **kwargs):
-        """ Return json formatted string. """
-        return json.dumps(self.__dict__)
-
-    def pickle(self, **kwargs):
-        """ Returns pickle string. """
-        return pickle.dumps(self)
-
-    def csv(self, tags=None, header=True, delimiter=",", **kwargs):
-        """ write csv string. """
-        # Get all attributes if tags are not specified
-        if tags is None:
-            tags = list(vars(self).keys())
-
-        # Add header is specified
-        if header:
-            f = delimiter.join(tags)
-        else:
-            f = ""
-
-        # Try to print tag. If it doesnt exist, then leave blank
-        vals = list()
-        for t in tags:
-            try:
-                vals.append(str(getattr(self,t)))
-            except:
-                vals.append("")
-        f += delimiter.join(vals) + "\n"
-
-        return f
-
-    def write(self, filename, format="fasta", tags=None, aligned=False):
-        """ Write to file with given format.
-
-            Default is fasta.
-        """
-        # Different writing formats that are possible
-        write_format = {"fasta":"w",
-                        "pickle": "wb",
-                        "json":"w",
-                        "phylip":"w"}
-
-        format_func = getattr(self, format)
-        f = open(filename, write_format[format])
-        f.write(format_func(tags=tags, aligned=aligned))
-        f.close()
-
 
 class HomologSet(object):
 
     def __init__(self, homolog_set=[]):
         """ Construct a set of homolog objects. """
         self._homologs = homolog_set
+
+        # Attach Write-ing object
+        self.Write = WriteSet(self)
 
     @property
     def homologs(self):
@@ -362,7 +286,7 @@ class HomologSet(object):
     def find_homolog(self, id):
         """ Returns the metadata dictionary of homolog with id. """
         mapping = self.get_map("id")
-        return mapping[id].__dict__
+        return mapping[id].__tags__
 
     def print_homolog(self, id, keys=None):
         """ Print the metadata dictionary of homolog with id. """
@@ -376,79 +300,3 @@ class HomologSet(object):
         print(id + ":\n" + "-----------\n")
         for key in keys:
             print(key+" : " + str(homolog_dict[key]) + "\n")
-
-    # -----------------------------------
-    # Output formats
-    # -----------------------------------
-
-    def fasta(self, tags=None, aligned=False):
-        """ Return string in fasta format for the set."""
-        f = ""
-        for h in self._homologs:
-            f += h.fasta(tags, aligned=aligned)
-        return f
-
-    def phylip(self, tags=None, **kwargs):
-        """ Return string of sequences in phylip format. """
-
-        # Get the latest align if other alignment isn't specified
-        if tags is None:
-            tags = "latest_align"
-
-        f = ""
-        for h in self.homologs:
-            f += h.phylip(tags)
-
-        n_homologs = len(self.homologs)
-        n_col = len(getattr(self.homologs[0], tags))
-
-        out = "%i  %i\n\n%s\n" % (n_homologs,n_col,f)
-        return out
-
-    def json(self, **kwargs):
-        """ Return json string of homolog set."""
-        obj = list()
-        for h in self._homologs:
-            obj.append(h.__dict__)
-        return json.dumps(obj)
-
-    def pickle(self, **kwargs):
-        """ Return pickle string of homolog set. """
-        return pickle.dumps(self)
-
-    def csv(self, tags=None, delimiter=",", **kwargs):
-        """ Return csv string. """
-        # If tags is not specified, get all tags.
-        if tags is None:
-            tags = list(self.homologs[0].__dict__.keys())
-
-        f = delimiter.join(tags)
-        f += "\n"
-        for h in self._homologs:
-            f += h.csv(tags=tags, header=False, delimiter=delimiter)
-        return f
-
-    def newick(self, tags, **kwargs):
-        """ Write a tree to file. """
-        old_name = "id"
-        new_names = tags
-        tree = switch(self, "id", new_names, format="newick")
-        return tree
-
-    def write(self, filename, format="fasta", tags=None, aligned=False):
-        """ Write to file with given format.
-
-            Default is fasta.
-        """
-        # Different writing formats that are possible
-        write_format = {"fasta":"w",
-                        "pickle": "wb",
-                        "json":"w",
-                        "phylip":"w",
-                        "csv": "w",
-                        "newick": "w"}
-
-        format_func = getattr(self, format)
-        f = open(filename, write_format[format])
-        f.write(format_func(tags=tags, aligned=aligned))
-        f.close()

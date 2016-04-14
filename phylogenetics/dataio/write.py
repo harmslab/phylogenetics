@@ -5,39 +5,42 @@ import pickle
 
 from functools import wraps
 
+def _write(function):
+    """ Decorator for determining whether to write to file or print to terminal."""
+
+    #@wraps # functools for ridding ourselves of closure for pickling
+    def wrapper(self, fname=None, *args, **kwargs):
+        """ """
+        # Create a string of whatever datatype
+        string = function(self, *args, **kwargs)
+
+        # If a filename is not given, return string.
+        if fname is None:
+            return string
+
+        # Write to a file
+        else:
+            try:
+                # Try to write a straight string.
+                with open(fname, "w") as f:
+                    f.write(string)
+            except:
+                # IF writing string failed, try writing bytes.
+                with open(fname, "wb") as f:
+                    f.write(string)
+
+            return string
+
+    return wrapper
+
+
 class Write(object):
 
     def __init__(self, Homolog):
         """ """
         self._homolog = Homolog
 
-    @staticmethod
-    def _write(function):
-        """ Decorator for determining whether to write to file or print to terminal."""
-
-        @wrap # functools for ridding ourselves of closure for pickling
-        def wrapper(fname=None, *args, **kwargs):
-            """ Wrapper method. """
-            # Create a string of whatever datatype
-            string = function(*wargs, **kwargs)
-
-            # If a filename is not given, return string.
-            if fname is None:
-                return string
-
-            # Write to a file
-            else:
-                try:
-                    # Try to write a straight string.
-                    with open(fname, "w") as f:
-                        f.write(string)
-                except:
-                    # IF writing string failed, try writing bytes.
-                    with open(fname, "wb") as f:
-                        f.write(string)
-
-
-    @self._write
+    @_write
     def fasta(self, tags=None, aligned=False):
         """ Return fasta formatted string with named tags (in order given).
 
@@ -60,7 +63,7 @@ class Write(object):
 
         return f
 
-    @self._write
+    @_write
     def phylip(self, tags=None, **kwargs):
         """ Return a PhyML formatted string to write to file.
 
@@ -80,19 +83,19 @@ class Write(object):
         return f
 
 
-    @self._write
+    @_write
     def json(self, **kwargs):
         """ Return json formatted string. """
-        return json.dumps(self._homolog.__dict__)
+        return json.dumps(self._homolog.__tags__)
 
 
-    @self._write
+    @_write
     def pickle(self, **kwargs):
         """ Returns pickle string. """
         return pickle.dumps(self._homolog)
 
 
-    @self._write
+    @_write
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
         """ write csv string. """
         # Get all attributes if tags are not specified
@@ -118,46 +121,21 @@ class Write(object):
 
 
 
-def WriteSet(object):
+class WriteSet(object):
 
     def __init__(self, HomologSet):
         """ Object for writing out metadata held in a HomologSet. """
         self._homologset = HomologSet
 
-    @staticmethod
-    def _write(function):
-        """ Decorator for determining whether to write to file or print to terminal."""
-
-        @wrap # functools for ridding ourselves of closure for pickling
-        def wrapper(fname=None, *args, **kwargs):
-            """ Wrapper method. """
-            # Create a string of whatever datatype
-            string = function(*wargs, **kwargs)
-
-            # If a filename is not given, return string.
-            if fname is None:
-                return string
-
-            # Write to a file
-            else:
-                try:
-                    # Try to write a straight string.
-                    with open(fname, "w") as f:
-                        f.write(string)
-                except:
-                    # IF writing string failed, try writing bytes.
-                    with open(fname, "wb") as f:
-                        f.write(string)
-
-    @self._write
+    @_write
     def fasta(self, tags=None, aligned=False):
         """ Return string in fasta format for the set."""
         f = ""
         for h in self._homologset._homologs:
-            f += h.fasta(tags, aligned=aligned)
+            f += h.Write.fasta(tags, aligned=aligned)
         return f
 
-    @self._write
+    @_write
     def phylip(self, tags=None, **kwargs):
         """ Return string of sequences in phylip format. """
 
@@ -166,45 +144,45 @@ def WriteSet(object):
             tags = "latest_align"
 
         f = ""
-        for h in self.homologs:
-            f += h.phylip(tags)
+        for h in self._homologset.homologs:
+            f += h.Write.phylip(tags)
 
-        n_homologs = len(self.homologs)
-        n_col = len(getattr(self.homologs[0], tags))
+        n_homologs = len(self._homologset.homologs)
+        n_col = len(getattr(self._homologset.homologs[0], tags))
 
         out = "%i  %i\n\n%s\n" % (n_homologs,n_col,f)
         return out
 
-    @self._write
+    @_write
     def json(self, **kwargs):
         """ Return json string of homolog set."""
         obj = list()
-        for h in self._homologs:
-            obj.append(h.__dict__)
+        for h in self._homologset._homologs:
+            obj.append(h.__tags__)
         return json.dumps(obj)
 
-    @self._write
+    @_write
     def pickle(self, **kwargs):
         """ Return pickle string of homolog set. """
-        return pickle.dumps(self)
+        return pickle.dumps(self._homologset)
 
-    @self._write
+    @_write
     def csv(self, tags=None, delimiter=",", **kwargs):
         """ Return csv string. """
         # If tags is not specified, get all tags.
         if tags is None:
-            tags = list(self.homologs[0].__dict__.keys())
+            tags = list(self._homologset.homologs[0].__tags__.keys())
 
         f = delimiter.join(tags)
         f += "\n"
-        for h in self._homologs:
-            f += h.csv(tags=tags, header=False, delimiter=delimiter)
+        for h in self._homologset._homologs:
+            f += h.Write.csv(tags=tags, header=False, delimiter=delimiter)
         return f
 
-    @self._write
+    @_write
     def newick(self, tags, **kwargs):
         """ Write a tree to file. """
         old_name = "id"
         new_names = tags
-        tree = switch(self, "id", new_names, format="newick")
+        tree = switch(self._homologset, "id", new_names, format="newick")
         return tree
