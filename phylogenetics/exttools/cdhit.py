@@ -3,7 +3,7 @@ import subprocess
 
 from phylogenetics.homologs import rank_homologs
 
-def run_cdhit(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
+def run(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
              keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
              "unnamed", "possible", "predicted", "unknown", "uncharacterized",
              "mutant", "isoform")):

@@ -112,36 +112,43 @@ def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","
 class Homolog(object):
 
     def __init__(self, unique_id, **kwargs):
-        """ Create a single Homolog object.
+        """ Inialize a Homolog Object.
 
-            Args:
-            ----
+            The `Homolog` object provides a data-structure for sequence metadata
+            in a phylogenetics project.
+
+
+            Arguments:
+            ---------
             unique_id: str
                 ID number for homolog, unique from any set.
+
+            kwargs become tags/
         """
+        # Initialize all attributes
+        self._attrs = {}
+
         # Must set a unique ID and sequence
-        self.id = unique_id
-        self.latest_align = ""
+        self.addattr("id", unique_id)
+        self.addattr("latest_align", "")
 
-        # Attach Write-ing object
-        self.Write = Write(self)
-
-        self.__tags = {}
         # Set user specified attributes
         for key, value in kwargs.items():
             # Protect from overwriting Python native attributes
             if key == "def":
-                self.__tags["defline"] = value
+                self.addattr("defline",value)
             elif key == "id":
-                self.__tags["defline"] = value
+                self.attattr("gid", value)
             else:
-                self.__tags[key] = value
+                self.addattr(key, value)
 
+        # Attach Write-ing object
+        self.write = Write(self)
 
     @property
-    def __tags__(self):
+    def attrs(self):
         """ """
-        return self.__tags
+        return self._attrs
 
     @property
     def seqlen(self):
@@ -153,20 +160,49 @@ class Homolog(object):
         """ Get the length of the aligned sequence. """
         return len(self.latest_align) - self.latest_align.count('-')
 
-    def add_attributes(self, **kwargs):
+    def add_alignment(self, alignment):
+        """ Add an alignment to """
+        
+
+
+    def addattr(self, key, value):
         """ Add attributes to homolog object. """
-        for key,value in kwargs.items():
-            setattr(self, key, value)
+        # Set in attrs dict
+        self._attrs[key] = value
+
+        # Set the object attribute as well
+        setattr(self, key, value)
+
+    def rmattr(self, attr):
+        """ remove an attribute from Homologs. """
+        # Remove from _attrs dict
+        del self._attrs[attr]
+
+        # Remove from object
+        delattr(self, attr)
 
 
 class HomologSet(object):
 
-    def __init__(self, homolog_set=[]):
-        """ Construct a set of homolog objects. """
-        self._homologs = homolog_set
+    def __init__(self, homologs=[]):
+        """ Initialize a HomologSet object.
+
+            A HomologSet object provides a data-structure for metadata from a set
+            of sequences for a phylogenetics project.
+
+        """
+        self._homologs = {}
+        self.add(homologs)
 
         # Attach Write-ing object
-        self.Write = WriteSet(self)
+        self.write = WriteSet(self)
+
+    @classmethod
+    def load(cls, fname):
+        """ Read a HomologSet. """
+        with open(fname, "rb") as f:
+            homologset = pickle.load(f)
+        return homologset
 
     @property
     def homologs(self):
@@ -174,7 +210,7 @@ class HomologSet(object):
         return self._homologs
 
     @property
-    def id_list(self):
+    def list_ids(self):
         """ Return ID list. """
         return [h.id for h in self._homologs]
 
@@ -216,9 +252,9 @@ class HomologSet(object):
         for id in ids:
             homologs.append(mapping[id])
 
-        return HomologSet(homologs)
+        return HomologSet(homologs=homologs)
 
-    def renumber_homologs(self):
+    def renumber(self):
         """ Renumber the ID numbers for homologs in the set, starting at
             0 to len(homologs).
         """
@@ -227,26 +263,27 @@ class HomologSet(object):
             unique_id = "XX%08d" % i
             self._homologs[i].id = unique_id
 
-    def add_homologs(self, homologs):
+    def add(self, homologs):
         """ Append a list of homolog objects to the set.
 
             NOTE: does not renumber the homolog set. this must be called
             manually.
         """
-
         # If a single homolog is given, format it into a list
         # for loop below.
         if isinstance(homologs,list) == False:
             homologs = [homologs]
 
-        # Append each homolog to list if it's a homolog instance.
-        for i in range(len(homologs)):
-            if isinstance(homologs[i], Homolog):
-                self._homologs.append(homologs[i])
-            else:
-                raise Exception("homolog must be an instance of Homolog class.")
+        # Set homolog as attribute of the HomologSet object
+        for h in homologs:
+            setattr(self, h.id, h)
 
-    def rm_homologs(self, ids):
+        # Add homolog to homologs
+        for h in homologs:
+            self._homologs[h.id] = h
+
+
+    def rm(self, ids):
         """ Remove a list of homologs from set of homologs.
 
             NOTE: this does not renumber the homolog set. must be done manually.
@@ -258,45 +295,9 @@ class HomologSet(object):
         if isinstance(ids,list) == False:
             ids = [ids]
 
-        # Get id map
-        homolog_dict = self.get_map("id")
-
-        # Remove these homologs from system
         for id in ids:
-            del homolog_dict[id]
+            # Remove from homologs dict
+            del self._homologs[id]
 
-        self._homologs = list(homolog_dict.values())
-
-
-    def subset_homologs(self, ids):
-        """ Returns a new Homologs object from subset of this homolog object. """
-        if isinstance(ids,list) == False:
-            ids = [ids]
-
-        # Get id map
-        homolog_dict = self.get_map("id")
-
-        # Remove these homologs from system
-        subset = list()
-        for id in ids:
-            subset.append(homolog_dict[id])
-
-        return HomologSet(homolog_set=subset)
-
-    def find_homolog(self, id):
-        """ Returns the metadata dictionary of homolog with id. """
-        mapping = self.get_map("id")
-        return mapping[id].__tags__
-
-    def print_homolog(self, id, keys=None):
-        """ Print the metadata dictionary of homolog with id. """
-
-        # Homolog dictionary
-        homolog_dict = self.find_homolog(id)
-        if keys is None:
-            keys = list(homolog_dict.keys())
-
-        # Print in table
-        print(id + ":\n" + "-----------\n")
-        for key in keys:
-            print(key+" : " + str(homolog_dict[key]) + "\n")
+            # Remove Homolog attribute from object
+            delattr(self, id)

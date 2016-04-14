@@ -5,7 +5,7 @@ import subprocess
 
 from phylogenetics.utils import read_fasta, run_subprocess
 
-def run_phyml(homolog_set, outfile_prefix, dtype="aa", tree_file=True, rm_tmp=True, *args, **kwargs):
+def run(homolog_set, outfile_prefix, dtype="aa", tree_file=True, rm_tmp=True, *args, **kwargs):
     """ Construct a maximum likelihood tree using PhyML.
 
 		__Arguments__:

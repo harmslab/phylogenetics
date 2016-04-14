@@ -6,7 +6,7 @@ import subprocess
 # Local imports
 from phylogenetics.utils import read_fasta
 
-def run_msaprobs(homolog_set, tmp_file_suffix="alignment", rm_tmp=True):
+def run(homolog_set, tmp_file_suffix="alignment", rm_tmp=True):
     """ Use MSAProbs to run a multiple sequence alignment on a set of homolog objects.
 
         Args:
