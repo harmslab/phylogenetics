@@ -2,13 +2,10 @@
 
 class Alignment(object):
 
-    def __init__(self, homologset):
+    def __init__(self, HomologSet):
+        """ Object for maintaining alignment data for a HomologSet Object.
         """
-        """
-        self._homologset
-
-    def _alignment(self, n):
-        self._homologset
+        self._HomologSet = HomologSet
 
     @property
     def latest(self, fname=None):
@@ -30,6 +27,6 @@ class Alignment(object):
         """ """
         pass
 
-    def update(self, alignments):
-        """ """
+    def update(self, alignment="latest_align"):
+        """ Update an alignment with new set of sequences. """
         pass

@@ -161,11 +161,6 @@ class Homolog(object):
         """ Get the length of the aligned sequence. """
         return len(self.latest_align) - self.latest_align.count('-')
 
-    def add_alignment(self, alignment):
-        """ Add an alignment to """
-
-
-
     def addattr(self, key, value):
         """ Add attributes to homolog object. """
         # Set in attrs dict
@@ -302,3 +297,13 @@ class HomologSet(object):
 
             # Remove Homolog attribute from object
             delattr(self, id)
+
+
+    def align(self):
+        pass
+
+    def tree(self):
+        pass
+
+    def reconstruct(self):
+        pass

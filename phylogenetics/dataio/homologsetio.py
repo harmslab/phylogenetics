@@ -3,7 +3,7 @@ import json
 import pickle
 
 from .base import write_to_file, read_from_file
-from . import fasta
+from .formats import fasta
 
 class Write(object):
 
@@ -18,26 +18,6 @@ class Write(object):
         for id, homolog in self._homologset.homologs.items():
             f += homolog.write.fasta(tags, aligned=aligned)
         return f
-
-    @write_to_file
-    def phylip(self, alignment_index=0, **kwargs):
-        """ Return string of sequences in phylip format. """
-
-        # Get the latest align if other alignment isn't specified
-        if alignment_index is 0:
-            alignment = "latest_align"
-        else:
-            alignment = "alignment" + str(alignment_index)
-
-        f = ""
-        for id, homolog in self._homologset.homologs.items():
-            f += homolog.write.phylip(alignment_index=alignment_index)
-
-        n_homologs = len(self._homologset.homologs)
-        n_col = len(getattr(list(self._homologset.homologs.values())[0], alignment_index))
-
-        out = "%i  %i\n\n%s\n" % (n_homologs,n_col,f)
-        return out
 
     @write_to_file
     def json(self, **kwargs):

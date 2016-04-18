@@ -1,7 +1,7 @@
 # Module for input/output of Homolog Object
 
 from .base import read_from_file, write_to_file
-from phylogenetics.dataio import fasta
+from .formats import fasta, csv
 
 class Write(object):
 
@@ -26,6 +26,8 @@ class Write(object):
 
         return sequence_data
 
+    def_
+
     @write_to_file
     def fasta(self, tags=("id",), aligned=False):
         """ Return fasta formatted string with named tags (in order given).
@@ -33,28 +35,8 @@ class Write(object):
             If no tags are given, prints id with sequence.
         """
         sequence_data = self._homolog_to_sequence_data()
-        fasta.write()
-        return f
-
-    @write_to_file
-    def phylip(self, alignment_index=None, **kwargs):
-        """ Return a PhyML formatted string to write to file.
-
-            Only allowed when Homolog has alignment attribute
-        """
-        # Check that an alignment attribute exists in homolog.
-        if hasattr(self._homolog, "latest_align") is False:
-            raise Exception("Homolog must have an alignment attribute to write phylip.")
-
-        # Use specified alignment key
-        if tags is not None:
-            alignment = getattr(self._homolog, tags)
-        else:
-            alignment = self._homolog.latest_align
-
-        f = "%s\n%s\n" % (self._homolog.id, alignment)
-        return f
-
+        output = fasta.write(sequence_data)
+        return output
 
     @write_to_file
     def json(self, **kwargs):
@@ -66,7 +48,6 @@ class Write(object):
     def pickle(self, **kwargs):
         """ Returns pickle string. """
         return pickle.dumps(self._homolog)
-
 
     @write_to_file
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
@@ -125,6 +106,12 @@ class Read(object):
 
         return self._Homolog
 
+    def _sequence_metadata_to_homolog(self, sequence_metadata):
+        """ Convert a sequence metadata datatype to a homolog object. """
+        for key, value in sequence_metadata.items():
+            self._Homolog.addattr(key, value)
+        return self._Homolog
+
     @read_from_file
     def fasta(self, data, tags=None):
         """ Read a fasta string.
@@ -147,8 +134,4 @@ class Read(object):
 
     @read_from_file
     def json(self, data):
-        pass
-
-    @read_from_file
-    def phylip(self, data):
         pass
