@@ -8,9 +8,7 @@ class Alignment(object):
         self._homologset
 
     def _alignment(self, n):
-
-        self._homologset.write()
-
+        self._homologset
 
     @property
     def latest(self, fname=None):
@@ -35,6 +33,3 @@ class Alignment(object):
     def update(self, alignments):
         """ """
         pass
-
-
-    def

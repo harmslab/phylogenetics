@@ -4,7 +4,8 @@ import json
 import pickle
 from phylogenetics.names import switch
 
-from phylogenetics.dataio.write import Write, WriteSet
+import phylogenetics.dataio.homologio as homologio
+import phylogenetics.dataio.homologsetio as homologsetio
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -143,7 +144,7 @@ class Homolog(object):
                 self.addattr(key, value)
 
         # Attach Write-ing object
-        self.write = Write(self)
+        self.write = homolog.Write(self)
 
     @property
     def attrs(self):
@@ -162,7 +163,7 @@ class Homolog(object):
 
     def add_alignment(self, alignment):
         """ Add an alignment to """
-        
+
 
 
     def addattr(self, key, value):
@@ -195,7 +196,7 @@ class HomologSet(object):
         self.add(homologs)
 
         # Attach Write-ing object
-        self.write = WriteSet(self)
+        self.write = homologsetio.Write(self)
 
     @classmethod
     def load(cls, fname):
