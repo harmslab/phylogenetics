@@ -15,11 +15,11 @@ def read_from_file(function):
         else:
             try:
                 # Try to write a straight string.
-                with open(fname, "w") as f:
+                with open(fname, "r") as f:
                     data = f.read()
             except:
                 # IF writing string failed, try writing bytes.
-                with open(fname, "wb") as f:
+                with open(fname, "rb") as f:
                     data = f.read()
 
         # Create a string of whatever datatype
@@ -53,6 +53,6 @@ def write_to_file(function):
                 # IF writing string failed, try writing bytes.
                 with open(fname, "wb") as f:
                     f.write(string)
-            return string
+            #return string
 
     return wrapper

@@ -140,7 +140,7 @@ class Tree(dendropy.datamodel.treemodel.Tree):
         for a in attributes:
             # If the attribute doesn't exist, skip it
             try:
-                mapping = self._homologset.get_map("id", a)
+                mapping = self._homologset.map("id", a)
 
                 # Add that attribute to tree's taxon metadata
                 for taxon in self.taxon_namespace:

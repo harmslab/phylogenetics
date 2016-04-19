@@ -10,23 +10,37 @@ class Write(object):
         self._Homolog = Homolog
 
     def _homolog_to_sequence_data(self, tags=("id",)):
-        """ Write homolog set as sequence data to be written to file.
+        """ Write Homolog as sequence_data datatype.
 
             Arguments:
             ---------
             sequence_data
+
+
+            Output Format:
+            -------------
+
         """
         # Built a tuple of tags
         tag_data = tuple()
         for t in tags:
-            tag_data += (self.Homolog.get_attr(t),)
+            tag_data += (getattr(self._Homolog, t),)
 
         # Built tuple pair of tags to sequence
-        sequence_data = (tag_data, Homolog.sequence)
+        sequence_data = (tag_data, self._Homolog.sequence)
 
         return sequence_data
 
-    def_
+    def _homolog_to_sequence_metadata(self, tags=None):
+        """ Write Homolog to sequence_metadata datatype. """
+        sequence_metadata = []
+        if tags is None:
+            sequence_metadata.append(self._Homolog.attrs)
+        else:
+            metadata = dict([(t, getattr(self._Homolog, t)) for t in tags])
+            sequence_metadata.append(metadata)
+        return sequence_metadata
+
 
     @write_to_file
     def fasta(self, tags=("id",), aligned=False):
@@ -79,7 +93,7 @@ class Read(object):
         """ Object for reading and writing HomologSets. """
         self._Homolog = Homolog
 
-    def _sequence_data_to_homolog(self, sequence_data):
+    def _sequence_data_to_homolog(self, sequence_data, tags=None):
         """ Method to take transform sequence data-structure from reading methods
             to a Homolog.
         """

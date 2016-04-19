@@ -1,11 +1,20 @@
 # API for working with Homolog sets in a phylogenetics project
 
-import json
-import pickle
+import os
+
 from phylogenetics.names import switch
 
 import phylogenetics.dataio.homologio as homologio
 import phylogenetics.dataio.homologsetio as homologsetio
+
+from phylogenetics.alignment import Alignment
+
+
+from phylogenetics.exttools import (cdhit,
+                                msaprobs,
+                                phyml)
+
+#from phylogenetics.tree import Tree
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -131,7 +140,6 @@ class Homolog(object):
 
         # Must set a unique ID and sequence
         self.addattr("id", unique_id)
-        self.addattr("latest_align", "")
 
         # Set user specified attributes
         for key, value in kwargs.items():
@@ -144,7 +152,8 @@ class Homolog(object):
                 self.addattr(key, value)
 
         # Attach Write-ing object
-        self.write = homolog.Write(self)
+        self.Write = homologio.Write(self)
+        self.Read = homologio.Read(self)
 
     @property
     def attrs(self):
@@ -156,10 +165,27 @@ class Homolog(object):
         """ Get the length of sequence """
         return len(self.sequence)
 
-    @property
-    def alignedlen(self):
-        """ Get the length of the aligned sequence. """
-        return len(self.latest_align) - self.latest_align.count('-')
+    def add_alignment(self, alignment):
+        """ Add alignment to homolog """
+        # Check if this is the first alignment
+        if hasattr(self, "latest_align") is False:
+            # If first alignment, add new attribute to homolog.
+            self.addattr("latest_align", alignment)
+
+        # Else move old alignment to new attribute and update latest alignment.
+        else:
+            # Look for latest alignment
+            counter = 0
+            attr = "align0"
+            while hasattr(self, attr) is True:
+                attr = "align%d" % counter
+                counter += 1
+
+            # move old alignment to new attribute.
+            self.addattr(attr, self.latest_align)
+
+            # add new alignment to latest_align attribute
+            self.latest_align = alignment
 
     def addattr(self, key, value):
         """ Add attributes to homolog object. """
@@ -191,7 +217,8 @@ class HomologSet(object):
         self.add(homologs)
 
         # Attach Write-ing object
-        self.write = homologsetio.Write(self)
+        self.Write = homologsetio.Write(self)
+        self.Read = homologsetio.Read(self)
 
     @classmethod
     def load(cls, fname):
@@ -210,7 +237,7 @@ class HomologSet(object):
         """ Return ID list. """
         return [h.id for h in self._homologs]
 
-    def get_map(self, attr1, attr2=None):
+    def map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR
             if no second attribute is give, map attr1 to whole homolog.
 
@@ -222,7 +249,7 @@ class HomologSet(object):
         # If no second attribute is give, mapping is between first attribute
         # and the homolog object
         if attr2 is None:
-            for h in self._homologs:
+            for id, h in self._homologs.items():
                 m[getattr(h, attr1)] = h
 
         # else, mapping from one attribute to another
@@ -230,19 +257,19 @@ class HomologSet(object):
 
             # If attr2 is a list, return a list in mapping
             if isinstance(attr2,list):
-                for h in self._homologs:
+                for id, h in self._homologs.items():
                     m[getattr(h, attr1)] = [getattr(h, a) for a in attr2]
 
             # Else just return a single attr.
             else:
-                for h in self._homologs:
+                for id, h in self._homologs.items():
                     m[getattr(h, attr1)] = getattr(h, attr2)
 
         return m
 
     def subset(self, ids):
         """ Get a subset of the homologs from an ID list. """
-        mapping = self.get_map("id")
+        mapping = self.HomologSetmap("id")
 
         homologs = []
         for id in ids:
@@ -298,12 +325,38 @@ class HomologSet(object):
             # Remove Homolog attribute from object
             delattr(self, id)
 
+    def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
+        """ Multiple sequence alignment of the HomologSet.
 
-    def align(self):
-        pass
+            Currently, only option is to use MSAProbs.
+        """
+        # Write out alignment file
+        self.Write.fasta(fname="alignment.fasta")
+
+        # Run the alignment with MSAProbs
+        output_fname = msaprobs.run(fasta_fname="alignment", rm_tmp=rm_tmp)
+
+        # Attach an alignment object to HomologSet
+        self.Alignment = Alignment(self)
+
+        # Read alignment from output fasta and manage with Alignment object
+        self.Alignment.Read.fasta(fname=output_fname)
+
+        # Let us know when finished
+        if quiet is False:
+            print("Alignment finished.")
+
+        # Remove fasta file.
+        if rm_tmp:
+            os.remove("%s.fasta" % output_fname)
 
     def tree(self):
-        pass
+        """ Compute the maximum likelihood phylogenetic tree from
+            aligned dataset.
+
+        """
+        
+
 
     def reconstruct(self):
         pass

@@ -1,9 +1,9 @@
 import os, shlex, string
 import subprocess
 
-from phylogenetics.homologs import rank_homologs
+#from phylogenetics.homologs import rank_homologs
 
-def run(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
+def run(HomologSet,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
              keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
              "unnamed", "possible", "predicted", "unknown", "uncharacterized",
              "mutant", "isoform")):
@@ -18,16 +18,16 @@ def run(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, 
     # homolog_list.
 
     # Don't do anything for empty list
-    if len(homolog_set.homologs) == 0:
+    if len(HomologSet.homologs) == 0:
         print("Warning: empty list passed to cdhit!  Ignoring.")
-        return homolog_set
+        return HomologSet
 
     # Ranks homologs.
-    rank_homologs(homolog_set, accession=accession, positive=positive, negative=negative)
+    #rank_homologs(HomologSet, accession=accession, positive=positive, negative=negative)
 
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.fasta" % tmp_file_suffix
-    homolog_set.write(fname, format="fasta", tags=["id"])
+    HomologSet.Write(fname=fname, format="fasta", tags=["id"])
 
     # Build cdhit command
     # If the threshold is below 0.4, must use psi-cd-hit command. This requires
@@ -62,7 +62,7 @@ def run(homolog_set,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, 
     f = open("%s_cdhit.clstr" % tmp_file_suffix,'r')
 
     # Get a id-to-rank mapping dict from homolog_set
-    id_rank = homolog_set.get_map("id", "rank")
+    id_rank = HomologSet.map("id", "rank")
 
     subset_ids = []
     in_cluster = []

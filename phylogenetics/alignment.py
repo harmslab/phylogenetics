@@ -1,16 +1,20 @@
 ## Tools for managing alignments
 
+from phylogenetics.dataio.alignmentio import Write, Read
+
 class Alignment(object):
 
     def __init__(self, HomologSet):
         """ Object for maintaining alignment data for a HomologSet Object.
         """
         self._HomologSet = HomologSet
+        self.Write = Write(self)
+        self.Read = Read(self)
 
     @property
-    def latest(self, fname=None):
+    def latest(self):
         """ Return the latest alignment. """
-        self._homologset.write.fasta(fname=fname, aligned=True)
+        self.Write.fasta()
 
     @property
     def n_taxa(self):

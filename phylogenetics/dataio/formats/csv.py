@@ -59,7 +59,7 @@ def write(sequence_metadata, tags=None, delimiter=","):
     data = delimiter.join(tags) + "\n"
 
     for s in sequence_metadata:
-        string = ",".join[s[t] for t in tags] + "\n"
+        string = ",".join([s[t] for t in tags]) + "\n"
         data += string
 
     return data.strip()
