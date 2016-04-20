@@ -1,49 +1,57 @@
 # Multiple sequence alignment using MSAProbs
 
-import os, shlex, shutil
+import os, shlex, shutil, re
 import subprocess
 
 from phylogenetics.utils import read_fasta, run_subprocess
 
-def run(homolog_set, outfile_prefix, dtype="aa", tree_file=True, rm_tmp=True, *args, **kwargs):
-    """ Construct a maximum likelihood tree using PhyML.
+def parse_phyml_stats(data_string):
+    """ Parse phyml output. """
+    # Must match two patterns: `. key : value` and `- key : value`
+    option_regex = re.compile("\.[\w\t ]+:.+\n|\- [\w\t ]+:.+\n")
 
-		__Arguments__:
+    # Iterate through pairs
+    data = {}
+    for pair in option_regex.findall(data_string):
+        # Split the pair
+        parse = pair.split(":")
+        # Each pair has either a `. ` or `- ` in front. Remove those
+        key = parse[0][2:]
+        # Remove whitespace
+        value = parse[1].lstrip().rstrip()
+        # add to data dict
+        data[key] = value
 
-		`homolog_set` : Homologset Object with homologs to construct tree.
+    return data
 
-        output_prefix : str
-            The filename for output from this method, without any extension.
+def run(fname_prefix, dtype="aa", rm_tmp=True, *args, **kwargs):
+    """ Simple wrapper for running PhyML within Python.
 
     """
     # Create a temporary fasta file from homologs as input to PhyML.
-    fname = "%s.phy" % outfile_prefix
-    homolog_set.write(fname, format="phylip")
-
     # Build command array and run it.
-    stuff = ("-i", fname, "-d", dtype)
+    phy_fname = "%s.phy" % fname_prefix
+    stats_fname = "%s.phy_phyml_stats.txt" # Default name for output from phyml
+    tree_fname = "%s.phy_phyml_tree.txt" # default name for output tree file
+
+    # Construct arguments for subprocess
+    stuff = ("-i", phy_name, "-d", dtype)
     stuff += args
     run_subprocess("phyml", *stuff, **kwargs)
 
     # Read the tree file and add to homologset.
-    f = open("%s.phy_phyml_tree.txt" % outfile_prefix, "r")
-    tree = f.read()
-    f.close()
+    with open(tree_fname, "r") as f:
+        tree = f.read()
 
-    # Add the tree as an attribute to homolog set.
-    homolog_set.tree = tree
+    # Read the stats file.
+    with open(stats_fname, "r") as f:
+        stats_string = f.read()
 
-    # Remove phyml output if tree_file = False
-    if tree_file:
-        # Change extension of tree to nwk
-        shutil.move("%s.phy_phyml_tree.txt" % outfile_prefix,
-                    "%s.nwk" % outfile_prefix)
-    else:
-        os.remove("%s.phy_phyml_tree.txt" % outfile_prefix)
-        os.remove("%s.phy_phyml_stats.txt" % outfile_prefix)
+    # Return stats.
+    stats = parse_phyl_stats(stats_string)
 
     # Remove alignment files if you want to just keep homologs.
     if rm_tmp:
-        os.remove("%s.phy" % outfile_prefix)
+        os.remove(phy_fname)
 
-    return homolog_set
+    return tree, stats

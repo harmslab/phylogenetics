@@ -9,16 +9,16 @@ class Write(object):
         """ Object for reading and writing alignment data from a homolog set. """
         self._Alignment = Alignment
 
-    def _align_to_sequence_data(self, alignment="latest_align", tags=("id")):
+    def _align_to_sequence_data(self, alignment="latest_align", tags=("id",)):
         """ Convert alignment data to sequence data type """
         sequence_data = list()
         for id, homolog in self._Alignment._HomologSet.homologs.items():
             # Construct tag list
             labels = tuple()
             for t in tags:
-                labels += getattr(homolog, t)
+                labels += (getattr(homolog, t),)
             # Append tuple pair to list
-            sequence_data.append(labels, getattr(homolog, alignment))
+            sequence_data.append((labels, getattr(homolog, alignment)))
 
         return sequence_data
 
@@ -66,7 +66,7 @@ class Write(object):
         return sequence_metadata
 
     @write_to_file
-    def fasta(self, alignment="latest_align", tags=("id")):
+    def fasta(self, alignment="latest_align", tags=("id",)):
         """ Write alignment to fasta format. """
         data = self._align_to_sequence_data(alignment=alignment, tags=tags)
         output = fasta.write(data)

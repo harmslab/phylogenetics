@@ -14,23 +14,19 @@ class Alignment(object):
     @property
     def latest(self):
         """ Return the latest alignment. """
-        self.Write.fasta()
+        return self.Write.fasta()
 
     @property
     def n_taxa(self):
         """ Return the number of sequences in alignment """
-        return len(self.sequences)
+        return len(self._HomologSet.homologs)
 
     @property
     def length(self):
         """ Return the length of the alignment. """
-        return len(self.sequences[0])
+        return len(list(self._HomologSet.homologs.values())[0].latest_align)
 
-    @property
-    def without_gaps(self):
-        """ """
-        pass
-
-    def update(self, alignment="latest_align"):
+    def update(self, alignment_file):
         """ Update an alignment with new set of sequences. """
-        pass
+        # Write out alignment file
+        self.Read.fasta(fname=alignment_file)

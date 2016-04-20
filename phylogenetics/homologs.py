@@ -306,6 +306,13 @@ class HomologSet(object):
             self._homologs[h.id] = h
 
 
+    def cluster(self):
+        """ Reduce any redundancy in the HomologSet using CDHIT.
+
+        """
+        pass
+
+
     def rm(self, ids):
         """ Remove a list of homologs from set of homologs.
 
@@ -350,12 +357,21 @@ class HomologSet(object):
         if rm_tmp:
             os.remove("%s.fasta" % output_fname)
 
-    def tree(self):
+    def tree(self, **kwargs):
         """ Compute the maximum likelihood phylogenetic tree from
             aligned dataset.
 
         """
-        
+        # Write the HomologSet out as a phylip.
+        self.Write.Alignment.phylip(fname="ml-tree.phy")
+
+        # Run phyml and parse results.
+        tree, stats = phyml.run("ml-tree.phy", kwargs)
+
+        # Add Tree object to HomologSet
+        self.Tree = Tree(self)
+        self.Tree.Read.newick()
+        self.Tree.stats = stats
 
 
     def reconstruct(self):
