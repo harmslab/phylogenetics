@@ -1,20 +1,21 @@
 # API for working with Homolog sets in a phylogenetics project
-
 import os
 
-from phylogenetics.names import switch
-
+# Reading and Writing modules to HomologSet
 import phylogenetics.dataio.homologio as homologio
 import phylogenetics.dataio.homologsetio as homologsetio
 
+# Subobjects bound to HomologSet
 from phylogenetics.alignment import Alignment
+from phylogenetics.tree import Tree
+from phylogenetics.reconstruction import Reconstructed
 
-
+# Import external tools
 from phylogenetics.exttools import (cdhit,
                                 msaprobs,
-                                phyml)
+                                phyml,
+                                paml)
 
-#from phylogenetics.tree import Tree
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -320,8 +321,7 @@ class HomologSet(object):
 
             Also, note that this changes the homolog set in place!
         """
-        # If a single id is given, format it into a list
-        # for loop below.
+        # If a single id is given, format it into a list for loop below.
         if isinstance(ids,list) == False:
             ids = [ids]
 
@@ -363,16 +363,17 @@ class HomologSet(object):
 
         """
         # Write the HomologSet out as a phylip.
-        self.Write.Alignment.phylip(fname="ml-tree.phy")
+        self.Alignment.Write.phylip(fname="ml-tree.phy")
 
         # Run phyml and parse results.
-        tree, stats = phyml.run("ml-tree.phy", kwargs)
+        tree, stats = phyml.run("ml-tree", **kwargs)
 
         # Add Tree object to HomologSet
-        self.Tree = Tree(self)
-        self.Tree.Read.newick()
-        self.Tree.stats = stats
+        self.Tree = Tree(self, tree, stats=stats)
 
 
     def reconstruct(self):
-        pass
+        """ Resurrect Ancestors on Tree.
+        """
+        self.Reconstructed = Reconstructed(self)
+        self.Reconstructed.run()

@@ -34,7 +34,7 @@ class Write(object):
         """
         phylip_data = []
         for id, homolog in self._Alignment._HomologSet.homologs.items():
-            phylip_data.append(id, getattr(homolog, alignment))
+            phylip_data.append((id, getattr(homolog, alignment)))
         return phylip_data
 
     def _align_to_metadata(self, tags=None):

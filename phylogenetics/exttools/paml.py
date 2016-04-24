@@ -4,6 +4,17 @@ import os
 import re
 
 from phylogenetics.utils import run_subprocess
+from dendropy import Tree
+
+def get_tree_from_paml_rst():
+    # Get tree from rst file
+    regex = re.compile("tree with node labels for Rod Page's TreeView\n.+\n")
+    match = regex.search(output)
+    tree = match.group().split("\n")[1]
+
+    # Read from string
+    stuff = Tree.get_from_string(src=tree, schema="newick")
+
 
 class PAMLOutput(object):
 
@@ -37,7 +48,6 @@ class PAMLOutput(object):
                 #
                 residues = [(r[0], r[2:6]) for r in residue_data]
 
-            node[]
 
 
 

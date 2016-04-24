@@ -1,54 +1,29 @@
-
-from phylogenetics.paml.paml import CodeML
-
-
-
-class Ancestor:
-
-    def __init__(self, Tree, data):
-
-        ## Quality control name!
-        self._Tree = Tree
-        self._data = data
-
-    @property
-    def posteriors(self):
-        return self._posteriors
-
-    @property
-    def mlsequence(self):
-        return self._mlsequence
-
-
-class AncestorSet(object):
-
-    def __init__(self, Tree, Ancestors=None):
-        """ Object that holds a set of ancestor object. """
-
-        self._Tree = Tree
-
-        if Ancestors is not None:
-            for a in Ancestors:
-                self.add(a)
-
-    def add(self, Ancestor):
-        """ Add Ancestor to set. """
-        setattr(self, Ancestors.name, Ancestors)
-
-    def rm(self, Ancestor):
-        """ Remove the Ancestor from a set. """
-        delattr(self, Ancestor.name)
-
+from phylogenetics.exttools.paml import CodeML
 
 class Reconstructed(object):
 
-    def ___init__(self, Tree, paml_job=CodeML):
+    def __init__(self, HomologSet):
         """
         """
-        self.Tree = Tree
-        self.paml_job = CodeML()
+        self._HomologSet = HomologSet
+        self._Tree = self._HomologSet.Tree
 
-    def run(self):
+    def run(self, paml_job=CodeML):
         """ Run a reconstruction
         """
-        pass
+        seqfile = "asr-alignment.fasta"
+        outfile = "asr-output"
+        treefile = "asr-tree.nwk"
+
+        self._Tree._DendroPyTree.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
+        self._HomologSet.Alignment.Write.fasta(fname=seqfile)
+
+        self.paml_job = paml_job(
+            seqfile=seqfile,
+            outfile=outfile,
+            treefile=treefile,
+            fix_alpha=True,
+            alpha=self._Tree.stats["Gamma shape parameter"],
+        )
+
+        self.paml_job.run()

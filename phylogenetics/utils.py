@@ -4,6 +4,22 @@
 
 import re, pickle, subprocess
 
+def overwrite_warning(func):
+    """ Wrapper function to prevent overwriting modules in HomologSet objects. """
+
+    def wrapper(force=False, *args, **kwargs):
+        """ """
+        if force is True:
+            return func(*args, **kwargs)
+        else:
+            raise Warning(
+            """You are about to overwrite an object in your HomologSet object. \
+            If you're okay with overwriting, call this method\ again with the \
+            keyword `force=True`."""
+            )
+
+    return wrapper
+
 def run_subprocess(base, *args, **kwargs):
     """ Run a subprocess command with given set of args and kwargs.
         and handle errors.
@@ -12,7 +28,7 @@ def run_subprocess(base, *args, **kwargs):
     # Add positional arguments
     for a in args:
         f.append(a)
-    
+
     # Add keyword arguments
     for kw in kwargs:
         if len(kw) > 1:
@@ -21,7 +37,7 @@ def run_subprocess(base, *args, **kwargs):
             f.append("-" + kw)
         f.append(kwargs[kw])
 
-    # Run msaprobs using args.
+    # Run command using args.
     run = subprocess.Popen(f,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     #Answer Y to continue after initial pass. May need more quality check for this.
     try:

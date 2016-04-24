@@ -31,11 +31,11 @@ def run(fname_prefix, dtype="aa", rm_tmp=True, *args, **kwargs):
     # Create a temporary fasta file from homologs as input to PhyML.
     # Build command array and run it.
     phy_fname = "%s.phy" % fname_prefix
-    stats_fname = "%s.phy_phyml_stats.txt" # Default name for output from phyml
-    tree_fname = "%s.phy_phyml_tree.txt" # default name for output tree file
+    stats_fname = "%s.phy_phyml_stats.txt" % fname_prefix # Default name for output from phyml
+    tree_fname = "%s.phy_phyml_tree.txt" % fname_prefix # default name for output tree file
 
     # Construct arguments for subprocess
-    stuff = ("-i", phy_name, "-d", dtype)
+    stuff = ("-i", phy_fname, "-d", dtype)
     stuff += args
     run_subprocess("phyml", *stuff, **kwargs)
 
@@ -48,7 +48,7 @@ def run(fname_prefix, dtype="aa", rm_tmp=True, *args, **kwargs):
         stats_string = f.read()
 
     # Return stats.
-    stats = parse_phyl_stats(stats_string)
+    stats = parse_phyml_stats(stats_string)
 
     # Remove alignment files if you want to just keep homologs.
     if rm_tmp:
