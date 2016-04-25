@@ -55,20 +55,20 @@ class Write(object):
     @write_to_file
     def json(self, **kwargs):
         """ Return json formatted string. """
-        return json.dumps(self._homolog.attrs)
+        return json.dumps(self._Homolog.attrs)
 
 
     @write_to_file
     def pickle(self, **kwargs):
         """ Returns pickle string. """
-        return pickle.dumps(self._homolog)
+        return pickle.dumps(self._Homolog)
 
     @write_to_file
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
         """ write csv string. """
         # Get all attributes if tags are not specified
         if tags is None:
-            tags = list(vars(self._homolog).keys())
+            tags = list(vars(self._Homolog).keys())
 
         # Add header is specified
         if header:
@@ -80,7 +80,7 @@ class Write(object):
         vals = list()
         for t in tags:
             try:
-                vals.append(str(getattr(self._homolog,t)))
+                vals.append(str(getattr(self._Homolog,t)))
             except:
                 vals.append("")
         f += delimiter.join(vals) + "\n"

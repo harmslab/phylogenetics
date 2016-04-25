@@ -9,7 +9,7 @@ def read(data):
     """
     # Match tree with ancestor labels
     regex = re.compile("tree with node labels for Rod Page's TreeView\n.+\n")
-    match = regex.search(output)
+    match = regex.search(data)
     tree = match.group().split("\n")[1]
 
     # Initialize the ancestor_data dictionary

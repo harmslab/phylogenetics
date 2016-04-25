@@ -6,52 +6,6 @@ import re
 from phylogenetics.utils import run_subprocess
 from dendropy import Tree
 
-def get_tree_from_paml_rst():
-    # Get tree from rst file
-    regex = re.compile("tree with node labels for Rod Page's TreeView\n.+\n")
-    match = regex.search(output)
-    tree = match.group().split("\n")[1]
-
-    # Read from string
-    stuff = Tree.get_from_string(src=tree, schema="newick")
-
-
-class PAMLOutput(object):
-
-    def __init__(self, fname):
-
-        self.fname = fname
-
-        with open(fname, "r") as f:
-            self.data = f.read()
-
-        self.nodes = []
-
-    def _parses_output(self):
-
-        """ Paml returns the following format for posterior probabilities at a given ancestral state.
-
-            A(0.000) B(0.000) C(0.000) D(0.000)
-        """
-        # Define all regular expressions
-        node_regex = re.compile("Prob distribution at node [0-9]+, by site")
-        site_regex = re.compile("[0-9]+[\s]+[0-9]+[\s]+[A-Z]+[:]([\s]+[A-Z][(][0-9].[0-9]{3}[)])+")
-        residue_regex = re.compile("[A-Z][(][0-9].[0-9]{3}[])]")
-
-        nodes = []
-        for node in node_regex.finditer(data):
-
-            for site in site_regex.finditer(node):
-
-                residue_data = residue_regex.findall(site)
-
-                #
-                residues = [(r[0], r[2:6]) for r in residue_data]
-
-
-
-
-
 class ControlFile:
 
     def __init__(self, **kwargs):

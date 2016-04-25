@@ -46,7 +46,8 @@ class Tree(object):
             # Get the labels
             label = node.label
             node.score = label
-            node.label = i
+            # Define a unique label for internal label
+            node.label = "ZZ%08d" % i
             i += 1
 
     def subtree(self, node_name):

@@ -8,7 +8,7 @@ import phylogenetics.dataio.homologsetio as homologsetio
 # Subobjects bound to HomologSet
 from phylogenetics.alignment import Alignment
 from phylogenetics.tree import Tree
-from phylogenetics.reconstruction import Reconstructed
+from phylogenetics.ancestors import Ancestor, AncestorSet
 
 # Import external tools
 from phylogenetics.exttools import (cdhit,
@@ -375,5 +375,34 @@ class HomologSet(object):
     def reconstruct(self):
         """ Resurrect Ancestors on Tree.
         """
-        self.Reconstructed = Reconstructed(self)
-        self.Reconstructed.run()
+        # Bind Ancestor Objects to each internal node.
+        ancestors = []
+        for node in self.Tree._DendroPyTree.internal_nodes():
+            id = node.label
+            ancestors.append( Ancestor(id, self.Tree))
+
+        # Bind an AncestorSet object to HomologSet
+        self.AncestorSet = AncestorSet(self.Tree, ancestors=ancestors)
+
+        seqfile = "asr-alignment.fasta"
+        outfile = "asr-output"
+        treefile = "asr-tree.nwk"
+
+        # Prepare input files for PAML
+        self.Tree._DendroPyTree.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
+        self.Alignment.Write.fasta(fname=seqfile)
+
+        # Construct a paml job
+        pamljob = paml.CodeML(
+            seqfile=seqfile,
+            outfile=outfile,
+            treefile=treefile,
+            fix_alpha=True,
+            alpha=self.Tree.stats["Gamma shape parameter"],
+        )
+
+        # Run the PAML job
+        pamljob.run()
+
+        # Read the paml output and bind data to tree
+        self.AncestorSet.Read.rst(fname="rst")

@@ -3,16 +3,21 @@ import subprocess
 
 #from phylogenetics.homologs import rank_homologs
 
-def run(HomologSet,redund_cutoff=0.99,tmp_file_suffix="oB_cdhit", word_size=5, cores=1,
-             keep_tmp=False, accession=(), positive=(), negative=("putative","hypothetical",
-             "unnamed", "possible", "predicted", "unknown", "uncharacterized",
-             "mutant", "isoform")):
+def run(HomologSet,
+    redund_cutoff=0.99,
+    tmp_file_suffix="oB_cdhit",
+    word_size=5,
+    cores=1,
+    keep_tmp=False,
+    accession=(),
+    positive=(),
+    negative=("putative","hypothetical", "unnamed", "possible", "predicted",
+                "unknown", "uncharacterized","mutant", "isoform")):
     """
-    Remove redundant homologs using cdhit.  After clustering with
-    the redundancy cutoff, take the member of each cluster with the lowest
-    rank.  Return the subset of homologlist.
+        Remove redundant homologs using cdhit.  After clustering with
+        the redundancy cutoff, take the member of each cluster with the lowest
+        rank.  Return the subset of homologlist.
     """
-
     # Write out the fasta file with a unique name for each sequence that goes
     # >0, >1...>N.  Those numbers point to the index of the sequence in
     # homolog_list.
