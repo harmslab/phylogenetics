@@ -35,8 +35,8 @@ def read(data):
         sequences.append((header, sequence))
 
     # If a list isn't necessary, just give me the sequence data
-    if len(sequences) == 1:
-        sequences = sequences[0]
+    #if len(sequences) == 1:
+    #    sequences = sequences[0]
 
     return sequences
 

@@ -3,30 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to phylogenetics documentation!
-=========================================
+Phylogenetics package
+=====================
 
-The `phylogenetics` package was designed for two purposes: 
+The `phylogenetics` package was designed for two purposes:
 
 1. Create a single, persistent python object for managing phylogenetic data
-2. Simple, one-stop python API for running through acomplete phylogenetic pipeline.
+2. Simple, one-stop python API for running through a complete phylogenetic pipeline.
+
+An annoying problem in phylogenetics (and bioinformatics in general) is constantly converting
+a set of sequence data to the many different file formats (i.e. fasta, phylip,
+xml, etc.). Phylogenetics tries to make this conversion simple and seamless. In most cases, it does this automatically
+and you shouldn't even know its writing this formats underneath the hood.
 
 
-1. Persistent Phylogenetics Python Object
-===========================================
-
-Let me introduce you to the `HomologSet` object. 
-
-
-
-2. Python API for phylogenetics pipeline
-===========================================
-
-This can analyze HomologSet objects in many ways. A few include BLASTing databases for homolog sequence data, constructing multiple sequence alignments between sequences, generating phylogenetic trees of sequence data, and reconstructing the ancestral sequences at nodes on trees. Basically, 
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
 
+   introduction
+   homolog
 
 
 Indices and tables
@@ -35,4 +33,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

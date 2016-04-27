@@ -3,7 +3,7 @@
 def read_from_file(function):
     """ Decorator to read data from a file.
     """
-    def wrapper(self, fname=None, data=None, *args, **kwargs):
+    def wrapper(self, data=None, fname=None, *args, **kwargs):
         """ """
         # If a filename is not given, return string.
         if fname is None:

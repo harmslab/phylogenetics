@@ -4,12 +4,39 @@ from .base import write_to_file, read_from_file
 from .formats import fasta, pickle, csv
 
 class Write(object):
+    """Object for writing out the metadata of a HomologSet object.
 
+    There are two basic output data-structures for the HomologSet.
+
+    1. Sequence data::
+
+        data = [
+            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
+            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
+            ...
+        ]
+
+    2. Sequence Metadata::
+
+        sequence_metadata = [
+            {
+                "species": "seq0",
+                "organism": "agasda",
+                "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
+            },
+            {
+                "species": "seq1",
+                "organism": "afher",
+                "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
+            },
+            ...
+        ]
+
+    """
     def __init__(self, HomologSet):
-        """ Object for writing out metadata held in a HomologSet. """
         self._HomologSet = HomologSet
 
-    def _homologset_to_sequence_data(self, tags=["id"]):
+    def _homologset_to_sequence_data(self, tags=("id",)):
         """ Convert alignment data to sequence data type """
         sequence_data = list()
         for id, homolog in self._HomologSet.homologs.items():
@@ -23,7 +50,7 @@ class Write(object):
 
         return sequence_data
 
-    def _homologset_to_metadata(self, tags=None):
+    def _homologset_to_metadata(self, tags=("id",)):
         """ Write alignment data to metadata format.
 
             Output Format:
@@ -66,14 +93,14 @@ class Write(object):
         return pickle.write(self)
 
     @write_to_file
-    def csv(self, tags=None, delimiter=","):
+    def csv(self, tags=("id",), delimiter=","):
         """ Return csv string. """
         sequence_metadata = self._homologset_to_metadata(tags=tags)
         output = csv.write(sequence_metadata, delimiter=delimiter)
         return output
 
     @write_to_file
-    def newick(self, tags, **kwargs):
+    def newick(self, tags=("id",), **kwargs):
         """ Write a tree to file. """
         old_name = "id"
         new_names = tags
@@ -82,9 +109,44 @@ class Write(object):
 
 
 class Read(object):
+    """Object bound to HomologSets for reading homolog set data.
 
+    There are two basic output data-structures for the HomologSet.
+
+    1. Sequence data::
+
+        data = [
+            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
+            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
+            ...
+        ]
+
+    2. Sequence Metadata::
+
+        sequence_metadata = [
+            {
+                "species": "seq0",
+                "organism": "agasda",
+                "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
+            },
+            {
+                "species": "seq1",
+                "organism": "afher",
+                "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
+            },
+            ...
+        ]
+
+    Parameters
+    ----------
+    HomologSet : phylogenetics.homolog.HomologSet object
+        HomologSet to which the reading object will be bound.
+
+    Examples
+    --------
+
+    """
     def __init__(self, HomologSet):
-        """ """
         self._HomologSet = HomologSet
 
     def _sequence_data_to_homologset(self, data, tags=("id",)):
@@ -123,6 +185,8 @@ class Read(object):
             for i in range(len(tags)):
                 homolog.addattr(tags[i], attributes[i])
 
+            homolog.addattr("sequence", sequence)
+
         return self._HomologSet
 
 
@@ -140,10 +204,10 @@ class Read(object):
         return self._HomologSet
 
     @read_from_file
-    def fasta(self, data):
+    def fasta(self, data, tags=("id",)):
         """ Add sequence data from fasta to HomologSet. """
         sequence_data = fasta.read(data)
-        self._sequence_data_to_homologset(sequence_data)
+        self._sequence_data_to_homologset(sequence_data, tags=tags)
         return self._HomologSet
 
     @read_from_file

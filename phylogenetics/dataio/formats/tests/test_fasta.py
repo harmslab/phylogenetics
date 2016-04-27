@@ -28,7 +28,7 @@ sequences2 = [
 data3 = """>XX00000003\nAGAEWGAHDSGAWSCDCADSGADAG\
 """
 
-sequences3 = (("XX00000003",), "AGAEWGAHDSGAWSCDCADSGADAG")
+sequences3 = [(("XX00000003",), "AGAEWGAHDSGAWSCDCADSGADAG")]
 
 def test_read():
     """ Test read """
