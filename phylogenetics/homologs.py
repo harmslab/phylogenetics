@@ -339,14 +339,6 @@ class HomologSet(object):
         for h in homologs:
             self._homologs[h.id] = h
 
-
-    def cluster(self):
-        """ Reduce any redundancy in the HomologSet using CDHIT.
-
-        """
-        pass
-
-
     def rm(self, ids):
         """ Remove a list of homologs from set of homologs.
 
@@ -364,6 +356,13 @@ class HomologSet(object):
 
             # Remove Homolog attribute from object
             delattr(self, id)
+
+
+    def cluster(self):
+        """ Reduce any redundancy in the HomologSet using CDHIT.
+
+        """
+        pass
 
     def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.
@@ -416,6 +415,7 @@ class HomologSet(object):
 
         # Bind an AncestorSet object to HomologSet
         self.AncestorSet = AncestorSet(self.Tree, ancestors=ancestors)
+        self.AncestorSet._nodes_to_ancestor()
 
         seqfile = "asr-alignment.fasta"
         outfile = "asr-output"

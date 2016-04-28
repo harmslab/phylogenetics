@@ -146,7 +146,7 @@ class CodeML(ControlFile):
         #getSE=0,
         RateAncestor=2,
         Small_Diff=1e-6,
-        cleandata=1,
+        cleandata=0,
         fix_blength=1,
         method=1
         ):
