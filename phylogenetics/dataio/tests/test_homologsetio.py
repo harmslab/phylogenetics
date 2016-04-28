@@ -5,7 +5,12 @@ from .base import RWTestCase
 from phylogenetics.homologs import Homolog
 
 class TestWrite(RWTestCase):
+    """Test the Write object of HomologSet object
 
+    Anytime a file is written in the test, make sure to add its path to
+    the `fnames` attribute of the test class!
+
+    """
     def test_fasta(self):
         """ Test fasta writing.
 
@@ -36,7 +41,12 @@ class TestWrite(RWTestCase):
 
 
 class TestRead(RWTestCase):
+    """Test the Read object of HomologSet object
 
+    Anytime a file is written in the test, make sure to add its path to
+    the `fnames` attribute of the test class!
+
+    """
     def test_fasta(self):
         """ read a fasta file. """
         fasta_string = """>XX00000001\nVVVVWWWMWMMMMMMMWMWWAVVVVV"""

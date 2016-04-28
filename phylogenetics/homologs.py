@@ -14,7 +14,10 @@ from phylogenetics.ancestors import Ancestor, AncestorSet
 from phylogenetics.exttools import (cdhit,
                                 msaprobs,
                                 phyml,
-                                paml)
+                                paml,
+                                entrez)
+
+from phylogenetics.dataio.formats import entrez_xml
 
 
 # ---------------------------------------------------
@@ -156,6 +159,11 @@ class Homolog(object):
         self.Write = homologio.Write(self)
         self.Read = homologio.Read(self)
 
+    @classmethod
+    def download(self, accession):
+        """ """
+
+
     @property
     def attrs(self):
         """ """
@@ -222,6 +230,29 @@ class HomologSet(object):
         self.Read = homologsetio.Read(self)
 
     @classmethod
+    def download(cls, accessions, email):
+        """ Download a HomologSet from Entrez
+        """
+        # Check that ids is a list
+        if type(accessions) != list:
+            raise Exception("""`ids` must be a list.""")
+
+        # Initialize the class
+        hs = cls()
+        # Use download method inside class
+        hs._download(accessions, email)
+        # overwrite this classmethod with non-classmethod
+        hs.download = hs._download
+        return hs
+
+    def _download(self, accessions, email):
+        """ Download HomologSet
+        """
+        # Download the full metadata for
+        data = entrez.download(accessions, email)
+        self.Read.entrez_xml(data)
+
+    @classmethod
     def load(cls, fname):
         """ Read a HomologSet. """
         with open(fname, "rb") as f:
@@ -236,7 +267,15 @@ class HomologSet(object):
     @property
     def list_ids(self):
         """ Return ID list. """
-        return [h.id for h in self._homologs]
+        return [hom.id for h, hom in self._homologs.items()]
+
+    @property
+    def max_id(self):
+        """ Return the max id. """
+        if len(self.list_ids) == 0:
+            return 0
+        else:
+            return max([int(id[2:]) for id in self.list_ids])
 
     def map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR

@@ -1,8 +1,5 @@
 import time
 
-# XML parser import
-from xml.etree import ElementTree as ET
-
 # import server exceptions
 try:
     from urllib.error import HTTPError  # for Python 3
@@ -12,26 +9,24 @@ except ImportError:
 # Use the biopython entrez api
 from Bio import Entrez
 
-
-from phylogenetics.utils import flatten_concatenated_XML
-
-
-def download(accession_list, email, out_file, db="protein",
-                      batch_download_size=50, write=False):
+def download(accession_list,
+    email,
+    db="protein",
+    batch_download_size=50):
     """
-    Download the Entrez sequences from a list of accessions.
+    Download the Entrez XML metadata from a list of accessions.
 
-    Arguments :
-    ---------
-    accession_list: list
+    Parameters
+    ----------
+    accession_list : list
         list of ncbi accesion numbers
-    out_file:
+    out_file :
         file in which to write output in fasta/xml format
-    db:
+    db :
         database to use for accession
-    batch_download_size:
+    batch_download_size :
         size of individual download packets
-    force:  True/False.
+    write :  True/False.
         Overwrite existing download file. If False, the program
         throws a notice that an old file is being used rather than re-
         downloading.
@@ -82,51 +77,4 @@ def download(accession_list, email, out_file, db="protein",
             fetch_handle.close()
             total_xml += data + "\n"
 
-
-    # Write to file is interested.
-    if write:
-        out_handle = open(out_file, "w")
-        out_handle.write(data)
-        out_handle.close()
-
-    # parse the xml and get sequence data as list
-    sequence_data = parse_entrez_xml(total_xml)
-
-    # Map accession list to their sequences
-    mapping = dict([(accession_list[i], sequence_data[i]["sequence"]) for i in range(len(accession_list))])
-
-    return mapping
-
-def parse_entrez_xml(xml_string):
-    """
-        Parse Blast's Fasta/XML formatted file, returning a list of each
-        sequence's data.
-
-        Args:
-        ----------
-        xml_string: str
-            Fasta/XML formatted string from Blast Output.
-
-        Returns:
-        -------
-        sequences: list of dicts
-            List of sequences data in their own lists.
-    """
-    # Fix screwed up XML because sequences downloaded and output concatenated
-    sequence_input = flatten_concatenated_XML(xml_string, "TSeqSet")
-
-    # Now we should have valid XML...
-    sequence_input = ET.XML(sequence_input)
-
-    # XML Tag prefix to strip
-    prefix = "TSeq_"
-
-    sequences = []
-    for i, sequence in enumerate(sequence_input):
-        # Rip out all properties of a sequence
-        properties = dict([(s.tag[len(prefix):],str(s.text).strip()) for s in sequence])
-
-        # Append to sequences.
-        sequences.append(properties)
-
-    return sequences
+    return total_xml

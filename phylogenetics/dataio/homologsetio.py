@@ -1,7 +1,7 @@
 # Module for input and output of HomologSet objects
-
+from phylogenetics import homologs
 from .base import write_to_file, read_from_file
-from .formats import fasta, pickle, csv
+from .formats import fasta, pickle, csv, entrez_xml
 
 class Write(object):
     """Object for writing out the metadata of a HomologSet object.
@@ -52,23 +52,6 @@ class Write(object):
 
     def _homologset_to_metadata(self, tags=("id",)):
         """ Write alignment data to metadata format.
-
-            Output Format:
-            -------------
-            sequence_metadata = [
-                {
-                    "species": "seq0",
-                    "organism": "agasda",
-                    "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
-                },
-                {
-                    "species": "seq1",
-                    "organism": "afher",
-                    "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
-                },
-                ...
-            ]
-
         """
         sequence_metadata = []
         if tags is None:
@@ -151,14 +134,6 @@ class Read(object):
 
     def _sequence_data_to_homologset(self, data, tags=("id",)):
         """ Add sequence_data to alignment
-
-            Input Format:
-            ------------
-            data = [
-                (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
-                (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
-                ...
-            ]
         """
         # Check for ids in alignment
         try:
@@ -178,14 +153,20 @@ class Read(object):
             if len(attributes) != len(tags):
                 raise Exception(""" Number of attributes do not match number of tags given. """)
 
-            # Get Homolog object
-            homolog = getattr(self._HomologSet, id)
+            # Update homologs that are already in the Set.
+            if hasattr(self._HomologSet, id):
+                # Get Homolog object
+                Homolog = getattr(self._HomologSet, id)
+            # otherwise, add a new Homolog object
+            else:
+                Homolog = homologs.Homolog(id)
+                self._HomologSet.add(Homolog)
 
             # Add updated attributes
             for i in range(len(tags)):
-                homolog.addattr(tags[i], attributes[i])
+                Homolog.addattr(tags[i], attributes[i])
 
-            homolog.addattr("sequence", sequence)
+            Homolog.addattr("sequence", sequence)
 
         return self._HomologSet
 
@@ -194,12 +175,19 @@ class Read(object):
         """ Add sequence_metadata to alignment.
         """
         for s in sequence_metadata:
-            # Get homolog with given ID
-            homolog = getattr(self._Homolog, id)
+            # Update homologs that are already in the Set.
+            if "id" in s:
+                # Get Homolog object
+                Homolog = getattr(self._HomologSet, id)
+            # otherwise, add a new Homolog object
+            else:
+                id = "XX%08d" % int(self._HomologSet.max_id + 1)
+                Homolog = homologs.Homolog(id)
+                self._HomologSet.add(Homolog)
 
             # Iterate over attributes in s and add to homolog.
             for key, value in s.items():
-                homolog.addattr(key, value)
+                Homolog.addattr(key, value)
 
         return self._HomologSet
 
@@ -214,5 +202,12 @@ class Read(object):
     def csv(self, data):
         """ Add csv data to HomologSet. """
         sequence_metadata = csv.read(data)
+        self._sequence_metadata_to_homologset(sequence_metadata)
+        return self._HomologSet
+
+    @read_from_file
+    def entrez_xml(self, data):
+        """ Add entrez xml output to homolog. """
+        sequence_metadata = entrez_xml.read(data)
         self._sequence_metadata_to_homologset(sequence_metadata)
         return self._HomologSet
