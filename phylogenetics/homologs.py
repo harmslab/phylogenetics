@@ -31,16 +31,6 @@ def unique_id(start, end=None):
         start = 0
     return ["XX%08d" % i for i in range(start, end+1)]
 
-def load_homologset(filename):
-    """ Load a homologset from pickle file.
-
-        Note: only need to give the filename.
-    """
-    f = open(filename, "rb")
-    homologset = pickle.load(f)
-    f.close()
-    return homologset
-
 def concat_homolog_sets(hs1, hs2, renumber=False):
     """ Concatenate two homolog set. If told, will renumber the `id` attributes
         in the merged set.
@@ -248,6 +238,10 @@ class HomologSet(object):
     def _download(self, accessions, email):
         """ Download HomologSet
         """
+        # Check that ids is a list
+        if type(accessions) != list:
+            raise Exception("""`ids` must be a list.""")
+
         # Download the full metadata for
         data = entrez.download(accessions, email)
         self.Read.entrez_xml(data)
@@ -394,7 +388,7 @@ class HomologSet(object):
 
         # Remove fasta file.
         if rm_tmp:
-            os.remove("%s.fasta" % output_fname)
+            os.remove(output_fname)
 
     def tree(self, **kwargs):
         """ Compute the maximum likelihood phylogenetic tree from
