@@ -28,7 +28,7 @@ def switch(homologset, current_name, new_names, format="newick"):
     tree = homologset.tree
 
     # Construct mapping for name replace.
-    mapping = homologset.get_map(current_name, new_names)
+    mapping = homologset.map(current_name, new_names)
 
     # If new_name was a list.
     if isinstance(new_names,list):

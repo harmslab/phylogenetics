@@ -4,43 +4,7 @@ import os
 import re
 
 from phylogenetics.utils import run_subprocess
-
-class PAMLOutput(object):
-
-    def __init__(self, fname):
-
-        self.fname = fname
-
-        with open(fname, "r") as f:
-            self.data = f.read()
-
-        self.nodes = []
-
-    def _parses_output(self):
-
-        """ Paml returns the following format for posterior probabilities at a given ancestral state.
-
-            A(0.000) B(0.000) C(0.000) D(0.000)
-        """
-        # Define all regular expressions
-        node_regex = re.compile("Prob distribution at node [0-9]+, by site")
-        site_regex = re.compile("[0-9]+[\s]+[0-9]+[\s]+[A-Z]+[:]([\s]+[A-Z][(][0-9].[0-9]{3}[)])+")
-        residue_regex = re.compile("[A-Z][(][0-9].[0-9]{3}[])]")
-
-        nodes = []
-        for node in node_regex.finditer(data):
-
-            for site in site_regex.finditer(node):
-
-                residue_data = residue_regex.findall(site)
-
-                #
-                residues = [(r[0], r[2:6]) for r in residue_data]
-
-            node[]
-
-
-
+from dendropy import Tree
 
 class ControlFile:
 
@@ -182,7 +146,7 @@ class CodeML(ControlFile):
         #getSE=0,
         RateAncestor=2,
         Small_Diff=1e-6,
-        cleandata=1,
+        cleandata=0,
         fix_blength=1,
         method=1
         ):
