@@ -219,6 +219,8 @@ class HomologSet(object):
         self.Write = homologsetio.Write(self)
         self.Read = homologsetio.Read(self)
 
+        setattr(self, "download", self._download)
+
     @classmethod
     def download(cls, accessions, email):
         """ Download a HomologSet from Entrez
@@ -301,15 +303,21 @@ class HomologSet(object):
 
         return m
 
-    def subset(self, ids):
-        """ Get a subset of the homologs from an ID list. """
-        mapping = self.HomologSetmap("id")
+    def subset(self, ids, inplace=True):
+        """Subset the HomologSet. By default, it reduces
+        the HomologSet size in place. If `inplace`=False,
+        subset HomologSet is returned as new_object
+        """
+        mapping = self.HomologSet.map("id")
 
-        homologs = []
-        for id in ids:
-            homologs.append(mapping[id])
+        if inplace:
+            self.rm(ids)
+        else:
+            homologs = []
+            for id in ids:
+                homologs.append(mapping[id])
 
-        return HomologSet(homologs=homologs)
+            return HomologSet(homologs=homologs)
 
     def renumber(self):
         """ Renumber the ID numbers for homologs in the set, starting at
@@ -358,11 +366,100 @@ class HomologSet(object):
             delattr(self, id)
 
 
-    def cluster(self):
+    def cluster(self,
+        redund_cutoff=0.99,
+        tmp_file_suffix="oB_cdhit",
+        word_size=5,
+        cores=1,
+        keep_tmp=False,
+        accession=(),
+        positive=(),
+        negative=("putative","hypothetical", "unnamed", "possible", "predicted",
+                    "unknown", "uncharacterized","mutant", "isoform"),
+        inplace=True
+        ):
         """ Reduce any redundancy in the HomologSet using CDHIT.
 
         """
-        pass
+        # Write out the fasta file with a unique name for each sequence that goes
+        # >0, >1...>N.  Those numbers point to the index of the sequence in
+        # homolog_list.
+
+        # Don't do anything for empty list
+        if len(self.homologs) == 0:
+            print("Warning: empty list passed to cdhit!  Ignoring.")
+            return self
+
+        # Ranks homologs.
+        rank_homologs(self, accession=accession, positive=positive, negative=negative)
+
+        # Create a temporary fasta file from homologs as input to CDHIT.
+        fname = "%s.fasta" % fname_prefix
+        self.Write(fname=fname, format="fasta", tags=["id"])
+
+        cdhit.run(fname_prefix,
+            redund_cutoff=redund_cutoff,
+            tmp_file_suffix=tmp_file_suffix,
+            word_size=word_size,
+            cores=cores,
+            keep_tmp=keep_tmp,
+            accession=accession,
+            positive=positive,
+            negative=negative
+        )
+
+        # Now parse the output of cdhit and grab members of clusters with the
+        # lowest rank
+        f = open("%s_cdhit.clstr" % fname_prefix,'r')
+
+        # Get a id-to-rank mapping dict from homolog_set
+        id_rank = self.map("id", "rank")
+
+        subset_ids = []
+        in_cluster = []
+        line = f.readline()
+        while line != "":
+
+            # If we are starting a new cluster
+            if line.startswith(">"):
+
+                # ... and this is not the first cluster
+                if in_cluster != []:
+
+                    # Take the member of in_cluster with the minimum rank
+                    ranks = [id_rank[homolog_id] for homolog_id in in_cluster]
+                    best_id = in_cluster[ranks.index(min(ranks))]
+                    subset_ids.append(best_id)
+
+                in_cluster = []
+
+            # If this is not a blank line, record the seq_id in in_cluster
+            elif line[0] in string.digits:
+                seq_id = line.split(">")[1][:10]
+                in_cluster.append(seq_id)
+
+            # Read the next line
+            line = f.readline()
+
+        # Grab the last cluster
+        ranks = [id_rank[homolog_id] for homolog_id in in_cluster]
+        best_id = in_cluster[ranks.index(min(ranks))]
+        subset_ids.append(best_id)
+        f.close()
+
+        # Delete temporary files
+        if not keep_tmp:
+            try:
+                os.remove("%s.fasta" % fname_prefix)
+                os.remove("%s_cdhit" % fname_prefix)
+                os.remove("%s_cdhit.clstr" % fname_prefix)
+                os.remove("%s_cdhit.bak.clstr" % fname_prefix)
+            except:
+                pass
+
+        # Subset the HomologSet with ids pulled from clusters.
+        self.subset(id, inplace=inplace)
+
 
     def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.

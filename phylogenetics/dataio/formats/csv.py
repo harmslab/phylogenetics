@@ -22,11 +22,11 @@ def read(data, delimiter=","):
     tags = header.split(delimiter)
 
     # Construct metadata for each sequence
-    sequence_meta = []
+    sequence_metadata = []
     for s in sequences:
         values = s.split(delimiter)
         metadata = dict([(tags[i], values[i]) for i in range(len(tags))])
-        sequence_meta.append(metadata)
+        sequence_metadata.append(metadata)
 
     return sequence_metadata
 

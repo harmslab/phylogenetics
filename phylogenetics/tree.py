@@ -86,9 +86,11 @@ class Tree(object):
 
         return homologset
 
-    def root(self):
+    def root(self, item):
+        """Reroot a tree on a given item.
         """
-        """
+        
+
 
     def prune(self, id):
         """ Prune Node in Tree object. Also removes Homolog from HomologSet.

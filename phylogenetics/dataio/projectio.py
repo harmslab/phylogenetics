@@ -64,6 +64,22 @@ class Read(object):
         self._Project.Alignment.Read.phylip(data, tags=tags)
 
     @read_from_file
+    def csv(self, data):
+        """Read csv file.
+        """
+        if hasattr(self._Project, "HomologSet") is False:
+            # Add a HomologSet to project
+            self._Project.add( HomologSet() )
+
+        self._Project.HomologSet.Read.csv(data)
+
+        # Check if an alignment is in the csv.
+        if hasattr(list(project.HomologSet.homologs.values())[0], "latest_align"):
+            # Add alignment to project
+            self._Project.add( Alignment( self._Project.HomologSet ) )
+
+    @read_from_file
     def rst(self, data):
         """Read PAML output form file.
         """
+        

@@ -178,7 +178,7 @@ class Read(object):
             # Update homologs that are already in the Set.
             if "id" in s:
                 # Get Homolog object
-                Homolog = getattr(self._HomologSet, id)
+                Homolog = getattr(self._HomologSet, s["id"])
             # otherwise, add a new Homolog object
             else:
                 id = "XX%08d" % int(self._HomologSet.max_id + 1)

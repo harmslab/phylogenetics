@@ -9,6 +9,8 @@ from phylogenetics.tree import Tree
 from phylogenetics.ancestors import Ancestor, AncestorSet
 from phylogenetics.reconstruction import Reconstruction
 
+from phylogenetics.dataio import projectio
+
 # imports for running external tools.
 from .exttools import (cdhit,
                         msaprobs,
@@ -18,12 +20,17 @@ from .exttools import (cdhit,
 
 class Project(object):
     """Container object for managing all data for a phylogenetics project.
+
+    Optional arguments can be passed into the Project class. These must be
+    phylogenetic objects from this package (i.e. HomologSet, Alignment, Tree,
+    Reconstruction, AncestorSet, etc.)
     """
-    def __init__(self, **kwargs):
-        """
-            Base Object for managing phylogenetic projects
-        """
-        pass
+    def __init__(self, *args):
+        # Bind Reading module to class
+        self.Read = projectio.Read(self)
+        # Add any objects that were given to Project
+        for a in args:
+            self.add(a)
 
     def add(self, item):
         """Add data to project.
@@ -33,7 +40,8 @@ class Project(object):
             HomologSet: self._add_HomologSet,
             Alignment: self._add_Alignment,
             Tree: self._add_Tree,
-            Reconstruction: self._add_Reconstruction
+            Reconstruction: self._add_Reconstruction,
+            AncestorSet: self._add_AncestorSet
         }
 
         # Find item type in set of possible items
@@ -42,16 +50,18 @@ class Project(object):
         # Add that item to project
         adding_method(item)
 
-    @classmethod
-    def load(self, fname):
-        """Load a phylogenetics project from file.
-        """
+    def download(self, ids, email):
+        """ Download a set of Homologs"""
+        hs = HomologSet()
+        self._add_HomologSet( hs )
+        self.HomologSet.download(ids, email)
 
     def _add_HomologSet(self, HomologSet):
         """Add HomologSet Set to PhylogeneticsProject object."""
         # Set the HomologSet object
         self.HomologSet = HomologSet
         # Expose the align method of this object to user
+        setattr(self, "cluster", self._cluster)
         setattr(self, "align", self._align)
 
     def _add_Alignment(self, Alignment):
@@ -75,6 +85,32 @@ class Project(object):
     def _add_AncestorSet(self, AncestorSet):
         """Add a AncestorSet object to PhylogeneticsProject object."""
         self.AncestorSet = AncestorSet
+
+    def _cluster(self,
+        redund_cutoff=0.99,
+        tmp_file_suffix="oB_cdhit",
+        word_size=5,
+        cores=1,
+        keep_tmp=False,
+        accession=(),
+        positive=(),
+        negative=("putative","hypothetical", "unnamed", "possible", "predicted",
+                    "unknown", "uncharacterized","mutant", "isoform"),
+        inplace=True
+        ):
+        """Remove redundant sequences from HomologSet.
+        """
+        self.HomologSet.cluster(
+            redund_cutoff=redund_cutoff,
+            tmp_file_suffix=tmp_file_suffix,
+            word_size=word_size,
+            cores=cores,
+            keep_tmp=keep_tmp,
+            accession=accession,
+            positive=positive,
+            negative=negative
+        )
+
 
     def _align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.
