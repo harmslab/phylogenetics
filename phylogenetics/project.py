@@ -1,7 +1,22 @@
 # In the future, this will be the top level object that contains all Subobjects
 # important for doing a phylogenetics project
+import os
 
-class PhylogeneticProject(object):
+# import objects to bind to Project class
+from phylogenetics.homologs import Homolog, HomologSet
+from phylogenetics.alignment import Alignment
+from phylogenetics.tree import Tree
+from phylogenetics.ancestors import Ancestor, AncestorSet
+from phylogenetics.reconstruction import Reconstruction
+
+# imports for running external tools.
+from .exttools import (cdhit,
+                        msaprobs,
+                        phyml,
+                        paml)
+
+
+class Project(object):
     """Container object for managing all data for a phylogenetics project.
     """
     def __init__(self, **kwargs):
@@ -13,19 +28,16 @@ class PhylogeneticProject(object):
     def add(self, item):
         """Add data to project.
         """
-        # Get type of item
-        item_type = type(item)
-
         # possible objects to add
         items = {
-            str(type(HomologSet)): self._add_HomologSet,
-            str(type(Alignment)): self._add_Alignment,
-            str(type(Tree)): self._add_Tree,
-            str(type(Reconstruction)): self._add_Reconstruction
+            HomologSet: self._add_HomologSet,
+            Alignment: self._add_Alignment,
+            Tree: self._add_Tree,
+            Reconstruction: self._add_Reconstruction
         }
 
         # Find item type in set of possible items
-        adding_method = items[item_type]
+        adding_method = items[item.__class__]
 
         # Add that item to project
         adding_method(item)
@@ -60,7 +72,6 @@ class PhylogeneticProject(object):
         """Add Reconstruction to PhylogeneticsProject object."""
         self.Reconstruction = Reconstruction
 
-
     def _add_AncestorSet(self, AncestorSet):
         """Add a AncestorSet object to PhylogeneticsProject object."""
         self.AncestorSet = AncestorSet
@@ -77,7 +88,7 @@ class PhylogeneticProject(object):
         output_fname = msaprobs.run(fasta_fname="alignment", rm_tmp=rm_tmp)
 
         # Attach an alignment object to HomologSet
-        self._add_Alignment(Alignment(self))
+        self._add_Alignment(Alignment(self.HomologSet))
 
         # Read alignment from output fasta and manage with Alignment object
         self.Alignment.Read.fasta(fname=output_fname)
@@ -102,43 +113,12 @@ class PhylogeneticProject(object):
         tree, stats = phyml.run("ml-tree", **kwargs)
 
         # Add Tree object to HomologSet
-        self._add_Tree = Tree(self, tree, stats=stats)
+        self._add_Tree(Tree(self.HomologSet, tree, stats=stats))
 
 
     def _reconstruct(self):
         """ Resurrect Ancestors on Tree.
         """
-        # Bind Ancestor Objects to each internal node.
-        ancestors = []
-        for node in self.Tree._DendroPyTree.internal_nodes():
-            id = node.label
-            ancestors.append( Ancestor(id, self.Tree))
-
-        # Bind an AncestorSet object to HomologSet
-        self.AncestorSet = AncestorSet(self.Tree, ancestors=ancestors)
-        self.AncestorSet._nodes_to_ancestor()
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         # Bind Ancestor Objects to each internal node.
         ancestors = []
         for node in self.Tree._DendroPyTree.internal_nodes():
@@ -158,7 +138,7 @@ class PhylogeneticProject(object):
         self.Alignment.Write.fasta(fname=seqfile)
 
         # Construct a paml job
-        pamljob = paml.CodeML(
+        paml_job = paml.CodeML(
             seqfile=seqfile,
             outfile=outfile,
             treefile=treefile,
@@ -166,8 +146,14 @@ class PhylogeneticProject(object):
             alpha=self.Tree.stats["Gamma shape parameter"],
         )
 
+        reconstruction = Reconstruction(self.Alignment, self.Tree, self.AncestorSet, paml_job)
+        self._add_Reconstruction( reconstruction )
+
         # Run the PAML job
-        pamljob.run()
+        self.Reconstruction.paml_job.run()
 
         # Read the paml output and bind data to tree
         self.AncestorSet.Read.rst(fname="rst")
+
+        # Infer gaps.
+        self.Reconstruction.infer_gaps()

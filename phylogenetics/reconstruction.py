@@ -23,7 +23,6 @@ class Reconstruction(object):
         when calculating the average posterior probability of the ancestor.
         """
         taxa = self._Tree._DendroPyTree.taxon_namespace
-        tree = self._Tree._DendroPyTree
 
         # Build a Sequence data matrix from Dendropy
         data = dendropy.ProteinCharacterMatrix.get(
@@ -32,11 +31,13 @@ class Reconstruction(object):
             taxon_namespace=taxa
         )
 
+        tree = self._Tree._DendroPyTree
+
         # Get the alphabet of Dendropy's ProteinCharacterMatrix
-        alphabet = [char.value for char in data.datatype_alphabet.states]
+        alphabet = data.state_alphabets[0].symbols
 
         # Construct a map object between sequence data and tree data.
-        taxon_state_sets_map = data.taxon_state_sets_map(gaps_as_missing=True)
+        taxon_state_sets_map = data.taxon_state_sets_map(gaps_as_missing=False)
 
         # Fitch algorithm to determine placement of gaps
         dendropy.model.parsimony.fitch_down_pass(tree.postorder_node_iter(),
@@ -56,5 +57,6 @@ class Reconstruction(object):
                 if len(site_list) == 1 and alphabet[site_list[0]] == "-":
                     gap_indices.append(i)
 
-            # Bind gap indices to Ancestpr
-            Ancestor._set_gaps(gap_indices)
+            # Bind gap indices to Ancestor
+            if gap_indices != []:
+                Ancestor._set_gaps(gap_indices)

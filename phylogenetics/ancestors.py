@@ -111,7 +111,7 @@ class AncestorSet(object):
     def add(self, Ancestor):
         """ Add Ancestor to set. """
         setattr(self, Ancestor.id, Ancestor)
-        self._ancestors[id] = Ancestor
+        self._ancestors[Ancestor.id] = Ancestor
 
     def rm(self, id):
         """ Remove the Ancestor from a set. """
