@@ -1,68 +1,129 @@
-# Python API and command-line for doing phylogenetics
+# Python API for doing phylogenetics
 
 Test out the API in notebooks -- click on the badge:
 
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Zsailer/phylogenetics)
 
-This is the master repository for the `phylogenetics` Python package. This package includes a lightweight, simple-to-use API for managing and processing phylogenetic data. Many of the modules included in this package originated from Dr. [Mike Harms'](https://github.com/harmsm) `phylo_tools` and have been converted to API's. Read the Wiki to learn more about the internal structure.
+This is the master repository for the `phylogenetics` Python package. This package offers an intuitive API for analyzing, creating, and reading/writing phylogenetic data via Python. The goal of this API is to make molecular phylogenetics broadly accessible without requiring all the technical/computational expertise currently needed.
 
-This package also contains a series of command-line tools that are installed globally and do many vanilla tasks common to phylogenetics projects. While I recommend using the API in an interactive environment, like IPython or Jupyter notebooks, it is sometimes faster to use these scripts. Note that there are example notebooks included in the `examples` folder.
+From a programming point-of-view, this API defines/standardizes a set of objects and data-structures for managing phylogenetic data. Perhaps the most frustrating aspect of doing phylogenetics (and most of bioinformatics) is converting your sequence data to various file formats used by the separate phylogenetic tools (ie. fasta, phylip, newick, nexus, etc.). One huge strength of this API is that it manages data I/O for you. It reads and writes formats seamlessly -- most of which you won't even notice as a user.
 
-The foundation of this API are the `Homolog` and `HomologSet` objects. These objects offer simple data-structures that manages the metadata for a set of sequences in a phylogenetics/reconstruction project. These objects are easily queried, updated, and saved into many formats (i.e. fasta, csv, phylip, pickle, and json).
+This package provides tools for:
 
-An metadata inside a homolog (__dict__ attribute) might look might look like this:
+1. Constructing and managing multiple sequence alignments (using MSAProbs).
+2. Constructing and analyzing maximum likelihood phylogenetic trees (using PhyML and DendroPy).
+3. Reconstructing ancestral sequences via ASR (via PAML).
+4. Reading and Writing to various file formats to standing Python objects.
+
+## The Basics
+
+The main entry-point to the API is the `Project` object, which acts as a container object for all pieces of a
+phylogenetics project. Below is an example of how to use the `Project` class.
 
 ```python
->>> print(homolog.__dict__)
+from phylogenetics.project import Project
 
-{
-    "id" : "XX00000000",
-    "species" : "S100A5",
-    "organism" : "human",
-    "length" : 180,
-    "sequence" : "ASKFAFELGSKADGKASEKA...",
-    "latest_align" : "----ASK---F-AFELG--SKA---DGKASEK-A---...",
-    "align_1" : "--------------ASK-------F-AFELG-----SKA--DFLASEK--A--...",
-
-    .
-    .
-    .
-}
-
->>> homolog.fasta()
-
->XX00000000
-ASKFAFELGSKADGKASEKA...
-
-
->>> homolog.write("homolog.fasta", format="fasta")  # writes to file "homolog.fasta"
+# Initialize a project class
+project = Project()
 ```
+Now we need to start adding data to this empty phylogenetics object. We can do this by downloading sequences
+from BLAST database.
+```python
+# List some accession IDS to download from BLAST database.
+email = ""
+accessions = [
+    "AGH62057"
+    "NP_004553",
+    "AHW56551",
+    "BAA25751",
+    "ABN46990"
+]
+
+# Download from database!
+project.download(accession, email)
+```
+Alternatively, you may have sequence data in a file somewhere. In which case, you can load them into your project by reading them:
+```python
+project.Read.fasta(fname="sequence.fasta")
+```
+The `Read` module read many different formats.
+
+At this point, the sequences and metadata for the accession IDs listed are now
+contained by `project` in an object called `HomologSet`.
+
+We can now align the `HomologSet`, build a tree, and reconstruct the it's ancestors by following methods:
+```python
+project.align()
+project.tree()
+project.reconstruct()
+```
+Project contains each part of the process in separate objects for easy manipulation.
+
+Also, you can start a `Project` at any stage of the phylogenetic process. Maybe you have a tree already constructed and just want to reconstruct ancestors. Simply initialize a `Project` object and read in the tree and alignment. `Project` will automatically build the other objects necessary for reconstruction and you'll be ready to go.
+```python
+# Read the tree format. Could also be nexus, etc.
+project = Project.Read.newick(fname="tree.nwk")
+project = Project.Read.alignment(fname="alignment.fasta")
+
+# Reconstruct the ancestors
+project.reconstruct()
+```
+
+Doing a full phylogenetics project is as simple as that!
+
+To see more, check out some Jupyter Notebook [examples](https://github.com/Zsailer/phylogenetics/tree/master/examples).
+
+## Coming Soon
+
+A few features on the immediate roadmap for this project are:
+
+1. Plotting modules for analyzing pieces of phylogenetic projects on the fly (via `matplotlib`)
+2. Interactive widgets for manipulating data on the fly (via `ipywidgets`)
+3. Light-weight treeviewer to quickly visualize trees.
 
 ## Installation
 
-This package is on Pypi, so this works for installation:
+### User
+This package can be installed via PyPI:
 ```
 pip install phylogenetics
 ```
-however, it will likely be trailing development as I move quickly on improving this tool.
-
-I suggest installing from source until I get a fully stable version up and running.
-
-Clone this repo locally:
+Note, however, that development might be changing rapidly, and the builds on PyPI might
+fall behind quickly. To keep up with development, clone this repo locally:
 ```
 git clone https://github.com/Zsailer/phylogenetics
 ```
-
 Navigate to this directory, and install this python package with
-
 ```
 python setup.py install
 ```
 
-If you'd like to work in development mode,
-
+### Development
+If you'd like to work on developing `phylogenetics`, install with:
 ```
 pip install -e .
 ```
 
 **NOTE:** Many of modules in this API require other software packages to work.
+
+## Dependencies
+
+`phylogenetics` is an API for managing phylogenetics data. It does not, on its own, run any of the
+calculations. Instead, it offers wrappers around current phylogenetic tools that must be
+downloaded and built separately. The [wiki](https://github.com/Zsailer/phylogenetics/wiki/Setting-up-Phylogenetics-package) provides some documentation on how to install many of
+these dependencies.
+
+External dependencies include:
+1. `cdhit` - clustering redundant sequences
+2. `msaprobs` - multiple sequence alignment software
+3. `phyml` - building maximum likelihood trees
+4. `paml` - reconstructing ancestors
+
+Python dependencies includes:
+
+1. `biopython` (for Entrez calls).
+2. `dendropy`  -- and AWESOME API for working with Tree data-structures.
+
+## Credits
+
+Most of this work was originally inspired [Mike Harms'](https://github.com/harmsm) `phylo_tools` repo. The `Reconstruction` modules of this package were inspired by [Victor Hanson-Smith's](https://github.com/vhsvhs) Python package `lazarus`. While Lazarus is not used by this API, much the work for doing ASR in Python was pioneered by this process.
