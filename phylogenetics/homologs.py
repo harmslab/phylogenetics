@@ -254,7 +254,7 @@ class HomologSet(object):
         self.Read.entrez_xml(data)
 
         # Quality control for data without sequences in them.
-        bad_data = [id for id, Homolog in self.homologs.items() if hasattr(Homolog) is False]
+        bad_data = [id for id, Homolog in self.homologs.items() if hasattr(Homolog, "sequence") is False]
         self.rm(bad_data)
 
     @classmethod
@@ -312,7 +312,7 @@ class HomologSet(object):
 
         return m
 
-    def subset(self, ids, inplace=True):
+    def subset(self, ids, inplace=False):
         """Subset the HomologSet. By default, it reduces
         the HomologSet size in place. If `inplace`=False,
         subset HomologSet is returned as new_object
@@ -386,7 +386,9 @@ class HomologSet(object):
                     "unknown", "uncharacterized","mutant", "isoform"),
         inplace=False
         ):
-        """ Reduce any redundancy in the HomologSet using CDHIT.
+        """ Reduce sequence redundancy in the HomologSet using CDHIT.
+
+        By default, this method returns a new HomologSet
 
         """
         # Write out the fasta file with a unique name for each sequence that goes
@@ -419,6 +421,7 @@ class HomologSet(object):
             positive=positive,
             negative=negative
         )
+        print("""Clustering finished.""")
 
         # Now parse the output of cdhit and grab members of clusters with the
         # lowest rank
@@ -470,11 +473,12 @@ class HomologSet(object):
                 pass
 
         # Subset the HomologSet with ids pulled from clusters.
-        self.subset(subset_ids, inplace=inplace)
-        print("""Clustering finished.""")
         if inplace:
+            self.subset(subset_ids, inplace=inplace)
             print("""%s sequences in HomologSet""" % len(self.homologs))
-
+        else:
+            hs = self.subset(subset_ids, inplace=inplace)
+            return hs
 
     def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.

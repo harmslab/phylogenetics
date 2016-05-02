@@ -86,7 +86,8 @@ class Project(object):
         """Add a AncestorSet object to PhylogeneticsProject object."""
         self.AncestorSet = AncestorSet
 
-    def _cluster(self,
+    def _cluster(
+        self,
         redund_cutoff=0.99,
         tmp_file_suffix="oB_cdhit",
         word_size=5,
@@ -96,11 +97,24 @@ class Project(object):
         positive=(),
         negative=("putative","hypothetical", "unnamed", "possible", "predicted",
                     "unknown", "uncharacterized","mutant", "isoform"),
-        inplace=True
         ):
-        """Remove redundant sequences from HomologSet.
+        """Remove redundant sequences from HomologSet based on some sequence redundancy
+        cutoff threshold.
+
+        This method moves the original HomologSet to a new object inside project
+        called `HomologSet_original`. Clustering always happens on this set. The
+        results are set as the new HomologSet object.
         """
-        self.HomologSet.cluster(
+        # If the original set is old, use it for clustering
+        if hasattr(self, "HomologSet_original"):
+            HomologSet_to_cluster = self.HomologSet_original
+        # Else HomologSet is the original set.
+        else:
+            HomologSet_to_cluster = self.HomologSet
+            setattr(self, "HomologSet_original", self.HomologSet)
+
+        # Cluster original set
+        new_HomologSet = HomologSet_to_cluster.cluster(
             redund_cutoff=redund_cutoff,
             tmp_file_suffix=tmp_file_suffix,
             word_size=word_size,
@@ -108,9 +122,12 @@ class Project(object):
             keep_tmp=keep_tmp,
             accession=accession,
             positive=positive,
-            negative=negative
+            negative=negative,
+            inplace=False
         )
 
+        # Set the resulting subset HomologSet as the new HomologSet.
+        self.HomologSet = new_HomologSet
 
     def _align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.
