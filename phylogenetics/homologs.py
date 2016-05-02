@@ -253,6 +253,10 @@ class HomologSet(object):
         data = entrez.download(accessions, email)
         self.Read.entrez_xml(data)
 
+        # Quality control for data without sequences in them.
+        bad_data = [id for id, Homolog in self.homologs.items() if hasattr(Homolog) is False]
+        self.rm(bad_data)
+
     @classmethod
     def load(cls, fname):
         """ Read a HomologSet. """
@@ -380,7 +384,7 @@ class HomologSet(object):
         positive=(),
         negative=("putative","hypothetical", "unnamed", "possible", "predicted",
                     "unknown", "uncharacterized","mutant", "isoform"),
-        inplace=True
+        inplace=False
         ):
         """ Reduce any redundancy in the HomologSet using CDHIT.
 
@@ -467,6 +471,9 @@ class HomologSet(object):
 
         # Subset the HomologSet with ids pulled from clusters.
         self.subset(subset_ids, inplace=inplace)
+        print("""Clustering finished.""")
+        if inplace:
+            print("""%s sequences in HomologSet""" % len(self.homologs))
 
 
     def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
