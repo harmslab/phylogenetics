@@ -1,5 +1,5 @@
 # API for working with Homolog sets in a phylogenetics project
-import os
+import os, string
 
 # Reading and Writing modules to HomologSet
 import phylogenetics.dataio.homologio as homologio
@@ -82,7 +82,8 @@ def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","
 
     """ Rank homologs based on dubious descriptions in their defline. """
 
-    for h in homolog_set.homologs:
+    for id, h in homolog_set.homologs.items():
+        h.addattr("rank", rank_offset)
         defline = h.defline
 
         # Does one of the dubious entries occur on this line?
@@ -100,14 +101,18 @@ def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","
 
         # If accession is given, it should supercede all other ranks.
         try:
-            access = h.accession
+            if hasattr(h, "accver"):
+                access = h.accver
+            else:
+                access = h.accession
             for a in accession:
                 if a in access:
                     rank -= 100
         except:
             pass
 
-        h.add_attributes(rank=rank)
+        h.rank = rank
+
 
 # ---------------------------------------------------
 # Main Homolog objects for package
@@ -308,14 +313,13 @@ class HomologSet(object):
         the HomologSet size in place. If `inplace`=False,
         subset HomologSet is returned as new_object
         """
-        mapping = self.HomologSet.map("id")
-
         if inplace:
-            self.rm(ids)
+            homologs_to_rm = [h for h in self.homologs if h not in ids]
+            self.rm(homologs_to_rm)
         else:
             homologs = []
-            for id in ids:
-                homologs.append(mapping[id])
+            for i in ids:
+                homologs.append(self.homologs[i])
 
             return HomologSet(homologs=homologs)
 
@@ -358,12 +362,12 @@ class HomologSet(object):
         if isinstance(ids,list) == False:
             ids = [ids]
 
-        for id in ids:
+        for i in ids:
             # Remove from homologs dict
-            del self._homologs[id]
+            del self._homologs[i]
 
             # Remove Homolog attribute from object
-            delattr(self, id)
+            delattr(self, i)
 
 
     def cluster(self,
@@ -391,11 +395,15 @@ class HomologSet(object):
             return self
 
         # Ranks homologs.
-        rank_homologs(self, accession=accession, positive=positive, negative=negative)
+        try:
+            rank_homologs(self, accession=accession, positive=positive, negative=negative)
+        except:
+            print("""WARNING: No defline in Homologs?""")
 
         # Create a temporary fasta file from homologs as input to CDHIT.
-        fname = "%s.fasta" % fname_prefix
-        self.Write(fname=fname, format="fasta", tags=["id"])
+        fname_prefix = "cluster-%s" % str(redund_cutoff)
+        fname = fname_prefix+".fasta"
+        self.Write.fasta(fname=fname, tags=["id"])
 
         cdhit.run(fname_prefix,
             redund_cutoff=redund_cutoff,
@@ -458,7 +466,7 @@ class HomologSet(object):
                 pass
 
         # Subset the HomologSet with ids pulled from clusters.
-        self.subset(id, inplace=inplace)
+        self.subset(subset_ids, inplace=inplace)
 
 
     def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):

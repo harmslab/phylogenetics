@@ -1,2 +1,3 @@
 phylogenetics
-ete2
+biopython
+dendropy

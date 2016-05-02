@@ -2,12 +2,12 @@
 from setuptools import setup
 
 setup(name = 'phylogenetics',
-    version = '0.2.2',
+    version = '0.3',
     description = 'Python API that provides simple tools for doing phylogenetics.',
     author = 'Zach Sailer',
     author_email = 'zachsailer@gmail.com',
     url = 'https://github.com/Zsailer/phylogenetics',
-    download_url = 'https://github.com/Zsailer/phylogenetics/tarball/v0.2.2',
+    download_url = 'https://github.com/Zsailer/phylogenetics/tarball/v0.3',
     packages = ['phylogenetics'],
     install_requires=[
         'dendropy',
