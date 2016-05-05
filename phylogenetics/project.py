@@ -37,7 +37,7 @@ class Project(object):
         """ Load a project from pickle file. """
         with open(path, "rb") as f:
             project = pickle.load(f)
-            if project != Project:
+            if project.__class__ != Project:
                 raise Exception("pickled object is not a Project object.")
         return project
 

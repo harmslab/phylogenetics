@@ -73,7 +73,7 @@ class Write(object):
     @write_to_file
     def pickle(self):
         """ Return pickle string of homolog set. """
-        return pickle.write(self)
+        return pickle.write(self._HomologSet)
 
     @write_to_file
     def csv(self, tags=("id",), delimiter=","):
@@ -81,14 +81,6 @@ class Write(object):
         sequence_metadata = self._homologset_to_metadata(tags=tags)
         output = csv.write(sequence_metadata, delimiter=delimiter)
         return output
-
-    @write_to_file
-    def newick(self, tags=("id",), **kwargs):
-        """ Write a tree to file. """
-        old_name = "id"
-        new_names = tags
-        tree = switch(self._homologset, "id", new_names, format="newick")
-        return tree
 
 
 class Read(object):
