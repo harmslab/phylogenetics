@@ -16,9 +16,9 @@ from .formats import (csv,
                         rst)
 
 class Read(object):
-
+    """Module for reading in files to project object.
+    """
     def __init__(self, Project):
-        """"""
         self._Project = Project
 
     @read_from_file
@@ -82,4 +82,3 @@ class Read(object):
     def rst(self, data):
         """Read PAML output form file.
         """
-        

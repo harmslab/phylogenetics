@@ -108,6 +108,9 @@ class Read(object):
         except ValueError:
             raise Exception(""" One tag in alignment must be `id`. """)
 
+        # Initialize a list to old all ids in file.
+        ids_in_alignment_file = list()
+
         # Iterate through the sequence data
         for pair in data:
             attributes = pair[0]
@@ -121,11 +124,24 @@ class Read(object):
             homolog = getattr(self._Alignment._HomologSet, id)
             homolog.add_alignment(alignment)
 
+            # Track ids that are in alignment
+            ids_in_alignment_file.append(id)
+
+        # Check if Homologs were removed from Alignment file. If so, remove from
+        # HomologSet.
+        ids_in_HomologSet = self._Alignment._HomologSet.list_ids
+        for h in ids_in_HomologSet:
+            if h not in ids_in_alignment_file:
+                self._Alignment._HomologSet.rm(h)
+
         return self._Alignment
 
     def _phylip_data_to_alignment(self, phylip_data):
         """ Add phylip data to alignment.
         """
+        # Initialize a list to old all ids in file.
+        ids_in_alignment_file = list()
+
         # Iterate through the sequence data
         for pair in data:
             id = pair[0]
@@ -136,6 +152,16 @@ class Read(object):
 
             homolog = getattr(self._Alignment._HomologSet, id)
             homolog.add_alignment(alignment)
+
+            # Track ids that are in alignment
+            ids_in_alignment_file.append(id)
+
+        # Check if Homologs were removed from Alignment file. If so, remove from
+        # HomologSet.
+        ids_in_HomologSet = self._Alignment._HomologSet.list_ids
+        for h in ids_in_HomologSet:
+            if h not in ids_in_alignment_file:
+                self._Alignment._HomologSet.rm(h)
 
         return self._Alignment
 

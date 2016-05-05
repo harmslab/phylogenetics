@@ -9,10 +9,8 @@ class Tree(object):
         connectiong to HomologSet object.
     """
     def __init__(self, HomologSet, tree, stats={}):
-        """
-        """
         self.stats = stats
-        self._DendroPyTree = dendropy.datamodel.treemodel.Tree.get(data=tree, schema="newick")
+        self.Dendropy = dendropy.datamodel.treemodel.Tree.get(data=tree, schema="newick")
         self._HomologSet = HomologSet
 
         # Bind nodes to homologs
@@ -22,7 +20,7 @@ class Tree(object):
     def _nodes_to_homologs(self):
         """ Point nodes to homolog object and vice versa."""
         # Iterate through nodes in tree.
-        for node in self._DendroPyTree.nodes():
+        for node in self.Dendropy.nodes():
 
             # Find nodes that represent tips of the tree.
             if node.taxon is not None:
@@ -42,7 +40,7 @@ class Tree(object):
     def _internal_node_label(self):
         """ Label the internal nodes of the tree (a.k.a. ancestors). """
         i = 0
-        for node in self._DendroPyTree.internal_nodes():
+        for node in self.Dendropy.internal_nodes():
             # Get the labels
             label = node.label
             node.score = label
@@ -89,17 +87,17 @@ class Tree(object):
     def root(self, item):
         """Reroot a tree on a given item.
         """
-        
+
 
 
     def prune(self, id):
-        """ Prune Node in Tree object. Also removes Homolog from HomologSet.
+        """Prune Node in Tree object. Also removes Homolog from HomologSet.
         """
         # Get homolog object
         Homolog = getattr(self._HomologSet, id)
 
         # Remove node (and children) from tree.
-        self._DendroPyTree.prune_subtree(Homolog.node)
+        self.Dendropy.prune_subtree(Homolog.node)
 
         # Remove Homolog from HomologSet
         self._HomologSet.rm(id)

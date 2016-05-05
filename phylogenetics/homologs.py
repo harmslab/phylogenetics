@@ -11,14 +11,12 @@ from phylogenetics.tree import Tree
 from phylogenetics.ancestors import Ancestor, AncestorSet
 
 # Import external tools
+from phylogenetics.dataio.formats import entrez_xml
 from phylogenetics.exttools import (cdhit,
                                 msaprobs,
                                 phyml,
                                 paml,
                                 entrez)
-
-from phylogenetics.dataio.formats import entrez_xml
-
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -45,8 +43,8 @@ def rm_repeats_homologs(homolog_set, attribute="accession", renumber=False):
     """ Remove and repetitive homologs in a set with
         respect to a given attribute.
 
-        Arguments:
-        ---------
+        Parameters
+        ----------
         homolog_set: HomologSet object
             Set to search through.
         attribute: str (default="accession")
@@ -76,12 +74,17 @@ def rm_repeats_homologs(homolog_set, attribute="accession", renumber=False):
     return hs
 
 
-def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","hypothetical","unnamed",
-                    "possible", "predicted","unknown","uncharacterized",
-                    "mutant","isoform"), rank_offset=0):
-
-    """ Rank homologs based on dubious descriptions in their defline. """
-
+def rank_homologs(homolog_set,
+        accession=(),
+        positive=(),
+        negative=(
+            "putative","hypothetical","unnamed","possible", "predicted",
+            "unknown","uncharacterized","mutant","isoform"
+        ),
+        rank_offset=0
+    ):
+    """Rank homologs based on dubious descriptions in their defline.
+    """
     for id, h in homolog_set.homologs.items():
         h.addattr("rank", rank_offset)
         defline = h.defline
@@ -112,7 +115,6 @@ def rank_homologs(homolog_set, accession=(), positive=(), negative=("putative","
             pass
 
         h.rank = rank
-
 
 # ---------------------------------------------------
 # Main Homolog objects for package

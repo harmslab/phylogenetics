@@ -4,7 +4,6 @@ class Reconstruction(object):
     """Object for doing ancestral sequence reconstruction
     """
     def __init__(self, Alignment, Tree, AncestorSet, paml_job, gaps_infered=True):
-        """ """
         self._Alignment = Alignment
         self._Tree = Tree
         self._AncestorSet = AncestorSet
@@ -15,14 +14,13 @@ class Reconstruction(object):
     def infer_gaps(self):
         """Estimate gaps for ancestral nodes.
 
-
         Handling Gaps
         -------------
         Uses Fitch Parsimony to determine sites in ancestral sequences that
         are likely gaps. The posterior probability of these sites are ignored
         when calculating the average posterior probability of the ancestor.
         """
-        taxa = self._Tree._DendroPyTree.taxon_namespace
+        taxa = self._Tree.Dendropy.taxon_namespace
 
         # Build a Sequence data matrix from Dendropy
         data = dendropy.ProteinCharacterMatrix.get(
@@ -31,7 +29,7 @@ class Reconstruction(object):
             taxon_namespace=taxa
         )
 
-        tree = self._Tree._DendroPyTree
+        tree = self._Tree.Dendropy
 
         # Get the alphabet of Dendropy's ProteinCharacterMatrix
         alphabet = data.state_alphabets[0].symbols

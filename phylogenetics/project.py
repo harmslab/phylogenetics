@@ -1,6 +1,6 @@
 # In the future, this will be the top level object that contains all Subobjects
 # important for doing a phylogenetics project
-import os
+import os, pickle, datetime
 
 # import objects to bind to Project class
 from phylogenetics.homologs import Homolog, HomologSet
@@ -31,6 +31,21 @@ class Project(object):
         # Add any objects that were given to Project
         for a in args:
             self.add(a)
+
+    @staticmethod
+    def load(path):
+        """ Load a project from pickle file. """
+        with open(path, "rb") as f:
+            project = pickle.load(f)
+            if project != Project:
+                raise Exception("pickled object is not a Project object.")
+        return project
+
+    def save(self, path="project-%s.pickle" % \
+        datetime.date.today().isoformat()):
+        """ Save Project to path. """
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
 
     def add(self, item):
         """Add data to project.
@@ -128,6 +143,7 @@ class Project(object):
 
         # Set the resulting subset HomologSet as the new HomologSet.
         self.HomologSet = new_HomologSet
+        self.save()
 
     def _align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
         """ Multiple sequence alignment of the HomologSet.
@@ -153,6 +169,7 @@ class Project(object):
         # Remove fasta file.
         if rm_tmp:
             os.remove(output_fname)
+        self.save()
 
     def _tree(self, **kwargs):
         """ Compute the maximum likelihood phylogenetic tree from
@@ -167,6 +184,7 @@ class Project(object):
 
         # Add Tree object to HomologSet
         self._add_Tree(Tree(self.HomologSet, tree, stats=stats))
+        self.save()
 
 
     def _reconstruct(self):
@@ -174,7 +192,7 @@ class Project(object):
         """
         # Bind Ancestor Objects to each internal node.
         ancestors = []
-        for node in self.Tree._DendroPyTree.internal_nodes():
+        for node in self.Tree.Dendropy.internal_nodes():
             id = node.label
             ancestors.append( Ancestor(id, self.Tree))
 
@@ -187,7 +205,7 @@ class Project(object):
         treefile = "asr-tree.nwk"
 
         # Prepare input files for PAML
-        self.Tree._DendroPyTree.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
+        self.Tree.Dendropy.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
         self.Alignment.Write.fasta(fname=seqfile)
 
         # Construct a paml job
@@ -210,3 +228,4 @@ class Project(object):
 
         # Infer gaps.
         self.Reconstruction.infer_gaps()
+        self.save()
