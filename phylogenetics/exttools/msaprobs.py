@@ -27,10 +27,10 @@ def run(fasta_fname="alignment", cores=2, rm_tmp=True):
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.fasta" % fasta_fname
     oname = "%s-finished.fasta" % fasta_fname
-    
+
     # Build msaprobs command
-    msaprobs_cmd = "msaprobs %s.fasta -o %s-finished.fasta -num_threads" % (fasta_fname,
-                                                           fasta_fname, cores)
+    msaprobs_cmd = "msaprobs %s.fasta -o %s-finished.fasta -num_threads %s" % (fasta_fname,
+                                                           fasta_fname, str(cores))
     # Format the command into list.
     args = shlex.split(msaprobs_cmd)
 
