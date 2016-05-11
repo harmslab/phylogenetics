@@ -145,7 +145,12 @@ class Project(object):
         self.HomologSet = new_HomologSet
         self.save()
 
-    def _align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
+    def _align(self,
+        fname="alignment.fasta",
+        rm_tmp=True,
+        quiet=False,
+        cores=2
+        ):
         """ Multiple sequence alignment of the HomologSet.
 
             Currently, only option is to use MSAProbs.
@@ -154,7 +159,7 @@ class Project(object):
         self.HomologSet.Write.fasta(fname="alignment.fasta")
 
         # Run the alignment with MSAProbs
-        output_fname = msaprobs.run(fasta_fname="alignment", rm_tmp=rm_tmp)
+        output_fname = msaprobs.run(fasta_fname="alignment", cores=cores, rm_tmp=rm_tmp)
 
         # Attach an alignment object to HomologSet
         self._add_Alignment(Alignment(self.HomologSet))

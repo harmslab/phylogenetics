@@ -6,7 +6,7 @@ import subprocess
 # Local imports
 from phylogenetics.utils import read_fasta
 
-def run(fasta_fname="alignment", rm_tmp=True):
+def run(fasta_fname="alignment", cores=2, rm_tmp=True):
     """ Wrapper for MSAProbs.
 
         Runs a multiple sequence alignment for sequences in a named fasta file.
@@ -27,9 +27,10 @@ def run(fasta_fname="alignment", rm_tmp=True):
     # Create a temporary fasta file from homologs as input to CDHIT.
     fname = "%s.fasta" % fasta_fname
     oname = "%s-finished.fasta" % fasta_fname
+    
     # Build msaprobs command
-    msaprobs_cmd = "msaprobs %s.fasta -o %s-finished.fasta" % (fasta_fname,
-                                                           fasta_fname)
+    msaprobs_cmd = "msaprobs %s.fasta -o %s-finished.fasta -num_threads" % (fasta_fname,
+                                                           fasta_fname, cores)
     # Format the command into list.
     args = shlex.split(msaprobs_cmd)
 
