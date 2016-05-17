@@ -131,7 +131,7 @@ class Read(object):
         # HomologSet.
         ids_in_alignment_file = set(ids_in_alignment_file)
         ids_in_HomologSet = set(self._Alignment._HomologSet.list_ids)
-        diff = list(ids_in_alignment_file - ids_in_HomologSet)
+        diff = list(ids_in_HomologSet - ids_in_alignment_file)
 
         self._Alignment._HomologSet.rm(diff)
 
