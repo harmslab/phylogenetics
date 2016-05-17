@@ -160,7 +160,6 @@ class Homolog(object):
     def download(self, accession):
         """ """
 
-
     @property
     def attrs(self):
         """ """
@@ -267,6 +266,11 @@ class HomologSet(object):
         return homologset
 
     @property
+    def length(self):
+        """Return the number of homologs in the HomologSet."""
+        return len(self._homologs)
+
+    @property
     def homologs(self):
         """ Get homolog set. """
         return self._homologs
@@ -283,6 +287,10 @@ class HomologSet(object):
             return 0
         else:
             return max([int(id[2:]) for id in self.list_ids])
+
+    def homolog(self, id):
+        """ Return Homolog with id. """
+        return self.homologs[id]
 
     def map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR

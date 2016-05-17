@@ -1,7 +1,17 @@
 import dendropy
 
 class Reconstruction(object):
-    """Object for doing ancestral sequence reconstruction
+    """Object for doing ancestral sequence reconstruction.
+
+    Parameters
+    ----------
+    Alignment:
+
+    Tree:
+
+    AncestorSet:
+
+    paml_job:
     """
     def __init__(self, Alignment, Tree, AncestorSet, paml_job, gaps_infered=True):
         self._Alignment = Alignment

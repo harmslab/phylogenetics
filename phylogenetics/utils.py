@@ -2,7 +2,29 @@
 # Useful tools for handling fasta files.
 # --------------------------------------
 
-import re, pickle, subprocess
+import os, re, pickle, subprocess
+
+def overwriting(func):
+    """Wrapper function to prevent overwriting files.
+    """
+    def wrapper(self, fname, *args, **kwargs):
+        """Check if fname exists. If it does, add number to fname.
+        """
+        i = 0
+        path_exists = True
+        while path_exists:
+            path_exists = os.path.isfile(fname)
+            if path_exists:
+                pieces = fname.split(".")
+                path = "".join(pieces[0:-1])
+                ext = pieces[-1]
+                new_path = path + "(" + str(i) + ")"
+                fname = ".".join(new_path, ext)
+
+        return func(self, fname=fname)
+
+    return wrapper
+
 
 def overwrite_warning(func):
     """ Wrapper function to prevent overwriting modules in HomologSet objects. """

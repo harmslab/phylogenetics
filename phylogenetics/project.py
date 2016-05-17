@@ -8,8 +8,9 @@ from phylogenetics.alignment import Alignment
 from phylogenetics.tree import Tree
 from phylogenetics.ancestors import Ancestor, AncestorSet
 from phylogenetics.reconstruction import Reconstruction
-
 from phylogenetics.dataio import projectio
+
+from phylogenetics.utils import overwriting
 
 # imports for running external tools.
 from .exttools import (cdhit,
@@ -41,10 +42,11 @@ class Project(object):
                 raise Exception("pickled object is not a Project object.")
         return project
 
-    def save(self, path="project-%s.pickle" % \
+    #@overwriting
+    def save(self, fname="project-%s.pickle" % \
         datetime.date.today().isoformat()):
         """ Save Project to path. """
-        with open(path, "wb") as f:
+        with open(fname, "wb") as f:
             pickle.dump(self, f)
 
     def add(self, item):

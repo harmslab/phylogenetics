@@ -2,6 +2,7 @@
 
 import dendropy
 import copy
+from phylogenetics.dataio import treeio
 
 class Tree(object):
     """
@@ -16,6 +17,10 @@ class Tree(object):
         # Bind nodes to homologs
         self._nodes_to_homologs()
         self._internal_node_label()
+        self._internal_edge_label()
+
+        # Add Write module to tree
+        self.Write = treeio.Write(self)
 
     def _nodes_to_homologs(self):
         """ Point nodes to homolog object and vice versa."""
@@ -41,17 +46,26 @@ class Tree(object):
         """ Label the internal nodes of the tree (a.k.a. ancestors). """
         i = 0
         for node in self.Dendropy.internal_nodes():
-            # Get the labels
+            # Get the labels given by tree software.
             label = node.label
             node.score = label
             # Define a unique label for internal label
             node.label = "ZZ%08d" % i
             i += 1
 
+    def _internal_edge_label(self):
+        """Label the edges of the tree.
+        """
+        i = 0
+        for edge in self.Dendropy.edges():
+            # Give the edge a unique label
+            edge.label = "YY%08d" % i
+            i += 1
+
     def subtree(self, node_name):
         """ Get a subtree. """
         # Find the node with the given label
-        node = self.find_node(lambda n: n.annotations.get_value("name")==node_name)
+        node = self.Dendropy.find_node(lambda n: n.annotations.get_value("name")==node_name)
 
         if node is None:
             raise Exception(""" No ancestor with the given name. """)
@@ -84,11 +98,34 @@ class Tree(object):
 
         return homologset
 
-    def root(self, item):
+    def reroot(self, item_name):
         """Reroot a tree on a given item.
+
+        Parameters
+        ----------
+        item_name : str
+            Name of object in tree to reroot the tree. Can be either a ancestor,
+            edge, or taxa.
         """
+        if type(item_name) == str:
+            # Item dictionary
+            methods = {
+                "XX" : (self.Dendropy.nodes, self.Dendropy.reroot_at_node),
+                "YY" : (self.Dendropy.edges, self.Dendropy.reroot_at_edge),
+                "ZZ" : (self.Dendropy.internal_nodes, self.Dendropy.reroot_at_node)
+            }
+            # Retrieve method for finding reroot object
+            search_method = methods[item_name[0:2]][0]
+            reroot_method = methods[item_name[0:2]][1]
 
+        # Iterate through all items
+        for thing in search_method():
+            # Find the item with the given label
+            if thing.label == item_name:
+                item = thing
 
+        # Reroot tree at item
+        reroot_method(item)
 
     def prune(self, id):
         """Prune Node in Tree object. Also removes Homolog from HomologSet.

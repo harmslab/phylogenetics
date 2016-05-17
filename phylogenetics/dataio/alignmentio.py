@@ -129,10 +129,11 @@ class Read(object):
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
-        ids_in_HomologSet = self._Alignment._HomologSet.list_ids
-        for h in ids_in_HomologSet:
-            if h not in ids_in_alignment_file:
-                self._Alignment._HomologSet.rm(h)
+        ids_in_alignment_file = set(ids_in_alignment_file)
+        ids_in_HomologSet = set(self._Alignment._HomologSet.list_ids)
+        diff = list(ids_in_alignment_file - ids_in_HomologSet)
+
+        self._Alignment._HomologSet.rm(diff)
 
         return self._Alignment
 
@@ -158,10 +159,11 @@ class Read(object):
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
-        ids_in_HomologSet = self._Alignment._HomologSet.list_ids
-        for h in ids_in_HomologSet:
-            if h not in ids_in_alignment_file:
-                self._Alignment._HomologSet.rm(h)
+        ids_in_alignment_file = set(ids_in_alignment_file)
+        ids_in_HomologSet = set(self._Alignment._HomologSet.list_ids)
+        diff = ids_in_alignment_file - ids_in_HomologSet
+
+        self._Alignment._HomologSet.rm(diff)
 
         return self._Alignment
 
