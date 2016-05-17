@@ -168,10 +168,10 @@ class Read(object):
         return self._Alignment
 
     @read_from_file
-    def fasta(self, data):
+    def fasta(self, data, tags=["id"]):
         """ Read alignment from fasta file. """
         sequence_data = fasta.read(data)
-        self._sequence_data_to_alignment(sequence_data)
+        self._sequence_data_to_alignment(sequence_data, tags=tags)
         return self._Alignment
 
     @read_from_file
