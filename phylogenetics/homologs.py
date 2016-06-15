@@ -1,5 +1,5 @@
 # API for working with Homolog sets in a phylogenetics project
-import os, string
+import os, string, time
 
 # Reading and Writing modules to HomologSet
 import phylogenetics.dataio.homologio as homologio
@@ -16,7 +16,10 @@ from phylogenetics.exttools import (cdhit,
                                 msaprobs,
                                 phyml,
                                 paml,
-                                entrez)
+                                entrez,
+                                taxonomy)
+
+import phylogenetics.utils as utils
 
 # ---------------------------------------------------
 # Things that you often do with HomologSets
@@ -270,11 +273,43 @@ class HomologSet(object):
 
         # Download the full metadata for
         data = entrez.download(accessions, email)
+
         self.Read.entrez_xml(data)
 
         # Quality control for data without sequences in them.
         bad_data = [id for id, Homolog in self.homologs.items() if hasattr(Homolog, "sequence") is False]
+
+        # Remove bad data from HomologSet
         self.rm(bad_data)
+
+    def download_taxonomy(self, greedy=False):
+        """Retrieve Taxonomic information about HomologSet.
+
+        Note: This removes sequences that do not have taxonomic data.
+        """
+        first = True
+        bad_data = []
+        # Download taxonomy data from BLAST
+        for h in self.homologs:
+            # If sequence doesn't have an organism name, remove
+            homolog = self.homologs[h]
+            try:
+                # Estimate how long this will take
+                if first:
+                    time = utils.timeit(taxonomy.query, homolog.taxid)
+                    print("This will take roughly %d seconds" % round(time*self.length))
+
+                output = taxonomy.query(homolog.taxid)
+                homolog.addattr("taxonomy", output)
+                first = False
+            except AttributeError:
+                bad_data.append(homolog.id)
+
+        print("Done.")
+
+        if greedy is True:
+            # Remove bad data from HomologSet
+            self.rm(bad_data)
 
     @classmethod
     def load(cls, fname):
@@ -292,11 +327,11 @@ class HomologSet(object):
             raise Exception("""`ids` must be a list.""")
 
         # Mapping to accession
-        mapping = self.map("id", "accession")
+        mapping = self.map("id", "accver")
 
         # List accessions.
         accessions = [mapping[id] for id in ids]
-        self.download(accessions, email)
+        self._download(accessions, email)
 
     @property
     def length(self):
