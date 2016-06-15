@@ -2,7 +2,15 @@
 # Useful tools for handling fasta files.
 # --------------------------------------
 
-import os, re, pickle, subprocess
+import os, re, pickle, subprocess, time
+
+def timeit(func, *args, **kwargs):
+    """ Time how long a function takes. """
+    start = time.time()
+    func(*args, **kwargs)
+    stop = time.time()
+    diff = stop-start
+    return diff
 
 def overwriting(func):
     """Wrapper function to prevent overwriting files.
