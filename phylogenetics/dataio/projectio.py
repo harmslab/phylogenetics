@@ -1,12 +1,10 @@
-from .base import read_from_file, write_to_file
-
-
 # import objects to bind to Project class
 from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.alignment import Alignment
 from phylogenetics.tree import Tree
 from phylogenetics.ancestors import Ancestor, AncestorSet
 from phylogenetics.reconstruction import Reconstruction
+from .base import read_from_file, write_to_file
 
 from .formats import (csv,
                         entrez_xml,
@@ -23,7 +21,10 @@ class Read(object):
 
     @read_from_file
     def fasta(self, data, tags=("id",)):
-        """Read fasta file.
+        """Read fasta string.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """
         if hasattr(self._Project, "HomologSet") is False:
             # Add a HomologSet to project
@@ -33,7 +34,10 @@ class Read(object):
 
     @read_from_file
     def alignment(self, data, tags=("id",)):
-        """Read alignment from file.
+        """Read alignment from string.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """
         if hasattr(self._Project, "HomologSet") is False:
             # Add a HomologSet to project
@@ -43,8 +47,11 @@ class Read(object):
         self._Project.Alignment.Read.fasta(data, tags=tags)
 
     @read_from_file
-    def entre_xml(self, data):
-        """Read downloaded XML from Entrez server.
+    def entrez_xml(self, data):
+        """Read downloaded XML string from Entrez server.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """
         if hasattr(self._Project, "HomologSet") is False:
             # Add a HomologSet to project
@@ -54,7 +61,10 @@ class Read(object):
 
     @read_from_file
     def phylip(self, data):
-        """Read phylip file.
+        """Read phylip string.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """
         if hasattr(self._Project, "HomologSet") is False:
             # Add a HomologSet to project
@@ -65,7 +75,10 @@ class Read(object):
 
     @read_from_file
     def csv(self, data):
-        """Read csv file.
+        """Read csv string.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """
         if hasattr(self._Project, "HomologSet") is False:
             # Add a HomologSet to project
@@ -81,4 +94,7 @@ class Read(object):
     @read_from_file
     def rst(self, data):
         """Read PAML output form file.
+
+        Note: to read from a file, relace data argument with `fname=` keyword
+        argument.
         """

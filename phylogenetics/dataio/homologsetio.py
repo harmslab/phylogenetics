@@ -1,6 +1,6 @@
 # Module for input and output of HomologSet objects
 from phylogenetics import homologs
-from .base import write_to_file, read_from_file
+from .base import read_from_file, write_to_file
 from .formats import fasta, pickle, csv, entrez_xml
 
 class Write(object):
@@ -166,11 +166,21 @@ class Read(object):
     def _sequence_metadata_to_homologset(self, sequence_metadata):
         """ Add sequence_metadata to alignment.
         """
+        # Try to get a map if HomologSet exists.
+        mapping = self._HomologSet.map("accver", "id")
+
         for s in sequence_metadata:
             # Update homologs that are already in the Set.
             if "id" in s:
                 # Get Homolog object
                 Homolog = getattr(self._HomologSet, s["id"])
+
+            # Check if a sequence with same accession already exists in HomologSet,
+            # If so, just update attributes with new metadata
+            elif "accver" in s and s["accver"] in mapping:
+                # Get the Homolog with that accession number
+                Homolog = getattr(self._HomologSet, mapping[s["accver"]])
+
             # otherwise, add a new Homolog object
             else:
                 id = "XX%08d" % int(self._HomologSet.max_id + 1)

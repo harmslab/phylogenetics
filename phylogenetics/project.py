@@ -1,5 +1,17 @@
-# In the future, this will be the top level object that contains all Subobjects
-# important for doing a phylogenetics project
+"""Phylogenetics package entry point.
+
+`Project` class is a versatile object that manages all data for a phylogenetics
+project.
+
+Example:
+
+>>> Project.Alignment
+            .Tree
+            .HomologSet
+            .AncestorSet
+
+
+"""
 import os, pickle, datetime
 
 # import objects to bind to Project class
@@ -23,8 +35,10 @@ class Project(object):
     """Container object for managing all data for a phylogenetics project.
 
     Optional arguments can be passed into the Project class. These must be
-    phylogenetic objects from this package (i.e. HomologSet, Alignment, Tree,
+    objects from the `phylogenetics` package (i.e. HomologSet, Alignment, Tree,
     Reconstruction, AncestorSet, etc.)
+
+
     """
     def __init__(self, *args):
         # Bind Reading module to class
@@ -48,6 +62,12 @@ class Project(object):
         """ Save Project to path. """
         with open(fname, "wb") as f:
             pickle.dump(self, f)
+
+    def files(self, *files):
+        """Load files into project object and populate.
+        """
+        pass
+
 
     def add(self, item):
         """Add data to project.

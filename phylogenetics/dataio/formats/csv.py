@@ -1,7 +1,4 @@
-__doc__ = """
-
-Module for reading and writing csv strings.
-
+"""Module for reading and writing csv strings.
 """
 
 def read(data, delimiter=","):

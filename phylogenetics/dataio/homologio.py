@@ -1,24 +1,48 @@
-# Module for input/output of Homolog Object
+"""Module for reading input and writing output of Homolog Object.
+
+Writes homolog object attributes out as a python dictionary with metadata which can
+easily be written:
+
+
+Example :
+>>> { "XX00000000" :
+        {
+            "sequence" : "XXXXXX ....",
+            "latest_align" : "XX----XX-X--XX...",
+            "organism" : "mouse"
+        }
+    }
+"""
+
+# ----------------------------------------------
+# Imports
+# ----------------------------------------------
 
 from .base import read_from_file, write_to_file
 from .formats import fasta, csv
 
-class Write(object):
+# ----------------------------------------------
+# Winting moduel
+# ----------------------------------------------
 
+class Write(object):
+    """ Writing object for Homolog Object.
+
+    """
     def __init__(self, Homolog):
-        """ Writing object for Homolog Object. """
         self._Homolog = Homolog
 
-    def _homolog_to_sequence_data(self, tags=("id",)):
+    def _homolog_to_sequence_data(self, tags=[]):
         """ Write Homolog as sequence_data datatype.
 
-            Arguments:
-            ---------
-            sequence_data
+        Arguments
+        ---------
+        tags : list
+            list of attributes in Homolog object to write
 
-
-            Output Format:
-            -------------
+        Returns
+        -------
+        sequence_data : dict
 
         """
         # Built a tuple of tags
@@ -31,19 +55,8 @@ class Write(object):
 
         return sequence_data
 
-    def _homolog_to_sequence_metadata(self, tags=None):
-        """ Write Homolog to sequence_metadata datatype. """
-        sequence_metadata = []
-        if tags is None:
-            sequence_metadata.append(self._Homolog.attrs)
-        else:
-            metadata = dict([(t, getattr(self._Homolog, t)) for t in tags])
-            sequence_metadata.append(metadata)
-        return sequence_metadata
-
-
     @write_to_file
-    def fasta(self, tags=("id",), aligned=False):
+    def fasta(self, tags=[], aligned=False):
         """ Return fasta formatted string with named tags (in order given).
 
             If no tags are given, prints id with sequence.
@@ -56,7 +69,6 @@ class Write(object):
     def json(self, **kwargs):
         """ Return json formatted string. """
         return json.dumps(self._Homolog.attrs)
-
 
     @write_to_file
     def pickle(self, **kwargs):

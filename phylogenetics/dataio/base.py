@@ -33,6 +33,8 @@ def read_from_file(function):
 def write_to_file(function):
     """ Decorator to write the output of a function to a file if `fname` kwarg exists.
         Otherwise, output is just returned.
+
+        Output must be a string.
     """
     def wrapper(self, fname=None, *args, **kwargs):
         """ """

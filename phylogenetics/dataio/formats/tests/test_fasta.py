@@ -1,4 +1,8 @@
-# Test the fasta input/output modules
+"""Test the reading/writing modules for fastas files.
+
+
+
+"""
 
 # Test imports
 from nose import with_setup
@@ -29,6 +33,10 @@ data3 = """>XX00000003\nAGAEWGAHDSGAWSCDCADSGADAG\
 """
 
 sequences3 = [(("XX00000003",), "AGAEWGAHDSGAWSCDCADSGADAG")]
+
+
+# Test reading
+
 
 def test_read():
     """ Test read """

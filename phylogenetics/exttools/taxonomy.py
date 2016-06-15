@@ -6,19 +6,37 @@ import re
 import requests
 
 def query(keyword, type="name", **kwargs):
-    """Send a query to retrieve taxonomic data about a set of sequences.
+    """Send a query to retrieve taxonomic data about keyword from NCBI Taxonomy
+    Web service
+
+    Arguments
+    ---------
+    keyword : str
+        query string for BLAST Taxonomy. Can be common names, scientific names,
+        taxonomic ID, etc.
+    type : string
+        type of query. either 'name' or 'id'.
+    **kwargs are used to add extra options to the HTTPS request.
+
+    Returns
+    -------
+    taxonomy : dict
+        dictionary of all taxonomic keys returned by query.
     """
     main_url = "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?"
 
     # Construct arguments for query.
     kwargs[type] = keyword
     end_url = "&".join([key+"="+kwargs[key] for key in kwargs])
-
     total_url = main_url + end_url
 
+    # Send HTTPS request to NCBI
     data = requests.get(total_url)
 
-    # Strip out the HTML with the taxonomic lineage
+    # initialize taxonomy datatype
+    taxonomy = {}
+
+    #########  Strip out the HTML with the taxonomic lineage ##########
     regex = re.compile('<[aA][^<]+</[aA]>')
     lineage = regex.findall(data.text)
     # Get taxonomic tags
@@ -28,20 +46,20 @@ def query(keyword, type="name", **kwargs):
     # TITLE="superkingdom">Eukaryota
     #</a>
 
-    taxonomy = {}
     for level in lineage:
         # Get the classification
+
         try:
             classification = re.compile('TITLE="([A-Za-z\s]+)"').search(level).group(1)
 
             # Get the named classification
             try:
                 label = re.compile('>([\w ]+)<').search(level).group(1)
-            except AttributeError:
-                raise Exception("Found classification, but cannot find ")
 
-            # Add classification to taxonomy dictionary
-            taxonomy[classification] = label
+                # Add classification to taxonomy dictionary
+                taxonomy[classification] = label
+            except AttributeError:
+                pass
 
         # If the tag pulled from last REGEX is not a classification (but
         # another <a> tag), skip it.

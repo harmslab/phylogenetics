@@ -27,6 +27,12 @@ def parse_phyml_stats(data_string):
 def run(fname_prefix, dtype="aa", rm_tmp=True, *args, **kwargs):
     """ Simple wrapper for running PhyML within Python.
 
+    Options
+    -------
+    b :
+
+
+
     """
     # Create a temporary fasta file from homologs as input to PhyML.
     # Build command array and run it.

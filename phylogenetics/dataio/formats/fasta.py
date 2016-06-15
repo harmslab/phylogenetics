@@ -12,12 +12,14 @@ REGEX = re.compile(">.+\n[A-Z\-\n]+")
 def read(data):
     """ Read a fasta string.
 
-        Returns a list of tuple pairs. First value is header tags. Second
-        value is sequence.
+    Returns a list of tuple pairs. First value is header tags. Second
+    value is sequence.
+
+    Note: to read from file, replace the `data` arguemnt the keyword argument `fname`
     """
     # Match the pattern for fasta files
     matches = REGEX.findall(data)
-
+    print(matches)
     sequences = []
 
     for m in matches:
@@ -43,13 +45,15 @@ def read(data):
 def write(sequences):
     """ Write a fasta string.
 
-        Arguments:
-        ---------
+    Note: to write to file, replace the `data` arguemnt the keyword argument `fname`
 
-        sequences = [
-            ((tag0, tag1,...), sequence),
-            ...
-        ]
+    Arguments:
+    ---------
+
+    sequences = [
+        ((tag0, tag1,...), sequence),
+        ...
+    ]
     """
     if type(sequences) != list:
         sequences = [sequences]

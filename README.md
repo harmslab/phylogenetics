@@ -123,6 +123,7 @@ Python dependencies includes:
 
 1. `biopython` (for Entrez calls).
 2. `dendropy`  -- and AWESOME API for working with Tree data-structures.
+3. `requests` -- making requests to web service API's.
 
 ## Credits
 
