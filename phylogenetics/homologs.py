@@ -170,6 +170,24 @@ class Homolog(object):
         """ Get the length of sequence """
         return len(self.sequence)
 
+    def get(self, *attrs):
+        """ Get specific attributes from Homolog.
+
+        Arguments
+        ---------
+        *attrs : list
+            list of attributes to retrieve from Homolog object.
+
+        Returns
+        -------
+        metadata : dict
+            returns attributes that were given.
+        """
+        metadata = {}
+        for a in attrs:
+            metadata[a] = self._attrs[a]
+        return metadata
+
     def add_alignment(self, alignment):
         """ Add alignment to homolog """
         # Check if this is the first alignment
@@ -233,7 +251,7 @@ class HomologSet(object):
         """
         # Check that ids is a list
         if type(accessions) != list:
-            raise Exception("""`ids` must be a list.""")
+            raise Exception("""`accessions` must be a list.""")
 
         # Initialize the class
         hs = cls()
@@ -248,7 +266,7 @@ class HomologSet(object):
         """
         # Check that ids is a list
         if type(accessions) != list:
-            raise Exception("""`ids` must be a list.""")
+            raise Exception("""`accessions` must be a list.""")
 
         # Download the full metadata for
         data = entrez.download(accessions, email)
@@ -264,6 +282,21 @@ class HomologSet(object):
         with open(fname, "rb") as f:
             homologset = pickle.load(f)
         return homologset
+
+    def retrieve(self, ids, email):
+        """Retrieve data from Entrez for Homologs already
+        in the HomologSet object.
+        """
+        # Check that ids is a list
+        if type(ids) != list:
+            raise Exception("""`ids` must be a list.""")
+
+        # Mapping to accession
+        mapping = self.map("id", "accession")
+
+        # List accessions.
+        accessions = [mapping[id] for id in ids]
+        self.download(accessions, email)
 
     @property
     def length(self):
@@ -287,6 +320,29 @@ class HomologSet(object):
             return 0
         else:
             return max([int(id[2:]) for id in self.list_ids])
+
+    def get(self, *attrs):
+        """Get a dictionary with metadata for all homologs objects in the
+        HomologSet. The metadat for each Homolog only includes the attributes
+        named as arguments.
+
+        Arguments
+        ---------
+        *attrs : strings
+            Arguments to include in dictionary
+
+        Returns
+        -------
+        metadata : dict
+            Dictionary will metadata for each Homolog in HomologSet; only includes
+            keys named in arguments.
+        """
+        metadata = {}
+        for h in self.list_ids:
+            # Get homolog object
+            Homolog = getattr(self, h)
+            metadata[h] = Homolog.get(*attrs)
+        return metadata
 
     def homolog(self, id):
         """ Return Homolog with id. """
