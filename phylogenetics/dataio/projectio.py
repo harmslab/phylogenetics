@@ -1,4 +1,28 @@
-# import objects to bind to Project class
+"""
+
+{
+    "HomologSet" : [
+        {
+            "id" : "XX00000000",
+            "sequence" : "XJSMHTELTWF...",
+            "accver" : "#########",
+        },
+        {
+            "id" : "XX00000001",
+            "sequence" : "DSHASTEJOGASHJ...",
+            "accver" : "######"
+        }
+    ],
+    "Alignment" : 
+
+    "Tree" : (,),
+
+    ""
+
+
+
+}
+"""
 from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.alignment import Alignment
 from phylogenetics.tree import Tree

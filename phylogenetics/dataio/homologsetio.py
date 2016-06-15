@@ -170,10 +170,14 @@ class Read(object):
         mapping = self._HomologSet.map("accver", "id")
 
         for s in sequence_metadata:
-            # Update homologs that are already in the Set.
+            # If an id is already present in the metadata, use that.
             if "id" in s:
-                # Get Homolog object
-                Homolog = getattr(self._HomologSet, s["id"])
+                # See if that id already exists.
+                try:
+                    Homolog = getattr(self._HomologSet, s["id"])
+                except:
+                    Homolog = homologs.Homolog(id)
+                    self._HomologSet.add(Homolog)
 
             # Check if a sequence with same accession already exists in HomologSet,
             # If so, just update attributes with new metadata

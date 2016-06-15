@@ -10,6 +10,7 @@ class Alignment(object):
         self._HomologSet = HomologSet
         self.Write = Write(self)
         self.Read = Read(self)
+        self._latest = {}
 
     @property
     def latest(self):

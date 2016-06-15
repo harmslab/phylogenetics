@@ -55,6 +55,11 @@ class Write(object):
 
         return sequence_data
 
+    def _homolog_to_sequence_metadata(self):
+        """ Returns attributes
+        """
+        return self._Homolog.attrs
+
     @write_to_file
     def fasta(self, tags=[], aligned=False):
         """ Return fasta formatted string with named tags (in order given).

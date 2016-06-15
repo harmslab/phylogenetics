@@ -474,7 +474,6 @@ class HomologSet(object):
             # Remove Homolog attribute from object
             delattr(self, i)
 
-
     def cluster(self,
         redund_cutoff=0.99,
         tmp_file_suffix="oB_cdhit",
