@@ -22,8 +22,6 @@ from phylogenetics.ancestors import Ancestor, AncestorSet
 from phylogenetics.reconstruction import Reconstruction
 from phylogenetics.dataio import projectio
 
-from phylogenetics.utils import overwriting
-
 # imports for running external tools.
 from .exttools import (cdhit,
                         msaprobs,
@@ -39,8 +37,49 @@ class Project(object):
     Reconstruction, AncestorSet, etc.)
 
 
+    There a few ways in which you can construct a project object.
+
+    1. Start fresh
+        - initialize a project object
+            >>> project = phylogenetics.Project()
+        - download a list of accession ids
+            >>> project.download(accessions_list)
+        - run pipeline,
+            >>> project.cluster()
+            >>> project.align()
+            >>> project.tree()
+            >>> project.reconstruct()
+
+    2. Start with existing `phylogenetics` objects/data
+        - Initialize project class with other objects given as arguments
+            >>> project = phylogenetics.Project(
+                            HomologSet,
+                            Alignment,
+                        )
+        - Continue through pipeline
+        - Or add separate objects later.
+            >>> project = phylogenetics.add(Tree)
+
+    3. Load existing phylogenetics file from file.
+        - Each action in the phylogenetics package saves a copy to disk by default.
+            >>> project.load("project-#####.pickle")
+
+    4. Read phylogenetic data from files into project class.
+        - Initialize a project object
+            >>> project = phylogenetics.Project()
+        - Read files containing phylogenetic information using the `files` method.
+            >>> project.files(
+                HomologSet="sequences.fasta",
+                Alignment="alignment.fasta",
+                Tree="tree.newick",
+            )
+        - Or read in files individually.
+            >>> project.Read.fasta("sequences.fasta")
+
     """
     def __init__(self, *args):
+        # components
+        self._components = {}
         # Bind Reading module to class
         self.Read = projectio.Read(self)
         # Add any objects that were given to Project
@@ -56,16 +95,25 @@ class Project(object):
                 raise Exception("pickled object is not a Project object.")
         return project
 
-    #@overwriting
     def save(self, fname="project-%s.pickle" % \
         datetime.date.today().isoformat()):
         """ Save Project to path. """
         with open(fname, "wb") as f:
             pickle.dump(self, f)
 
-    def files(self, *files):
-        """Load files into project object and populate.
+    def files(self, **files):
+        """Load files into project object.
+
+        **files are keyword arguments.
         """
+        object_types = {
+            "HomologSet" : HomologSet,
+            "Alignment" : Alignment,
+            "Tree" : Tree,
+            "AncestorSet" : AncestorSet,
+            "Reconstruction" : Reconstruction,
+        }
+
         pass
 
 
@@ -95,6 +143,9 @@ class Project(object):
 
     def _add_HomologSet(self, HomologSet):
         """Add HomologSet Set to PhylogeneticsProject object."""
+        self._components = {
+            "HomologSet" : HomologSet
+        }
         # Set the HomologSet object
         self.HomologSet = HomologSet
         # Expose the align method of this object to user
@@ -103,6 +154,9 @@ class Project(object):
 
     def _add_Alignment(self, Alignment):
         """Add Alignment to PhylogeneticsProject object."""
+        self._components = {
+            "Alignment" : HomologSet
+        }
         # Set the Alignment object
         self.Alignment = Alignment
         # Expose the tree methods of this project object
@@ -110,6 +164,9 @@ class Project(object):
 
     def _add_Tree(self, Tree):
         """Add Tree to PhylogeneticsProject object."""
+        self._components = {
+            "Alignment" : HomologSet
+        }
         # Set the Tree object of project
         self.Tree = Tree
         # Expose the reconstruction methods of this project object
@@ -117,10 +174,16 @@ class Project(object):
 
     def _add_Reconstruction(self, Reconstruction):
         """Add Reconstruction to PhylogeneticsProject object."""
+        self._components = {
+            "Reconstruction" : HomologSet
+        }
         self.Reconstruction = Reconstruction
 
     def _add_AncestorSet(self, AncestorSet):
         """Add a AncestorSet object to PhylogeneticsProject object."""
+        self._components = {
+            "AncestorSet" : HomologSet
+        }
         self.AncestorSet = AncestorSet
 
     def _cluster(

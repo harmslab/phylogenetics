@@ -55,7 +55,7 @@ class Read(base.Read):
     def __init__(self, Project):
         self._Project = Project
 
-    def _data_to_project(data):
+    def _data_to_object(data):
         """Reads a project object from dictionary metadata.
         """
         object_types = {
@@ -72,94 +72,52 @@ class Read(base.Read):
             new_object.Read._data_to_object(data[key])
             self._Project.add(new_object)
 
-    def _sequences_to_project(data):
-        """Read project object from sequence data.
+    def _data_to_sequences(data):
+        """This method doesn't do anything.
         """
-        pass
-
+        print("""Use internal objects (i.e. HomologSet, Alignment) to read \
+        sequences from file, or the `files method`.""")
 
     @base.read_from_file
-    def fasta(self, data, tags=("id",)):
-        """Read fasta string.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
-        if hasattr(self._Project, "HomologSet") is False:
-            # Add a HomologSet to project
-            self._Project.add( HomologSet() )
-
-        self._Project.HomologSet.Read.fasta(data, tags=tags)
+    def pickle(self, data):
+        """Read a pickled string for project metadata."""
+        metadata = pickle.read(data)
+        self._data_to_object(metadata)
+        return self._Project
 
     @base.read_from_file
-    def alignment(self, data, tags=("id",)):
-        """Read alignment from string.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
-        if hasattr(self._Project, "HomologSet") is False:
-            # Add a HomologSet to project
-            self._Project.add( HomologSet() )
-
-        self._Project.add( Alignment(self._Project.HomologSet) )
-        self._Project.Alignment.Read.fasta(data, tags=tags)
-
-    @base.read_from_file
-    def entrez_xml(self, data):
-        """Read downloaded XML string from Entrez server.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
-        if hasattr(self._Project, "HomologSet") is False:
-            # Add a HomologSet to project
-            self._Project.add( HomologSet() )
-
-        self._Project.HomologSet.Read.entre_xml(data)
-
-    @base.read_from_file
-    def phylip(self, data):
-        """Read phylip string.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
-        if hasattr(self._Project, "HomologSet") is False:
-            # Add a HomologSet to project
-            self._Project.add( HomologSet() )
-
-        self._Project.add( Alignment(self._Project.HomologSet) )
-        self._Project.Alignment.Read.phylip(data, tags=tags)
-
-    @base.read_from_file
-    def csv(self, data):
-        """Read csv string.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
-        if hasattr(self._Project, "HomologSet") is False:
-            # Add a HomologSet to project
-            self._Project.add( HomologSet() )
-
-        self._Project.HomologSet.Read.csv(data)
-
-        # Check if an alignment is in the csv.
-        if hasattr(list(project.HomologSet.homologs.values())[0], "latest_align"):
-            # Add alignment to project
-            self._Project.add( Alignment( self._Project.HomologSet ) )
-
-    @base.read_from_file
-    def rst(self, data):
-        """Read PAML output form file.
-
-        Note: to read from a file, relace data argument with `fname=` keyword
-        argument.
-        """
+    def json(self, data):
+        """Read a json string for project metadata."""
+        metadata = json.read(data)
+        self._data_to_object(metadata)
+        return self._Project
 
 class Write(base.Write):
     """Writing object for project class.
     """
     def __init__(self, Project):
         self._Project = Project
+
+    def _object_to_data(self):
+        """Write project object to metadata dictionary."""
+        data = {}
+        for key, object self._Project._components.items():
+            data[key] = object._object_to_data()
+        return data
+
+    def _object_to_sequences(self):
+        """This method doesn't do anything in this object."""
+        print("""Use internal objects (i.e. HomologSet, Alignment) to write \
+        sequence data to file.""")
+
+    @base.write_to_file
+    def pickle(self):
+        """Write phylogenetics project to pickle string."""
+        metadata = self._object_to_data()
+        pickle.write(metadata)
+
+    @base.write_to_file
+    def json(self):
+        """Write phylogenetics project to json string."""
+        metadata = self._object_to_data()
+        json.write(metadata)
