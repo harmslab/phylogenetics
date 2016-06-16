@@ -82,6 +82,7 @@ class Project(object):
         self._components = {}
         # Bind Reading module to class
         self.Read = projectio.Read(self)
+        self.Write = projectio.Write(self)
         # Add any objects that were given to Project
         for a in args:
             self.add(a)
@@ -106,6 +107,7 @@ class Project(object):
 
         **files are keyword arguments.
         """
+        # Object types accessible to Project object
         object_types = {
             "HomologSet" : HomologSet,
             "Alignment" : Alignment,
@@ -114,8 +116,31 @@ class Project(object):
             "Reconstruction" : Reconstruction,
         }
 
-        pass
+        # File extensions used by project object
+        ext_types = {
+            "fasta" : "fasta",
+            "json" : "json",
+            "nwk" : "newick",
+            "nxs" : "nexus",
+            "pickle" : "pickle",
+            "rst" : "rst",
+            "csv" : "csv",
+            "xml" : "entrez_xml",
+            "phy" : "phylip"
+        }
 
+        for key, fname in files.items():
+            # Find file-type
+            filename, extension = os.path.splitext(fname)
+            filetype = ext_types[extension[1:]]
+            # Initialize the object that this file populates
+            new_object = object_types[key]()
+            # Get the reading method from new object
+            read_method = getattr(new_object.Read, filetype)
+            # Read into that object
+            read_method(fname=fname)
+            # Add object to project object.
+            self.add(new_object)
 
     def add(self, item):
         """Add data to project.
