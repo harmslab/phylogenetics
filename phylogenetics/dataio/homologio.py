@@ -18,7 +18,7 @@ Example :
 # Imports
 # ----------------------------------------------
 
-import .base
+from . import base
 from .formats import fasta, csv, json, pickle
 
 # ----------------------------------------------

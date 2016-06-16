@@ -1,4 +1,4 @@
-import .base
+from . import base
 class Write(base.Write):
     """Write the tree out."""
     def __init__(self, Tree):

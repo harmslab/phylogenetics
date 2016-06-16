@@ -1,6 +1,6 @@
-import base
 import dendropy
 
+from . import base
 from .formats import rst
 
 class Write(base.Write):

@@ -1,6 +1,6 @@
 # Module for input/output of Homolog Object
 
-import .base
+from . import base
 from .formats import fasta, csv, rst
 
 class Write(base.Write):

@@ -1,6 +1,6 @@
 # Module for input and output of alignment.
 
-import .base
+from . import base
 from .formats import fasta, phylip, json, pickle
 
 class Write(base.Write):

@@ -1,5 +1,5 @@
 # Module for input and output of HomologSet objects
-import .base
+from . import base
 from phylogenetics import homologs
 from .formats import fasta, csv, json, entrez_xml
 
@@ -171,7 +171,7 @@ class Read(base.Read):
                 try:
                     Homolog = getattr(self._HomologSet, s["id"])
                 except:
-                    Homolog = homologs.Homolog(id)
+                    Homolog = homologs.Homolog(s["id"])
                     self._HomologSet.add(Homolog)
 
             # Check if a sequence with same accession already exists in HomologSet,

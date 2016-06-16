@@ -34,7 +34,7 @@ Writes metadata as so:
 }
 """
 
-import .base
+from . import base
 from phylogenetics.homologs import Homolog, HomologSet
 from phylogenetics.alignment import Alignment
 from phylogenetics.tree import Tree
@@ -55,7 +55,7 @@ class Read(base.Read):
     def __init__(self, Project):
         self._Project = Project
 
-    def _data_to_object(data):
+    def _data_to_object(self, data):
         """Reads a project object from dictionary metadata.
         """
         object_types = {
@@ -68,11 +68,14 @@ class Read(base.Read):
 
         # walk through data object and add each feature to project class.
         for key in data:
-            new_object = object_types[key]
+            # Initialize the object
+            new_object = object_types[key]()
+            # Read the data
             new_object.Read._data_to_object(data[key])
+            # Add to project object
             self._Project.add(new_object)
 
-    def _data_to_sequences(data):
+    def _data_to_sequences(self, data):
         """This method doesn't do anything.
         """
         print("""Use internal objects (i.e. HomologSet, Alignment) to read \
@@ -101,8 +104,8 @@ class Write(base.Write):
     def _object_to_data(self):
         """Write project object to metadata dictionary."""
         data = {}
-        for key, object self._Project._components.items():
-            data[key] = object._object_to_data()
+        for key, object in self._Project._components.items():
+            data[key] = object.Write._object_to_data()
         return data
 
     def _object_to_sequences(self):
@@ -113,11 +116,13 @@ class Write(base.Write):
     @base.write_to_file
     def pickle(self):
         """Write phylogenetics project to pickle string."""
-        metadata = self._object_to_data()
-        pickle.write(metadata)
+        data = self._object_to_data()
+        metadata = pickle.write(data)
+        return metadata
 
     @base.write_to_file
     def json(self):
         """Write phylogenetics project to json string."""
-        metadata = self._object_to_data()
-        json.write(metadata)
+        data = self._object_to_data()
+        metadata = json.write(data)
+        return metadata
