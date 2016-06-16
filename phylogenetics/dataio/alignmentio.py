@@ -12,14 +12,14 @@ class Write(base.Write):
     def _object_to_sequences(self, alignment="latest", tags=["id"]):
         """ Convert alignment data to sequence data type. """
         sequences = []
-        alignment_dict = getattr(self._Alignment, alignment)
+        alignment_dict = self._Alignment._alignments[alignment]
         homologs = self._Alignment._HomologSet.homologs.items()
         for id, homolog in homologs:
             data = homolog.get(*tags)
             sequences.append((tuple([data[t] for t in tags]), alignment_dict[id]))
         return sequences
 
-    def _object_to_data(self, tags=[]):
+    def _object_to_data(self):
         """ Write alignment data to metadata format.
 
             sequence_metadata = [
@@ -37,11 +37,7 @@ class Write(base.Write):
             ]
 
         """
-        data = []
-        for id, homolog in self._Alignment._HomologSet.homologs.items():
-            metadata = homolog.get(*tags)
-            data.append(metadata)
-        return data
+        return self._Alignment._alignments
 
     @base.write_to_file
     def fasta(self, alignment="latest", tags=["id"]):
@@ -126,7 +122,7 @@ class Read(base.Read):
             ids_in_alignment_file.append(id)
 
         # Set this alignment as the latest.
-        self._Alignment._latest = alignment
+        self._Alignment._alignments["latest"] = alignment
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
@@ -147,23 +143,20 @@ class Read(base.Read):
         # Move old alignment to prevent overwriting.
         self._Alignment._move_old_alignment()
 
-        alignment = {}
-        # Iterate through the sequence data
-        for pair in data:
-            id = pair[0]
-            sequence = pair[1]
+        alignments = {}
+        # Iterate through the each alignments
+        for name, alignment in data.items():
+            # initialize alignment
+            alignments[name] = {}
+            for id, sequence in alignment.items():
+                # Add sequence.
+                alignments[name][id] = sequence
 
-            if len(attributes) != len(tags):
-                raise Exception(""" Number of attributes do not match number of tags given. """)
-
-            # Add sequence.
-            alignment[id] = sequence
-
-            # Track ids that are in alignment
-            ids_in_alignment_file.append(id)
+                # Track ids that are in alignment
+                ids_in_alignment_file.append(id)
 
         # Set this alignment as the latest.
-        self._Alignment._latest = alignment
+        self._Alignment._alignments = alignments
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
@@ -186,7 +179,7 @@ class Read(base.Read):
     def phylip(self, data):
         """ Read alignment from fasta file. """
         sequence_data = phylip.read(data)
-        self._data_to_object(sequence_data)
+        self._sequences_to_object(sequence_data)
         return self._Alignment
 
     @base.read_from_file

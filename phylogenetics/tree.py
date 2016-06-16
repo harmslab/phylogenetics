@@ -8,7 +8,7 @@ class Tree(object):
     """Subclass of Dendropy's Tree object including extra methods for
     connectiong to HomologSet object.
 
-    
+
     """
     def __init__(self, HomologSet, tree, stats={}):
         self.stats = stats

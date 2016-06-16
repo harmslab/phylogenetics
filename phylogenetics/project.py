@@ -87,13 +87,11 @@ class Project(object):
         for a in args:
             self.add(a)
 
-    @staticmethod
-    def load(path):
+    @classmethod
+    def load(cls, path):
         """ Load a project from pickle file. """
-        with open(path, "rb") as f:
-            project = pickle.load(f)
-            if project.__class__ != Project:
-                raise Exception("pickled object is not a Project object.")
+        project = cls()
+        project.Read.pickle(fname=path)
         return project
 
     def save(self, fname="project-%s.pickle" % \
@@ -168,9 +166,7 @@ class Project(object):
 
     def _add_HomologSet(self, HomologSet):
         """Add HomologSet Set to PhylogeneticsProject object."""
-        self._components = {
-            "HomologSet" : HomologSet
-        }
+        self._components["HomologSet"] = HomologSet
         # Set the HomologSet object
         self.HomologSet = HomologSet
         # Expose the align method of this object to user
@@ -179,9 +175,7 @@ class Project(object):
 
     def _add_Alignment(self, Alignment):
         """Add Alignment to PhylogeneticsProject object."""
-        self._components = {
-            "Alignment" : HomologSet
-        }
+        self._components["Alignment"] = Alignment
         # Set the Alignment object
         self.Alignment = Alignment
         # Expose the tree methods of this project object
@@ -189,9 +183,7 @@ class Project(object):
 
     def _add_Tree(self, Tree):
         """Add Tree to PhylogeneticsProject object."""
-        self._components = {
-            "Alignment" : HomologSet
-        }
+        self._components["Alignment"] = Tree
         # Set the Tree object of project
         self.Tree = Tree
         # Expose the reconstruction methods of this project object
@@ -199,16 +191,12 @@ class Project(object):
 
     def _add_Reconstruction(self, Reconstruction):
         """Add Reconstruction to PhylogeneticsProject object."""
-        self._components = {
-            "Reconstruction" : HomologSet
-        }
+        self._components["Reconstruction"] = Reconstruction
         self.Reconstruction = Reconstruction
 
     def _add_AncestorSet(self, AncestorSet):
         """Add a AncestorSet object to PhylogeneticsProject object."""
-        self._components = {
-            "AncestorSet" : HomologSet
-        }
+        self._components["AncestorSet"] = AncestorSet
         self.AncestorSet = AncestorSet
 
     def _cluster(

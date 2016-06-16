@@ -27,7 +27,7 @@ def read(data):
     header = HEADER_REGEX.search(data)
 
     if header is None:
-        raise Exception(""" Phylip file appears to have no header.""" )
+        raise Exception("""Phylip file appears to have no header.""" )
 
     # Parse header
     header_vals = HEADER_VAL_REGEX.findall(header.group())

@@ -8,7 +8,7 @@ class Read(object):
         """Read object from dictionary from pickled, json-ed, etc."""
         raise SubclassError("""Must be implemented in subclass""")
 
-    def _data_to_sequences(self):
+    def _sequences_to_object(self):
         """Read object from list of tuples, from formats like fasta,
         phylip, etc.
         """

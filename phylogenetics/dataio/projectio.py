@@ -33,6 +33,7 @@ Writes metadata as so:
     ]
 }
 """
+from collections import OrderedDict
 
 from . import base
 from phylogenetics.homologs import Homolog, HomologSet
@@ -58,22 +59,26 @@ class Read(base.Read):
     def _data_to_object(self, data):
         """Reads a project object from dictionary metadata.
         """
-        object_types = {
-            "HomologSet" : HomologSet,
-            "Alignment" : Alignment,
-            "Tree" : Tree,
-            "AncestorSet" : AncestorSet,
-            "Reconstruction" : Reconstruction,
-        }
+        meta = OrderedDict()
+        meta["HomologSet"] = HomologSet()
+        meta["Alignment"] = Alignment(meta["HomologSet"])
+        meta["Tree"] = Alignment(meta["HomologSet"])
+        meta["AncestorSet"] = Alignment(meta["Tree"])
+        #meta["Reconstruction"] = Reconstruction(
+        #    meta["Alignment"],
+        #    meta["Tree"],
+        #    meta["AncestorSet"],
+        #)
 
-        # walk through data object and add each feature to project class.
-        for key in data:
-            # Initialize the object
-            new_object = object_types[key]()
-            # Read the data
-            new_object.Read._data_to_object(data[key])
-            # Add to project object
-            self._Project.add(new_object)
+        for name, item in meta.items():
+            if name in data:
+                key = name
+                # Initialize the object
+                new_object = meta[key]
+                # Read the data
+                new_object.Read._data_to_object(data[key])
+                # Add to project object
+                self._Project.add(new_object)
 
     def _data_to_sequences(self, data):
         """This method doesn't do anything.
