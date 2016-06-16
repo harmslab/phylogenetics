@@ -1,9 +1,9 @@
 # Module for input/output of Homolog Object
 
-from .base import read_from_file, write_to_file
+import .base
 from .formats import fasta, csv, rst
 
-class Write(object):
+class Write(base.Write):
 
     def __init__(self, Ancestor):
         """ Writing object for Homolog Object. """
@@ -42,7 +42,7 @@ class Write(object):
         return sequence_metadata
 
 
-    @write_to_file
+    @base.write_to_file
     def fasta(self, tags=("id",), aligned=False):
         """ Return fasta formatted string with named tags (in order given).
 
@@ -52,18 +52,18 @@ class Write(object):
         output = fasta.write(sequence_data)
         return output
 
-    @write_to_file
+    @base.write_to_file
     def json(self, **kwargs):
         """ Return json formatted string. """
         return json.dumps(self._Ancestor.attrs)
 
 
-    @write_to_file
+    @base.write_to_file
     def pickle(self, **kwargs):
         """ Returns pickle string. """
         return pickle.dumps(self._Ancestor)
 
-    @write_to_file
+    @base.write_to_file
     def csv(self, tags=None, header=True, delimiter=",", **kwargs):
         """ write csv string. """
         # Get all attributes if tags are not specified
@@ -87,7 +87,7 @@ class Write(object):
 
         return f
 
-class Read(object):
+class Read(base.Read):
 
     def __init__(self, Ancestor):
         """ Object for reading and writing Ancestor. """
@@ -126,12 +126,12 @@ class Read(object):
             self._Ancestor.addattr(key, value)
         return self._Ancestor
 
-    @read_from_file
+    @base.read_from_file
     def rst (self, data):
         """ Read PAMLS's output. """
         pass
 
-    @read_from_file
+    @base.read_from_file
     def fasta(self, data, tags=None):
         """ Read a fasta string.
 
@@ -147,10 +147,10 @@ class Read(object):
         sequence_data = fasta.read(data)
         return self._sequence_data_to_ancestor(sequence_data)
 
-    @read_from_file
+    @base.read_from_file
     def csv(self, data):
         pass
 
-    @read_from_file
+    @base.read_from_file
     def json(self, data):
         pass

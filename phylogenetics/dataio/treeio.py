@@ -1,11 +1,10 @@
-from .base import read_from_file, write_to_file
-
-class Write(object):
+import .base
+class Write(base.Write):
     """Write the tree out."""
     def __init__(self, Tree):
         self._Tree = Tree
 
-    @write_to_file
+    @base.write_to_file
     def nexus(self,
         suppress_leaf_taxon_labels=False,
         suppress_leaf_node_labels=True,
@@ -52,7 +51,7 @@ class Write(object):
         return output
 
 
-    @write_to_file
+    @base.write_to_file
     def newick(self,
         suppress_leaf_taxon_labels=False,
         suppress_leaf_node_labels=True,
@@ -99,7 +98,7 @@ class Write(object):
         return output
 
 
-class Read(object):
+class Read(base.Read):
     """"""
     def __init__(self, Tree):
         self._Tree = Tree

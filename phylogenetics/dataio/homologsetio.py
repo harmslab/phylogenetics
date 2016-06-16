@@ -1,9 +1,9 @@
 # Module for input and output of HomologSet objects
+import .base
 from phylogenetics import homologs
-from .base import read_from_file, write_to_file
-from .formats import fasta, pickle, csv, entrez_xml
+from .formats import fasta, csv, json, entrez_xml
 
-class Write(object):
+class Write(base.Write):
     """Object for writing out the metadata of a HomologSet object.
 
     There are two basic output data-structures for the HomologSet.
@@ -36,54 +36,49 @@ class Write(object):
     def __init__(self, HomologSet):
         self._HomologSet = HomologSet
 
-    def _homologset_to_sequence_data(self, tags=("id",)):
+    def _object_to_sequences(self, tags=["id"]):
         """ Convert alignment data to sequence data type """
-        sequence_data = list()
-        for id, homolog in self._HomologSet.homologs.items():
-            # Construct tag list
-            labels = tuple()
+        sequence = []
+        for h, homolog in self._HomologSet.homologs.items():
+            data = homolog.get(*tags)
+            sequences.append(tuple([data[t] for t in tags]), getattr(homolog, "sequence"))
+        return sequences
 
-            for t in tags:
-                labels += (getattr(homolog, t),)
-            # Append tuple pair to list
-            sequence_data.append((labels, getattr(homolog, "sequence")))
-
-        return sequence_data
-
-    def _homologset_to_metadata(self, tags=("id",)):
+    def _object_to_data(self, tags=[]):
         """ Write alignment data to metadata format.
         """
-        sequence_metadata = []
-        if tags is None:
-            for id, homolog in self._HomologSet.homologs.items():
-                sequence_metadata.append(homolog.attrs)
-        else:
-            for id, homolog in self._HomologSet.homologs.items():
-                metadata = dict([(t, getattr(homolog, t)) for t in tags])
-                sequence_metadata.append(metadata)
-        return sequence_metadata
+        data = []
+        for h, homolog in self._HomologSet.homologs.items():
+            data.append(homolog.get(*tags))
+        return data
 
-    @write_to_file
-    def fasta(self, tags=("id",)):
+    @base.write_to_file
+    def fasta(self, tags=["id"]):
         """ Return string in fasta format for the set."""
-        sequence_data = self._homologset_to_sequence_data(tags=tags)
+        sequence_data = self._object_to_sequences(tags=tags)
         output = fasta.write(sequence_data)
         return output
 
-    @write_to_file
+    @base.write_to_file
     def pickle(self):
         """ Return pickle string of homolog set. """
-        return pickle.write(self._HomologSet)
+        return pickle.write(self._object_to_data())
 
-    @write_to_file
-    def csv(self, tags=("id",), delimiter=","):
+    @base.write_to_file
+    def json(self):
+        """Return json string for HomologSet object.
+        """
+        return json.write(self._object_to_data())
+
+    @base.write_to_file
+    def csv(self, tags=["id"], delimiter=","):
         """ Return csv string. """
-        sequence_metadata = self._homologset_to_metadata(tags=tags)
+        sequence_metadata = self._object_to_data(tags=tags)
         output = csv.write(sequence_metadata, delimiter=delimiter)
         return output
 
 
-class Read(object):
+class Read(base.Read):
     """Object bound to HomologSets for reading homolog set data.
 
     There are two basic output data-structures for the HomologSet.
@@ -124,7 +119,7 @@ class Read(object):
     def __init__(self, HomologSet):
         self._HomologSet = HomologSet
 
-    def _sequence_data_to_homologset(self, data, tags=("id",)):
+    def _sequences_to_object(self, data, tags=["id"]):
         """ Add sequence_data to alignment
         """
         # Check for ids in alignment
@@ -163,7 +158,7 @@ class Read(object):
         return self._HomologSet
 
 
-    def _sequence_metadata_to_homologset(self, sequence_metadata):
+    def _data_to_object(self, sequence_metadata):
         """ Add sequence_metadata to alignment.
         """
         # Try to get a map if HomologSet exists.
@@ -197,23 +192,41 @@ class Read(object):
 
         return self._HomologSet
 
-    @read_from_file
+    @base.read_from_file
     def fasta(self, data, tags=("id",)):
         """ Add sequence data from fasta to HomologSet. """
-        sequence_data = fasta.read(data)
-        self._sequence_data_to_homologset(sequence_data, tags=tags)
+        sequences = fasta.read(data)
+        self._data_to_object(sequences, tags=tags)
         return self._HomologSet
 
-    @read_from_file
+
+    @base.read_from_file
+    def pickle(self, data):
+        """Read in HomologSet data from pickle object.
+        """
+        data = pickle.read(data)
+        self._data_to_object(data)
+        return self._HomologSet
+
+
+    @base.read_from_file
+    def json(self, data):
+        """Read in HomologSet data from json string.
+        """
+        data = json.read(data)
+        self._data_to_object(data)
+        return self._HomologSet
+
+    @base.read_from_file
     def csv(self, data):
         """ Add csv data to HomologSet. """
         sequence_metadata = csv.read(data)
-        self._sequence_metadata_to_homologset(sequence_metadata)
+        self._data_to_object(sequence_metadata)
         return self._HomologSet
 
-    @read_from_file
+    @base.read_from_file
     def entrez_xml(self, data):
         """ Add entrez xml output to homolog. """
         sequence_metadata = entrez_xml.read(data)
-        self._sequence_metadata_to_homologset(sequence_metadata)
+        self._data_to_object(sequence_metadata)
         return self._HomologSet

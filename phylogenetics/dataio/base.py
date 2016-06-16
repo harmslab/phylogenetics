@@ -1,4 +1,31 @@
-# Base submodule for dataio module
+"""Base module for writing
+"""
+from phylogenetics.utils import SubclassError
+
+class Read(object):
+
+    def _data_to_object(self):
+        """Read object from dictionary from pickled, json-ed, etc."""
+        raise SubclassError("""Must be implemented in subclass""")
+
+    def _data_to_sequences(self):
+        """Read object from list of tuples, from formats like fasta,
+        phylip, etc.
+        """
+        raise SubclassError("""Must be implemented in subclass""")
+
+class Write(object):
+
+    def _object_to_data(self):
+        """Write object to a dictionary for pickling, json, etc."""
+        raise SubclassError("""Must be implemented in subclass""")
+
+    def _object_to_sequences(self):
+        """Write object to list of tuples for formats such as fasta,
+        phylip, etc.
+        """
+        raise SubclassError("""Must be implemented in subclass""")
+
 
 def read_from_file(function):
     """ Decorator to read data from a file.

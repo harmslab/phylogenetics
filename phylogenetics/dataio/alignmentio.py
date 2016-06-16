@@ -1,43 +1,23 @@
 # Module for input and output of alignment.
 
-from .base import read_from_file, write_to_file
-from .formats import fasta, phylip
+import .base
+from .formats import fasta, phylip, json, pickle
 
-class Write(object):
+class Write(base.Write):
 
     def __init__(self, Alignment):
         """ Object for reading and writing alignment data from a homolog set. """
         self._Alignment = Alignment
 
-    def _align_to_sequence_data(self, alignment="latest_align", tags=("id",)):
-        """ Convert alignment data to sequence data type """
-        sequence_data = list()
+    def _object_to_sequences(self, alignment="latest", tags=["id"]):
+        """ Convert alignment data to sequence data type. """
+        sequences = []
         for id, homolog in self._Alignment._HomologSet.homologs.items():
-            # Construct tag list
-            labels = tuple()
-            for t in tags:
-                labels += (getattr(homolog, t),)
-            # Append tuple pair to list
-            sequence_data.append((labels, getattr(homolog, alignment)))
+            data = homolog.get(*tags)
+            sequences.append((tuple([data[t] for t in tags]), getattr(homolog, alignment)))
+        return sequences
 
-        return sequence_data
-
-    def _align_to_phylip_data(self, alignment="latest_align"):
-        """ Convert alignment data to phylip format data type.
-
-            i.e.
-            phylip_data = [
-                ('name0', 'ASDGASHASASDFASGASDFAS'),
-                ('name1', 'JSERHSNDGAJEHDFDSGSHRE'),
-                ...
-            ]
-        """
-        phylip_data = []
-        for id, homolog in self._Alignment._HomologSet.homologs.items():
-            phylip_data.append((id, getattr(homolog, alignment)))
-        return phylip_data
-
-    def _align_to_metadata(self, tags=None):
+    def _object_to_data(self, tags=[]):
         """ Write alignment data to metadata format.
 
             sequence_metadata = [
@@ -55,52 +35,66 @@ class Write(object):
             ]
 
         """
-        sequence_metadata = []
-        if tags is None:
-            for id, homolog in self._Alignment._HomologSet.homologs.items():
-                sequence_metadata.append(h.attrs)
-        else:
-            for id, homolog in self._Alignment._HomologSet.homologs.items():
-                metadata = dict([(t, getattr(homolog, t)) for t in tags])
-                sequence_metadata.append(metadata)
-        return sequence_metadata
+        data = []
+        for id, homolog in self._Alignment._HomologSet.homologs.items():
+            metadata = homolog.get(*tags)
+            data.append(metadata)
+        return data
 
-    @write_to_file
-    def fasta(self, alignment="latest_align", tags=("id",)):
+    @base.write_to_file
+    def fasta(self, alignment="latest", tags=["id"]):
         """ Write alignment to fasta format. """
-        data = self._align_to_sequence_data(alignment=alignment, tags=tags)
+        data = self._object_to_sequences(alignment=alignment, tags=tags)
         output = fasta.write(data)
         return output
 
-    @write_to_file
-    def phylip(self, alignment="latest_align"):
+    @base.write_to_file
+    def pickle(self, alignment="latest"):
+        """Write alignment to pickle string.
+        """
+        data = self._object_to_data(alignment=alignment)
+        output = pickle.write(data)
+        return output
+
+    @base.write_to_file
+    def json(self, alignment="latest"):
+        """Write alignment to json string.
+        """
+        data = self._object_to_data(alignment=alignment)
+        output = json.write(data)
+        return output
+
+    @base.write_to_file
+    def phylip(self, alignment="latest"):
         """" Write alignment to phylip format. """
-        data = self._align_to_phylip_data(alignment=alignment)
+        data = self._object_to_data(alignment=alignment)
         output = phylip.write(data)
         return output
 
-    @write_to_file
-    def csv(self, tags=None):
-        """ Write alignment to csv format. """
-        sequence_metadata = self._align_to_metadata(tags=None)
+    @base.write_to_file
+    def csv(self, tags=[]):
+        """ Write alignment to csv format."""
+        sequence_metadata = self._object_to_data(tags=None)
         output = csv.write(sequence_metadata)
         return output
 
-class Read(object):
+class Read(base.Read):
 
     def __init__(self, Alignment):
         """ Module for reading alignment for Homologset from various formats. """
         self._Alignment = Alignment
 
-    def _sequence_data_to_alignment(self, data, tags=["id"]):
+    def _sequences_to_object(self, data, tags=["id"]):
         """ Add sequence_data to alignment
 
-            example:
-            data = [
-                (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
-                (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
-                ...
-            ]
+        example:
+        data = [
+            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
+            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
+            ...
+        ]
+
+
         """
         # Check for ids in alignment
         try:
@@ -108,24 +102,29 @@ class Read(object):
         except ValueError:
             raise Exception(""" One tag in alignment must be `id`. """)
 
+        # Move old alignment to prevent overwriting.
+        self._Alignment._move_old_alignment()
+
         # Initialize a list to old all ids in file.
         ids_in_alignment_file = list()
 
+        alignment = {}
         # Iterate through the sequence data
         for pair in data:
             attributes = pair[0]
-            alignment = pair[1]
+            sequence = pair[1]
 
             id = attributes[index]
 
             if len(attributes) != len(tags):
                 raise Exception(""" Number of attributes do not match number of tags given. """)
 
-            homolog = getattr(self._Alignment._HomologSet, id)
-            homolog.add_alignment(alignment)
-
+            alignment[id] = sequence
             # Track ids that are in alignment
             ids_in_alignment_file.append(id)
+
+        # Set this alignment as the latest.
+        self._Alignment._latest = alignment
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
@@ -137,25 +136,32 @@ class Read(object):
 
         return self._Alignment
 
-    def _phylip_data_to_alignment(self, phylip_data):
+    def _data_to_object(self, data):
         """ Add phylip data to alignment.
         """
         # Initialize a list to old all ids in file.
         ids_in_alignment_file = list()
 
+        # Move old alignment to prevent overwriting.
+        self._Alignment._move_old_alignment()
+
+        alignment = {}
         # Iterate through the sequence data
         for pair in data:
             id = pair[0]
-            alignment = pair[1]
+            sequence = pair[1]
 
             if len(attributes) != len(tags):
                 raise Exception(""" Number of attributes do not match number of tags given. """)
 
-            homolog = getattr(self._Alignment._HomologSet, id)
-            homolog.add_alignment(alignment)
+            # Add sequence.
+            alignment[id] = sequence
 
             # Track ids that are in alignment
             ids_in_alignment_file.append(id)
+
+        # Set this alignment as the latest.
+        self._Alignment._latest = alignment
 
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
@@ -167,16 +173,32 @@ class Read(object):
 
         return self._Alignment
 
-    @read_from_file
+    @base.read_from_file
     def fasta(self, data, tags=["id"]):
         """ Read alignment from fasta file. """
         sequence_data = fasta.read(data)
-        self._sequence_data_to_alignment(sequence_data, tags=tags)
+        self._sequences_to_object(sequence_data, tags=tags)
         return self._Alignment
 
-    @read_from_file
+    @base.read_from_file
     def phylip(self, data):
         """ Read alignment from fasta file. """
         sequence_data = phylip.read(data)
-        self._phylip_data_to_alignment(sequence_data)
+        self._data_to_object(sequence_data)
+        return self._Alignment
+
+    @base.read_from_file
+    def json(self, data):
+        """Read json data and add to alignment.
+        """
+        metadata = json.read(data)
+        self._data_to_object(metadata)
+        return self._Alignment
+
+    @base.read_from_file
+    def pickle(self, data):
+        """Read pickle data and add to alignment.
+        """
+        metadata = pickle.read(data)
+        self._data_to_object(metadata)
         return self._Alignment

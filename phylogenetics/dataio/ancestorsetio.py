@@ -1,9 +1,9 @@
-from .formats import rst
-from .base import read_from_file, write_to_file
-
+import base
 import dendropy
 
-class Write(object):
+from .formats import rst
+
+class Write(base.Write):
 
     def __init__(self, AncestorSet):
         """ """
@@ -20,7 +20,7 @@ class Write(object):
         pass
 
 
-class Read(object):
+class Read(base.Read):
 
     def __init__(self, AncestorSet):
         """ Read AncestorSet data from file and add to Ancestor"""
@@ -80,7 +80,7 @@ class Read(object):
         return self._AncestorSet
 
 
-    @read_from_file
+    @base.read_from_file
     def rst(self, data):
         """ Read ancestor set from paml file. """
         tree, ancestor_data = rst.read(data)
