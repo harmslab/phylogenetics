@@ -4,6 +4,9 @@
 
 import os, re, pickle, subprocess, time
 
+class SubclassError(Exception):
+    """Exception raised in parent objects for methods that must be inherited."""
+
 def timeit(func, *args, **kwargs):
     """ Time how long a function takes. """
     start = time.time()

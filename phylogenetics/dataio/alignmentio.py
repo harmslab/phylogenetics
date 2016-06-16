@@ -12,9 +12,11 @@ class Write(base.Write):
     def _object_to_sequences(self, alignment="latest", tags=["id"]):
         """ Convert alignment data to sequence data type. """
         sequences = []
-        for id, homolog in self._Alignment._HomologSet.homologs.items():
+        alignment_dict = getattr(self._Alignment, alignment)
+        homologs = self._Alignment._HomologSet.homologs.items()
+        for id, homolog in homologs:
             data = homolog.get(*tags)
-            sequences.append((tuple([data[t] for t in tags]), getattr(homolog, alignment)))
+            sequences.append((tuple([data[t] for t in tags]), alignment_dict[id]))
         return sequences
 
     def _object_to_data(self, tags=[]):
@@ -67,7 +69,7 @@ class Write(base.Write):
     @base.write_to_file
     def phylip(self, alignment="latest"):
         """" Write alignment to phylip format. """
-        data = self._object_to_data(alignment=alignment)
+        data = self._object_to_sequences(alignment=alignment)
         output = phylip.write(data)
         return output
 

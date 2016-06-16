@@ -1,5 +1,5 @@
 # API for working with Homolog sets in a phylogenetics project
-import os, string, time
+import os, string
 
 # Reading and Writing modules to HomologSet
 import phylogenetics.dataio.homologio as homologio
@@ -181,6 +181,8 @@ class Homolog(object):
         *attrs : list
             list of attributes to retrieve from Homolog object.
 
+        If no attrs are given, return all attrs.
+
         Returns
         -------
         metadata : dict
@@ -189,6 +191,10 @@ class Homolog(object):
         metadata = {}
         for a in attrs:
             metadata[a] = self._attrs[a]
+
+        if len(metadata) == 0:
+            metadata = self.attrs
+
         return metadata
 
     def add_alignment(self, alignment):
@@ -366,6 +372,8 @@ class HomologSet(object):
         *attrs : strings
             Arguments to include in dictionary
 
+        If no attributes are given, return all.
+
         Returns
         -------
         metadata : dict
@@ -377,6 +385,7 @@ class HomologSet(object):
             # Get homolog object
             Homolog = getattr(self, h)
             metadata[h] = Homolog.get(*attrs)
+
         return metadata
 
     def homolog(self, id):

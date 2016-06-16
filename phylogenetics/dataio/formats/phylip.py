@@ -58,7 +58,7 @@ def write(phylip_data):
         ---------
 
         phylip_data = [
-            (10_digit_id, sequence),
+            ((10_digit_id,), sequence),
             ...
         ]
 
@@ -76,7 +76,7 @@ def write(phylip_data):
 
     for s in phylip_data:
         # Get the header data from tuple pair
-        header = s[0]
+        header = s[0][0]
 
         # Quality control to make sequence name is less than 10 characters.
         if len(header)> 10:

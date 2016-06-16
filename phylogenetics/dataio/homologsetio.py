@@ -38,10 +38,10 @@ class Write(base.Write):
 
     def _object_to_sequences(self, tags=["id"]):
         """ Convert alignment data to sequence data type """
-        sequence = []
+        sequences = []
         for h, homolog in self._HomologSet.homologs.items():
             data = homolog.get(*tags)
-            sequences.append(tuple([data[t] for t in tags]), getattr(homolog, "sequence"))
+            sequences.append(([data[t] for t in tags], getattr(homolog, "sequence")))
         return sequences
 
     def _object_to_data(self, tags=[]):

@@ -19,7 +19,7 @@ def read(data):
     """
     # Match the pattern for fasta files
     matches = REGEX.findall(data)
-    print(matches)
+
     sequences = []
 
     for m in matches:
