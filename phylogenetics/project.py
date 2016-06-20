@@ -97,8 +97,7 @@ class Project(object):
     def save(self, fname="project-%s.pickle" % \
         datetime.date.today().isoformat()):
         """ Save Project to path. """
-        with open(fname, "wb") as f:
-            pickle.dump(self, f)
+        self.Write.pickle(fname=fname)
 
     def files(self, **files):
         """Load files into project object.
