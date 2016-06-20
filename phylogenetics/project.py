@@ -182,7 +182,7 @@ class Project(object):
 
     def _add_Tree(self, Tree):
         """Add Tree to PhylogeneticsProject object."""
-        self._components["Alignment"] = Tree
+        self._components["Tree"] = Tree
         # Set the Tree object of project
         self.Tree = Tree
         # Expose the reconstruction methods of this project object
