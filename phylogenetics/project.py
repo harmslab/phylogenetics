@@ -12,7 +12,7 @@ Example:
 
 
 """
-import os, pickle, datetime
+import os, pickle, datetime, copy
 
 # import objects to bind to Project class
 from phylogenetics.homologs import Homolog, HomologSet
@@ -92,6 +92,23 @@ class Project(object):
         """ Load a project from pickle file. """
         project = cls()
         project.Read.pickle(fname=path)
+        return project
+
+    def subproject(self, ids):
+        """Subset a project. Subsets the project instance as new project that
+        only includes the set of homologs given by ids.
+
+        NOTE: This method still under development, and will change as project
+        develops. A bit of a hack right now.
+        """
+        alignment = self.Alignment._alignments["latest"]
+        subset_alignment = dict([(id, alignment[id]) for id in ids])
+        HomologSet_ = self.HomologSet.subset(ids, inplace=False)
+        Alignment_ = Alignment(HomologSet_, subset_alignment)
+        project = Project(
+            HomologSet_,
+            Alignment_
+        )
         return project
 
     def save(self, fname="project-%s.pickle" % \

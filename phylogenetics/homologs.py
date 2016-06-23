@@ -197,28 +197,6 @@ class Homolog(object):
 
         return metadata
 
-    def add_alignment(self, alignment):
-        """ Add alignment to homolog """
-        # Check if this is the first alignment
-        if hasattr(self, "latest_align") is False:
-            # If first alignment, add new attribute to homolog.
-            self.addattr("latest_align", alignment)
-
-        # Else move old alignment to new attribute and update latest alignment.
-        else:
-            # Look for latest alignment
-            counter = 0
-            attr = "align0"
-            while hasattr(self, attr) is True:
-                attr = "align%d" % counter
-                counter += 1
-
-            # move old alignment to new attribute.
-            self.addattr(attr, self.latest_align)
-
-            # add new alignment to latest_align attribute
-            self.latest_align = alignment
-
     def addattr(self, key, value):
         """ Add attributes to homolog object. """
         # Set in attrs dict
@@ -446,7 +424,7 @@ class HomologSet(object):
             unique_id = "XX%08d" % i
             self._homologs[i].id = unique_id
 
-    def add(self, homologs):
+    def add(self, homologs={}, **kw_homologs):
         """ Append a list of homolog objects to the set.
 
             NOTE: does not renumber the homolog set. this must be called
@@ -454,7 +432,7 @@ class HomologSet(object):
         """
         # If a single homolog is given, format it into a list
         # for loop below.
-        if isinstance(homologs,list) == False:
+        if isinstance(homologs, list) == False:
             homologs = [homologs]
 
         # Set homolog as attribute of the HomologSet object
@@ -588,79 +566,3 @@ class HomologSet(object):
         else:
             hs = self.subset(subset_ids, inplace=inplace)
             return hs
-
-    def align(self, fname="alignment.fasta", rm_tmp=True, quiet=False):
-        """ Multiple sequence alignment of the HomologSet.
-
-            Currently, only option is to use MSAProbs.
-        """
-        # Write out alignment file
-        self.Write.fasta(fname="alignment.fasta")
-
-        # Run the alignment with MSAProbs
-        output_fname = msaprobs.run(fasta_fname="alignment", rm_tmp=rm_tmp)
-
-        # Attach an alignment object to HomologSet
-        self.Alignment = Alignment(self)
-
-        # Read alignment from output fasta and manage with Alignment object
-        self.Alignment.Read.fasta(fname=output_fname)
-
-        # Let us know when finished
-        if quiet is False:
-            print("Alignment finished.")
-
-        # Remove fasta file.
-        if rm_tmp:
-            os.remove(output_fname)
-
-    def tree(self, **kwargs):
-        """ Compute the maximum likelihood phylogenetic tree from
-            aligned dataset.
-
-        """
-        # Write the HomologSet out as a phylip.
-        self.Alignment.Write.phylip(fname="ml-tree.phy")
-
-        # Run phyml and parse results.
-        tree, stats = phyml.run("ml-tree", **kwargs)
-
-        # Add Tree object to HomologSet
-        self.Tree = Tree(self, tree, stats=stats)
-
-
-    def reconstruct(self):
-        """ Resurrect Ancestors on Tree.
-        """
-        # Bind Ancestor Objects to each internal node.
-        ancestors = []
-        for node in self.Tree._DendroPyTree.internal_nodes():
-            id = node.label
-            ancestors.append( Ancestor(id, self.Tree))
-
-        # Bind an AncestorSet object to HomologSet
-        self.AncestorSet = AncestorSet(self.Tree, ancestors=ancestors)
-        self.AncestorSet._nodes_to_ancestor()
-
-        seqfile = "asr-alignment.fasta"
-        outfile = "asr-output"
-        treefile = "asr-tree.nwk"
-
-        # Prepare input files for PAML
-        self.Tree._DendroPyTree.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
-        self.Alignment.Write.fasta(fname=seqfile)
-
-        # Construct a paml job
-        pamljob = paml.CodeML(
-            seqfile=seqfile,
-            outfile=outfile,
-            treefile=treefile,
-            fix_alpha=True,
-            alpha=self.Tree.stats["Gamma shape parameter"],
-        )
-
-        # Run the PAML job
-        pamljob.run()
-
-        # Read the paml output and bind data to tree
-        self.AncestorSet.Read.rst(fname="rst")

@@ -4,13 +4,13 @@ from phylogenetics.dataio.alignmentio import Write, Read
 
 class Alignment(object):
 
-    def __init__(self, HomologSet):
+    def __init__(self, HomologSet, alignment={}):
         """Object for maintaining alignment data for a HomologSet Object.
         """
         self._HomologSet = HomologSet
         self.Write = Write(self)
         self.Read = Read(self)
-        self._alignments = {"latest":{}}
+        self._alignments = {"latest": alignment}
 
     @property
     def latest(self):
@@ -53,10 +53,23 @@ class Alignment(object):
             # Move old alignment to new name.
             self._alignments["align" + str(counter)] = self.latest
 
+    def add(self, alignment):
+        """Add alignment data to object.
+        """
+        self.Read._data_to_object(alignment)
+
     def update(self, alignment_file):
-        """ Update an alignment with new set of sequences.
+        """ Read in a manually edited alignment to Alignment object.
 
         Reads in an alignment file and moves old alignments to new attribute.
         """
         # Write out alignment file
         self.Read.fasta(fname=alignment_file)
+
+    def subset(self, ids, alignment="latest"):
+        """Return the a new Alignment object, which is a subset of full
+        constructed from homologs given by ids alignment.
+
+        Currently not working ... Waiting for decoupling of Alignment
+        objects from HomologSet objects?
+        """
