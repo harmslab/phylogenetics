@@ -1,4 +1,5 @@
 from . import base
+from dendropy.datamodel.treemodel import Tree as DendropyTree
 
 class Write(base.Write):
     """Write the tree out."""
@@ -27,8 +28,7 @@ class Write(base.Write):
             real_value_format_specifier='',
             ignore_unrecognized_keyword_arguments=False,
         )
-        metadata = {"tree" : data}
-        return metadata
+        return data
 
     @base.write_to_file
     def nexus(self,
@@ -54,7 +54,7 @@ class Write(base.Write):
 
         For argument options, see DendroPy documentation.
         """
-        output = self._Tree.Dendropy.as_string(schema="nexus",
+        output = self._Tree.DendroPy.as_string(schema="nexus",
             suppress_leaf_taxon_labels=False,
             suppress_leaf_node_labels=True,
             suppress_internal_taxon_labels=False,
@@ -101,7 +101,7 @@ class Write(base.Write):
 
         For argument options, see DendroPy documentation.
         """
-        output = self._Tree.Dendropy.as_string(schema="newick",
+        output = self._Tree.DendroPy.as_string(schema="newick",
             suppress_leaf_taxon_labels=False,
             suppress_leaf_node_labels=True,
             suppress_internal_taxon_labels=False,
@@ -128,5 +128,36 @@ class Read(base.Read):
     def __init__(self, Tree):
         self._Tree = Tree
 
-    def nexus(self):
-        """ """
+    def _data_to_object(self, data, schema=None):
+        """Attaches a DendroPy tree object"""
+        schemas = [
+            "newick",
+            "nexus"
+        ]
+        # If schemas is not given, try each schema until one works.
+        if schema is None:
+            for s in schemas:
+                # Try different schemas until a tree works
+                try:
+                    tree = DendropyTree.get(data=data, schema=s)
+                except:
+                    pass
+        else:
+            tree = DendropyTree.get(data=data, schema=schema)
+
+        # Check that a tree was made.
+        try:
+            self._Tree._DendroPy = tree
+            self._Tree._construct()
+        except NameError:
+            raise Exception("""Tree data doesn't seem to be in a format that DendroPy can read.""")
+
+        return self._Tree
+
+    def newick(self, data):
+        """Read a tree from nexus string."""
+        return self._data_to_object(data=data, schema="newick")
+
+    def nexus(self, data):
+        Tree = DendropyTree.get(data=data, schema="nexus")
+        return self._data_to_object(Tree)

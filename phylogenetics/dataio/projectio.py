@@ -62,8 +62,8 @@ class Read(base.Read):
         meta = OrderedDict()
         meta["HomologSet"] = HomologSet()
         meta["Alignment"] = Alignment(meta["HomologSet"])
-        meta["Tree"] = Alignment(meta["HomologSet"])
-        meta["AncestorSet"] = Alignment(meta["Tree"])
+        meta["Tree"] = Tree(meta["HomologSet"])
+        meta["AncestorSet"] = AncestorSet(meta["Tree"])
         #meta["Reconstruction"] = Reconstruction(
         #    meta["Alignment"],
         #    meta["Tree"],
