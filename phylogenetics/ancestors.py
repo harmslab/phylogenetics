@@ -91,7 +91,7 @@ class AncestorSet(object):
     def _nodes_to_ancestor(self):
         """ Point nodes in tree to ancestor object and vice versa."""
         # Iterate through nodes in tree.
-        for node in self._Tree._DendroPyTree.nodes():
+        for node in self._Tree.DendroPy.nodes():
 
             # Find nodes that represent tips of the tree.
             if node.taxon is None:

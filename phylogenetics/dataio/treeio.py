@@ -154,10 +154,12 @@ class Read(base.Read):
 
         return self._Tree
 
+    @base.read_from_file
     def newick(self, data):
         """Read a tree from nexus string."""
         return self._data_to_object(data=data, schema="newick")
 
+    @base.read_from_file
     def nexus(self, data):
         Tree = DendropyTree.get(data=data, schema="nexus")
         return self._data_to_object(Tree)

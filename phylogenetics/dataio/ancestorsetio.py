@@ -55,7 +55,7 @@ class Read(base.Read):
         """
         # Read newick file into dendropy tree object
         new_tree = dendropy.datamodel.treemodel.Tree.get_from_string(tree, schema="newick")
-        old_tree = self._AncestorSet._Tree._DendroPyTree
+        old_tree = self._AncestorSet._Tree.DendroPy
 
         new_nodes = new_tree.internal_nodes()
         old_nodes = old_tree.internal_nodes()

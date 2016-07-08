@@ -36,6 +36,8 @@ class Project(object):
     objects from the `phylogenetics` package (i.e. HomologSet, Alignment, Tree,
     Reconstruction, AncestorSet, etc.)
 
+    Examples
+    --------
 
     There a few ways in which you can construct a project object.
 
@@ -293,7 +295,6 @@ class Project(object):
     def _tree(self, **kwargs):
         """ Compute the maximum likelihood phylogenetic tree from
             aligned dataset.
-
         """
         # Write the HomologSet out as a phylip.
         self.Alignment.Write.phylip(fname="ml-tree.phy")
@@ -303,6 +304,7 @@ class Project(object):
 
         # Add Tree object to HomologSet
         self._add_Tree(Tree(self.HomologSet, tree, stats=stats))
+        self.Tree.Read.newick(fname="ml-tree.phy_phyml_tree.txt")
         self.save()
 
 
@@ -311,7 +313,7 @@ class Project(object):
         """
         # Bind Ancestor Objects to each internal node.
         ancestors = []
-        for node in self.Tree.Dendropy.internal_nodes():
+        for node in self.Tree.DendroPy.internal_nodes():
             id = node.label
             ancestors.append( Ancestor(id, self.Tree))
 
@@ -324,7 +326,7 @@ class Project(object):
         treefile = "asr-tree.nwk"
 
         # Prepare input files for PAML
-        self.Tree.Dendropy.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
+        self.Tree.DendroPy.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
         self.Alignment.Write.fasta(fname=seqfile)
 
         # Construct a paml job
@@ -347,4 +349,4 @@ class Project(object):
 
         # Infer gaps.
         self.Reconstruction.infer_gaps()
-        self.save()
+        #self.save()
