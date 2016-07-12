@@ -171,7 +171,7 @@ class Read(base.Read):
     @base.read_from_file
     def fasta(self, data, tags=["id"]):
         """ Read alignment from fasta file. """
-        sequence_data = fasta.read(data)
+        sequence_data = fasta.read(data, tags)
         self._sequences_to_object(sequence_data, tags=tags)
         return self._Alignment
 
