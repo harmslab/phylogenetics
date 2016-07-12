@@ -161,9 +161,6 @@ class Read(base.Read):
     def _data_to_object(self, sequence_metadata):
         """ Add sequence_metadata to alignment.
         """
-        # Try to get a map if HomologSet exists.
-        mapping = self._HomologSet.map("accver", "id")
-
         for s in sequence_metadata:
             # If an id is already present in the metadata, use that.
             if "id" in s:
@@ -178,6 +175,8 @@ class Read(base.Read):
             # If so, just update attributes with new metadata
             elif "accver" in s and s["accver"] in mapping:
                 # Get the Homolog with that accession number
+                # Try to get a map if HomologSet exists.
+                mapping = self._HomologSet.map("accver", "id")
                 Homolog = getattr(self._HomologSet, mapping[s["accver"]])
 
             # otherwise, add a new Homolog object
@@ -193,10 +192,10 @@ class Read(base.Read):
         return self._HomologSet
 
     @base.read_from_file
-    def fasta(self, data, tags=("id",)):
+    def fasta(self, data):
         """ Add sequence data from fasta to HomologSet. """
         sequences = fasta.read(data)
-        self._data_to_object(sequences, tags=tags)
+        self._data_to_object(sequences)
         return self._HomologSet
 
 

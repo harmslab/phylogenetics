@@ -24,7 +24,9 @@ Table of Contents
    :maxdepth: 2
 
    introduction
-   homolog
+   project
+   reading
+   writing
 
 
 Indices and tables
