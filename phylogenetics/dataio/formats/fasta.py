@@ -9,7 +9,7 @@ import re
 # Regular expression patter for matching in fasta.
 REGEX = re.compile(">.+\n[A-Z\-\n]+")
 
-def read(data):
+def read(data, tags):
     """ Read a fasta string.
 
     Returns a list of tuple pairs. First value is header tags. Second
@@ -20,7 +20,7 @@ def read(data):
     # Match the pattern for fasta files
     matches = REGEX.findall(data)
 
-    sequences = []
+    sequences = {}
 
     for m in matches:
         index = m.find("\n")
@@ -33,8 +33,10 @@ def read(data):
         sequence = m[index+1:].strip()
         sequence = sequence.replace("\n", "") # Remove any newlines in sequence
 
+        for i in range(len(tags)):
+            sequences[tags[i]] = header[i]
         # Add tuple to tuples
-        sequences.append((header, sequence))
+        sequences["sequence"] = sequence
 
     # If a list isn't necessary, just give me the sequence data
     #if len(sequences) == 1:
