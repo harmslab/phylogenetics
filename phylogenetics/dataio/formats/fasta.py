@@ -20,7 +20,7 @@ def read(data, tags):
     # Match the pattern for fasta files
     matches = REGEX.findall(data)
 
-    sequences = {}
+    sequences = []
 
     for m in matches:
         index = m.find("\n")
@@ -33,10 +33,12 @@ def read(data, tags):
         sequence = m[index+1:].strip()
         sequence = sequence.replace("\n", "") # Remove any newlines in sequence
 
+        homolog = {}
         for i in range(len(tags)):
-            sequences[tags[i]] = header[i]
+            homolog[tags[i]] = header[i]
         # Add tuple to tuples
-        sequences["sequence"] = sequence
+        homolog["sequence"] = sequence
+        sequences.append(homolog)
 
     # If a list isn't necessary, just give me the sequence data
     #if len(sequences) == 1:
