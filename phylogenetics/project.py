@@ -327,7 +327,7 @@ class Project(object):
 
         # Prepare input files for PAML
         self.Tree.DendroPy.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
-        self.Alignment.Write.fasta(fname=seqfile)
+        self.Alignment.Write.fasta(fname=seqfile, tags=["id"])
 
         # Construct a paml job
         paml_job = paml.CodeML(
