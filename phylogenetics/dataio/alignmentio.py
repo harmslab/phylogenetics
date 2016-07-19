@@ -135,44 +135,34 @@ class Read(base.Read):
         return self._Alignment
 
     def _data_to_object(self, data):
-        """ Add phylip data to alignment.
+        """Add phylip data to alignment.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         # Initialize a list to old all ids in file.
-        ids_in_alignment_file = list()
-
+        ids_in_alignment_file = [homolog["id"] for homolog in data]
         # Move old alignment to prevent overwriting.
         self._Alignment._move_old_alignment()
-
-        alignments = {}
-        # Iterate through the each alignments
-        for name, alignment in data.items():
-            # initialize alignment
-            alignments[name] = {}
-            for id, sequence in alignment.items():
-                # Add sequence.
-                alignments[name][id] = sequence
-
-                # Track ids that are in alignment
-                ids_in_alignment_file.append(id)
-
         # Set this alignment as the latest.
-        self._Alignment._alignments = alignments
-
+        self._Alignment._alignments["latest"] = data
         # Check if Homologs were removed from Alignment file. If so, remove from
         # HomologSet.
         ids_in_alignment_file = set(ids_in_alignment_file)
         ids_in_HomologSet = set(self._Alignment._HomologSet.list_ids)
         diff = list(ids_in_HomologSet - ids_in_alignment_file)
-
         self._Alignment._HomologSet.rm(diff)
-
         return self._Alignment
 
     @base.read_from_file
     def fasta(self, data, tags=["id"]):
         """ Read alignment from fasta file. """
-        sequence_data = fasta.read(data, tags)
-        self._sequences_to_object(sequence_data, tags=tags)
+        sequence_data = fasta.read(data, tags=tags)
+        self._data_to_object(sequence_data)
         return self._Alignment
 
     @base.read_from_file

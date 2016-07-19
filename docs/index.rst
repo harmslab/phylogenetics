@@ -6,6 +6,8 @@
 Phylogenetics package
 =====================
 
+A Python API for constructing phylogenet
+
 The `phylogenetics` package was designed for two purposes:
 
 1. Create a single, persistent python object for managing phylogenetic data
