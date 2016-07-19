@@ -9,7 +9,7 @@ import re
 # Regular expression patter for matching in fasta.
 REGEX = re.compile(">.+\n[A-Z\-\n]+")
 
-def read(data, tags):
+def read(data, tags=["defline"]):
     """ Read a fasta string.
 
     Returns a list of tuple pairs. First value is header tags. Second

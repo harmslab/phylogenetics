@@ -192,7 +192,7 @@ class Read(base.Read):
         return self._HomologSet
 
     @base.read_from_file
-    def fasta(self, data, tags=["id"]):
+    def fasta(self, data, tags=["defline"]):
         """ Add sequence data from fasta to HomologSet. """
         sequences = fasta.read(data, tags)
         self._data_to_object(sequences)
