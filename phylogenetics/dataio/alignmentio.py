@@ -12,10 +12,9 @@ class Write(base.Write):
     def _object_to_sequences(self, alignment="latest"):
         """ Convert alignment data to sequence data type. """
         sequences = []
-        alignment_dict = self._Alignment._alignments[alignment]
-        homologs = self._Alignment._HomologSet.homologs.items()
-        for id, homolog in homologs:
-            sequences.append(id, homolog)
+        alignment = self._Alignment._alignments[alignment]
+        for a in alignment:
+            sequences.append(((a["id"],), a["sequence"]))
         return sequences
 
     def _object_to_data(self):
@@ -41,7 +40,7 @@ class Write(base.Write):
     @base.write_to_file
     def fasta(self, alignment="latest", tags=["id"]):
         """ Write alignment to fasta format. """
-        data = self._object_to_data(alignment=alignment, tags=tags)
+        data = self._object_to_sequences(alignment=alignment)
         output = fasta.write(data)
         return output
 
