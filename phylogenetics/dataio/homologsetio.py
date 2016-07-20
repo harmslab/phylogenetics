@@ -163,6 +163,7 @@ class Read(base.Read):
         """
         for s in sequence_metadata:
             # If an id is already present in the metadata, use that.
+            mapping = self._HomologSet.map("accver", "id")
             if "id" in s:
                 # See if that id already exists.
                 try:
