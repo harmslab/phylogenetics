@@ -163,7 +163,6 @@ class Read(base.Read):
         """
         for s in sequence_metadata:
             # If an id is already present in the metadata, use that.
-            mapping = self._HomologSet.map("accver", "id")
             if "id" in s:
                 # See if that id already exists.
                 try:
@@ -175,6 +174,7 @@ class Read(base.Read):
             # Check if a sequence with same accession already exists in HomologSet,
             # If so, just update attributes with new metadata
             elif "accver" in s and s["accver"] in mapping:
+                mapping = self._HomologSet.map("accver", "id")
                 # Get the Homolog with that accession number
                 # Try to get a map if HomologSet exists.
                 mapping = self._HomologSet.map("accver", "id")
