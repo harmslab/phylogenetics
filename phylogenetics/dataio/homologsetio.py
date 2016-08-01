@@ -171,6 +171,7 @@ class Read(base.Read):
                 try:
                     Homolog = getattr(self._HomologSet, s["id"])
                 except:
+                    from phylogenetics import homologs
                     Homolog = homologs.Homolog(s["id"])
                     self._HomologSet.add(Homolog)
 
