@@ -59,7 +59,7 @@ class Tree(object):
             setattr(Homolog, "node", node)
 
 
-    def label_tips(self, *attrs, clear=False):
+    def label_tips(self, clear=False, *attrs):
         """Add Homolog Attributes as tree tip labels. Pass then name of the
         attributes as arguments into this method.
 
