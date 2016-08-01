@@ -3,6 +3,7 @@ __doc__ = """
 Module for reading and writing fasta strings.
 
 """
+from __future__ import absolute_import
 
 import re
 

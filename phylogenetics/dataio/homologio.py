@@ -17,6 +17,7 @@ Example :
 # ----------------------------------------------
 # Imports
 # ----------------------------------------------
+from __future__ import absolute_import
 
 from . import base
 from .formats import fasta, csv, json, pickle

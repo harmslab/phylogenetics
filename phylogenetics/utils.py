@@ -1,6 +1,7 @@
 # --------------------------------------
 # Useful tools for handling fasta files.
 # --------------------------------------
+from __future__ import absolute_import
 
 import os, re, pickle, subprocess, time
 

@@ -1,5 +1,6 @@
 """Module for reading and writing csv strings.
 """
+from __future__ import absolute_import
 
 def read(data, delimiter=","):
     """ Read a fasta string.

@@ -1,4 +1,5 @@
 # Multiple sequence alignment using MSAProbs
+from __future__ import absolute_import
 
 import os, shlex
 import subprocess

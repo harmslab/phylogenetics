@@ -1,4 +1,6 @@
 # API for working with Homolog sets in a phylogenetics project
+from __future__ import absolute_import
+
 import os, string
 
 # Reading and Writing modules to HomologSet

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from . import base
 from dendropy.datamodel.treemodel import Tree as DendropyTree
 

@@ -1,4 +1,5 @@
 # Tree object for HomologSets
+from __future__ import absolute_import
 
 import dendropy
 import copy

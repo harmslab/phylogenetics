@@ -1,4 +1,5 @@
 ## Tools for managing alignments
+from __future__ import absolute_import
 
 from phylogenetics.dataio.alignmentio import Write, Read
 

@@ -1,4 +1,5 @@
 # Module for input/output of Homolog Object
+from __future__ import absolute_import
 
 from . import base
 from .formats import fasta, csv, rst

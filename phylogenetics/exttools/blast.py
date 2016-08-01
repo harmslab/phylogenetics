@@ -1,4 +1,6 @@
 # Useful functions for handling queries to NCBI Blast.
+from __future__ import absolute_import
+
 import os
 import glob
 from subprocess import call

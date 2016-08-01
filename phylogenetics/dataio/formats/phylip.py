@@ -3,6 +3,7 @@ __doc__ = """
 Module for reading and writing phylip strings.
 
 """
+from __future__ import absolute_import
 
 import re
 

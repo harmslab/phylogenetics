@@ -1,4 +1,6 @@
 # Module for input and output of HomologSet objects
+from __future__ import absolute_import
+
 from . import base
 from phylogenetics import homologs
 from .formats import fasta, csv, json, entrez_xml

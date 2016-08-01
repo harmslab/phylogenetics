@@ -12,6 +12,8 @@ Example:
 
 
 """
+from __future__ import absolute_import
+
 import os, pickle, datetime, copy
 
 # import objects to bind to Project class
