@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from . import base
-from phylogenetics import homologs
 from .formats import fasta, csv, json, entrez_xml
 
 class Write(base.Write):
@@ -148,6 +147,8 @@ class Read(base.Read):
                 Homolog = getattr(self._HomologSet, id)
             # otherwise, add a new Homolog object
             else:
+                # Import the Homolog Object locally and construct it.
+                from phylogenetics import homologs
                 Homolog = homologs.Homolog(id)
                 self._HomologSet.add(Homolog)
 
@@ -185,6 +186,8 @@ class Read(base.Read):
             # otherwise, add a new Homolog object
             else:
                 id = "XX%08d" % int(self._HomologSet.max_id + 1)
+                # Import the Homolog Object locally and construct it.
+                from phylogenetics import homologs
                 Homolog = homologs.Homolog(id)
                 self._HomologSet.add(Homolog)
 
