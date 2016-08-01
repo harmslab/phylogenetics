@@ -1,17 +1,3 @@
-"""Phylogenetics package entry point.
-
-`Project` class is a versatile object that manages all data for a phylogenetics
-project.
-
-Example:
-
->>> Project.Alignment
-            .Tree
-            .HomologSet
-            .AncestorSet
-
-
-"""
 from __future__ import absolute_import
 
 import os, pickle, datetime, copy
@@ -29,7 +15,21 @@ from .exttools import (cdhit,
                         msaprobs,
                         phyml,
                         paml)
+                        
+__doc__ = """Phylogenetics package entry point.
 
+`Project` class is a versatile object that manages all data for a phylogenetics
+project.
+
+Example:
+
+>>> Project.Alignment
+            .Tree
+            .HomologSet
+            .AncestorSet
+
+
+"""
 
 class Project(object):
     """Container object for managing all data for a phylogenetics project.

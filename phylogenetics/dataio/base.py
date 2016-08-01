@@ -1,5 +1,3 @@
-"""Base module for writing
-"""
 from __future__ import absolute_import
 
 from phylogenetics.utils import SubclassError

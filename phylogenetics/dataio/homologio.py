@@ -1,4 +1,10 @@
-"""Module for reading input and writing output of Homolog Object.
+
+# ----------------------------------------------
+# Imports
+# ----------------------------------------------
+from __future__ import absolute_import
+
+__doc__ = """Module for reading input and writing output of Homolog Object.
 
 Writes homolog object attributes out as a python dictionary with metadata which can
 easily be written:
@@ -14,10 +20,6 @@ Example :
     }
 """
 
-# ----------------------------------------------
-# Imports
-# ----------------------------------------------
-from __future__ import absolute_import
 
 from . import base
 from .formats import fasta, csv, json, pickle

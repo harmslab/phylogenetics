@@ -1,4 +1,6 @@
-"""Input/Output module for saving phylogenetics Project objects to disk.
+from __future__ import absolute_import
+
+__doc__ = """Input/Output module for saving phylogenetics Project objects to disk.
 
 Writes metadata as so:
 
@@ -33,7 +35,6 @@ Writes metadata as so:
     ]
 }
 """
-from __future__ import absolute_import
 
 from collections import OrderedDict
 
