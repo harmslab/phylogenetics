@@ -7,7 +7,7 @@ import re
 from phylogenetics.utils import run_subprocess
 from dendropy import Tree
 
-class ControlFile:
+class ControlFile(object):
 
     def __init__(self, **kwargs):
         """ Base class for writing a PAML control file"""
