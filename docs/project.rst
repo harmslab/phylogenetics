@@ -3,10 +3,24 @@ Project Class
 
 The ``project`` class provides a single, persisent object that walks you through
 a phylogenetics pipeline. As you construct your project, new methods and attributes emerge
-for navigating your data.
+to analyze your sequence data.
 
-This object acts as a container for all your data, and saves its current state
-at each step.
+This object also acts as a container for all your data, and saves its current state
+at each step. (To see what a saved project looks like, checkout the the `Metadata page`_.)
+The ```phylogenetics`` API, then, makes it easy to walk through your data/analysis.
+
+.. _Metadata page:
+
+Contents of this page:
+
+* `Project design`_
+* `Basic Usage`_
+
+
+Project design
+--------------
+
+
 
 Basic Usage
 -----------
@@ -17,7 +31,7 @@ There a few ways in which you can construct a phylogenetics Project.
 
         project = phylogenetics.Project()
 
-    2. download a list of accession ids:: 
+    2. download a list of accession ids::
 
         project.download(accessions_list)
 

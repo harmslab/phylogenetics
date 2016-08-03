@@ -1,7 +1,25 @@
 Metadata format
 ===============
 
-Project metadata format::
+A common issue today when doing phylogenetics
+is managing many different data formats that exist (i.e. fasta, phylip,
+newick, nexus, paml, etc.) while the data remains persistent. `phylogenetics` deals with this issue by tranforming
+all data that is read/written by the package to a single defined format metadata
+format. It follows a simple key-value dictionary structure. This data format is
+lightweight and easy to dump as pickle, json, csv, etc. This also allows us to
+continue developing the API without fear of backward incompatibility.
+
+Check out the different metadata formats:
+
+* `Project metadata format`_
+* `HomologSet metadata`_
+* `Alignment metadata format`_
+
+
+
+Project metadata format
+-----------------------
+::
 
     {
         "HomologSet" : [
@@ -27,7 +45,9 @@ Project metadata format::
         ""
     }
 
-HomologSet metadata::
+HomologSet metadata
+-------------------
+::
 
     {"HomologSet" : [
             {
@@ -43,5 +63,17 @@ HomologSet metadata::
         ]
     }
 
-Alignment metadata format::
-    {"Alignment" : }
+Alignment metadata format
+-------------------------
+::
+
+    {"Alignment" : {
+            "latest" : [
+                {
+                    "id" : "XX00000000"
+                },
+                {},
+            ]
+
+        }
+    }
