@@ -1,10 +1,8 @@
 # Python API for doing phylogenetics
 
-Test out the API in notebooks -- click on the badge:
-
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Zsailer/phylogenetics)
-
 This is the master repository for the `phylogenetics` Python package. This package offers an intuitive API for analyzing, creating, and reading/writing phylogenetic data via Python. The goal of this API is to make molecular phylogenetics broadly accessible without requiring all the technical/computational expertise currently needed.
+
+See the documentation [here](http://phylogenetics.readthedocs.io/en/latest/)
 
 From a programming point-of-view, this API defines/standardizes a set of objects and data-structures for managing phylogenetic data. Perhaps the most frustrating aspect of doing phylogenetics (and most of bioinformatics) is converting your sequence data to various file formats used by the separate phylogenetic tools (ie. fasta, phylip, newick, nexus, etc.). One huge strength of this API is that it manages data I/O for you. It reads and writes formats seamlessly -- most of which you won't even notice as a user.
 
@@ -57,18 +55,6 @@ project.align()
 project.tree()
 project.reconstruct()
 ```
-Project contains each part of the process in separate objects for easy manipulation.
-
-Also, you can start a `Project` at any stage of the phylogenetic process. Maybe you have a tree already constructed and just want to reconstruct ancestors. Simply initialize a `Project` object and read in the tree and alignment. `Project` will automatically build the other objects necessary for reconstruction and you'll be ready to go.
-```python
-# Read the tree format. Could also be nexus, etc.
-project = Project.Read.newick(fname="tree.nwk")
-project = Project.Read.alignment(fname="alignment.fasta")
-
-# Reconstruct the ancestors
-project.reconstruct()
-```
-
 Doing a full phylogenetics project is as simple as that!
 
 To see more, check out some Jupyter Notebook [examples](https://github.com/Zsailer/phylogenetics/tree/master/examples).
@@ -114,6 +100,7 @@ downloaded and built separately. The [wiki](https://github.com/Zsailer/phylogene
 these dependencies.
 
 External dependencies include:
+
 1. `cdhit` - clustering redundant sequences
 2. `msaprobs` - multiple sequence alignment software
 3. `phyml` - building maximum likelihood trees
