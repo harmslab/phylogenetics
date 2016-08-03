@@ -14,7 +14,8 @@ Check out the different metadata formats:
 * `Project metadata format`_
 * `HomologSet metadata`_
 * `Alignment metadata format`_
-
+* `Tree metadata format`_
+* `AncestorSet metadata format`_
 
 
 Project metadata format
@@ -24,22 +25,22 @@ Project metadata format
     {
         "HomologSet" : [
             {
-                "id" : "XX00000000",
+                "id" : "seq00000000",
                 "sequence" : "AGAMAMGATKLLSMA",
                 "orgname" : "human",
             },
             {
-                "id" : "XX00000001",
+                "id" : "seq00000001",
                 "sequence" : "AGAKKLGATKLLSMA",
                 "orgname" : "human",
             }
         ],
         "Alignment" : [
             {
-                "XX00000000" : "AG---KKLGATKL"
+                "seq00000000" : "AG---KKLGATKL"
             },
             {
-                "XX00000001" : ""
+                "seq00000001" : ""
             },
         ],
         ""
@@ -49,7 +50,8 @@ HomologSet metadata
 -------------------
 ::
 
-    {"HomologSet" : [
+    {
+        "HomologSet" : [
             {
                 "id" : "XX00000000",
                 "sequence" : "AGAMAMGATKLLSMA",
@@ -67,13 +69,77 @@ Alignment metadata format
 -------------------------
 ::
 
-    {"Alignment" : {
+    {
+        "Alignment" : {
             "latest" : [
                 {
-                    "id" : "XX00000000"
+                    "id" : "seq0000000",
+                    "sequence" : "",
+                    "date" : "",
                 },
-                {},
+                {
+                    "id" : "seq0000001",
+                    "sequence" : "",
+                    "data" : "",
+                },
+            ],
+            "align0" : [
+                {
+                    "id" : "seq0000000",
+                    "sequence" : "",
+                },
+                {
+                    "id" : "seq0000001",
+                    "sequence" : "",
+                },
             ]
-
         }
+    }
+
+
+Tree metadata format
+--------------------
+::
+
+    {
+        "Trees" : [
+            {
+                "name" : "tree0",
+                "notes" : "This is the best tree.",
+                "stats" : {
+                    "supports" : "aLRT",
+                }
+            },
+            {
+                "name" : "tree1",
+                "notes" : "This is a bad tree.",
+                "stats" : {
+                    "supports" : "SH"
+                }
+            }
+        ]
+    }
+
+
+AncestorSet metadata format
+---------------------------
+::
+
+    {
+        "Ancestors" : [
+            {
+                "treename" : "tree0",
+                "notes" : "",
+                "date" : "",
+                "AncestorSet": [
+                    {
+                        "id" : "anc0000000",
+                        "mlsequence" : "AGAMAMGATKLLSMA",
+                    },
+                    {
+                        "id" : "anc0000001",
+                        "mlsequence" : "AGAKKLGATKLLSMA",
+                ],
+            },
+        ]
     }

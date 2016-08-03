@@ -20,7 +20,15 @@ Contents of this page:
 Project design
 --------------
 
+The diagram below shows the architecture of the ``Project`` class and its API.
 
+.. image:: _images/project-fig.png
+
+Each object inside the Project class attaches a set of useful methods for analyzing
+each type of data. Each piece of a phylogenetics package lives shallow in the project
+class, and can be accessed through this single object's API. The modular design
+of this package also enables you to build each piece of a project separately. You
+can always add it to a new/old project later!
 
 Basic Usage
 -----------
