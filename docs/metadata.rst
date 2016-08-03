@@ -23,27 +23,111 @@ Project metadata format
 ::
 
     {
-        "HomologSet" : [
+        "name" : "human-project",
+        "date" : "",
+        "edited" : "",
+        "HomologSet" :
             {
-                "id" : "seq00000000",
-                "sequence" : "AGAMAMGATKLLSMA",
-                "orgname" : "human",
+                "name" : "dataset1",
+                "date" : "",
+                "edited" : "",
+                "homologs" : [
+                    {
+                        "id" : "XX00000000",
+                        "sequence" : "AGAMAMGATKLLSMA",
+                        "orgname" : "human",
+                    },
+                    {
+                        "id" : "XX00000001",
+                        "sequence" : "AGAKKLGATKLLSMA",
+                        "orgname" : "human",
+                    }
+                ]
+            },
+        "Alignments" : [
+            {
+                "name" : "latest",
+                "date" : "",
+                "alignment" : [
+                    {
+                        "id" : "seq0000000",
+                        "sequence" : "",
+                    },
+                    {
+                        "id" : "seq0000001",
+                        "sequence" : "",
+                    },
+                ],
             },
             {
-                "id" : "seq00000001",
-                "sequence" : "AGAKKLGATKLLSMA",
-                "orgname" : "human",
+                "name" : "old",
+                "date" : "",
+                "alignment" : [
+                    {
+                        "id" : "seq0000000",
+                        "sequence" : "",
+                    },
+                    {
+                        "id" : "seq0000001",
+                        "sequence" : "",
+                    },
+                ],
             }
         ],
-        "Alignment" : [
+        "Trees" : [
             {
-                "seq00000000" : "AG---KKLGATKL"
+                "name" : "tree0",
+                "date" : "",
+                "notes" : "This is the best tree.",
+                "stats" : {
+                    "supports" : "aLRT",
+                }
+                "newick" : ((,),),
             },
             {
-                "seq00000001" : ""
+                "name" : "tree1",
+                "date" : "",
+                "notes" : "This is the old tree.",
+                "stats" : {
+                    "supports" : "SH",
+                }
+                "newick" : ((,),),
+            }
+        ],
+        "Ancestors" : [
+            {
+                "tree" : "tree0",
+                "notes" : "",
+                "date" : "",
+                "ancestors": [
+                    {
+                        "id" : "anc0000000",
+                        "mlsequence" : "AGAMAMGATKLLSMA",
+                        "posterior" : [],
+                    },
+                    {
+                        "id" : "anc0000001",
+                        "mlsequence" : "AGAKKLGATKLLSMA",
+                        "posterior" : [],
+                ],
+            },
+            {
+                "tree" : "tree0",
+                "notes" : "",
+                "date" : "",
+                "ancestors": [
+                    {
+                        "id" : "anc0000000",
+                        "mlsequence" : "AGAMAMGATKLLSMA",
+                        "posterior" : [],
+                    },
+                    {
+                        "id" : "anc0000001",
+                        "mlsequence" : "AGAKKLGATKLLSMA",
+                        "posterior" : [],
+                ],
             },
         ],
-        ""
     }
 
 HomologSet metadata
@@ -51,7 +135,10 @@ HomologSet metadata
 ::
 
     {
-        "HomologSet" : [
+        "name" : "dataset1",
+        "date" : "",
+        "edited" : "",
+        "homologs" : [
             {
                 "id" : "XX00000000",
                 "sequence" : "AGAMAMGATKLLSMA",
@@ -70,54 +157,35 @@ Alignment metadata format
 ::
 
     {
-        "Alignment" : {
-            "latest" : [
-                {
-                    "id" : "seq0000000",
-                    "sequence" : "",
-                    "date" : "",
-                },
-                {
-                    "id" : "seq0000001",
-                    "sequence" : "",
-                    "data" : "",
-                },
-            ],
-            "align0" : [
-                {
-                    "id" : "seq0000000",
-                    "sequence" : "",
-                },
-                {
-                    "id" : "seq0000001",
-                    "sequence" : "",
-                },
-            ]
-        }
+        "name" : "align0",
+        "latest": True,
+        "date" : "",
+        "alignment" : [
+            {
+                "id" : "seq0000000",
+                "sequence" : "",
+            },
+            {
+                "id" : "seq0000001",
+                "sequence" : "",
+            },
+        ],
     }
 
 
 Tree metadata format
---------------------
+----------------------
 ::
 
     {
-        "Trees" : [
-            {
-                "name" : "tree0",
-                "notes" : "This is the best tree.",
-                "stats" : {
-                    "supports" : "aLRT",
-                }
-            },
-            {
-                "name" : "tree1",
-                "notes" : "This is a bad tree.",
-                "stats" : {
-                    "supports" : "SH"
-                }
-            }
-        ]
+        "name" : "tree0",
+        "date" : "",
+        "alignment" : "align0",
+        "notes" : "This is the best tree.",
+        "stats" : {
+            "supports" : "aLRT",
+        }
+        "newick" : ((,),),
     }
 
 
@@ -126,20 +194,18 @@ AncestorSet metadata format
 ::
 
     {
-        "Ancestors" : [
+        "tree" : "tree0",
+        "notes" : "",
+        "date" : "",
+        "ancestors": [
             {
-                "treename" : "tree0",
-                "notes" : "",
-                "date" : "",
-                "AncestorSet": [
-                    {
-                        "id" : "anc0000000",
-                        "mlsequence" : "AGAMAMGATKLLSMA",
-                    },
-                    {
-                        "id" : "anc0000001",
-                        "mlsequence" : "AGAKKLGATKLLSMA",
-                ],
+                "id" : "anc0000000",
+                "mlsequence" : "AGAMAMGATKLLSMA",
+                "posterior" : [],
             },
-        ]
-    }
+            {
+                "id" : "anc0000001",
+                "mlsequence" : "AGAKKLGATKLLSMA",
+                "posterior" : [],
+        ],
+    },
