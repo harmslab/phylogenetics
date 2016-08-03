@@ -178,7 +178,6 @@ class Read(base.Read):
             # Check if a sequence with same accession already exists in HomologSet,
             # If so, just update attributes with new metadata
             elif "accver" in s and s["accver"] in mapping:
-                mapping = self._HomologSet.map("accver", "id")
                 # Get the Homolog with that accession number
                 # Try to get a map if HomologSet exists.
                 mapping = self._HomologSet.map("accver", "id")
@@ -205,7 +204,6 @@ class Read(base.Read):
         self._data_to_object(sequences)
         return self._HomologSet
 
-
     @base.read_from_file
     def pickle(self, data):
         """Read in HomologSet data from pickle object.
@@ -213,7 +211,6 @@ class Read(base.Read):
         data = pickle.read(data)
         self._data_to_object(data)
         return self._HomologSet
-
 
     @base.read_from_file
     def json(self, data):

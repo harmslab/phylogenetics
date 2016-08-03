@@ -29,7 +29,7 @@ Table of Contents
    project
    reading
    writing
-
+   metadata
 
 Indices and tables
 ==================
