@@ -57,7 +57,7 @@ Project metadata format
                         "id" : "seq0000001",
                         "sequence" : "",
                     },
-                ],
+                ]
             },
             {
                 "name" : "old",
@@ -71,7 +71,7 @@ Project metadata format
                         "id" : "seq0000001",
                         "sequence" : "",
                     },
-                ],
+                ]
             }
         ],
         "Trees" : [
@@ -81,7 +81,7 @@ Project metadata format
                 "notes" : "This is the best tree.",
                 "stats" : {
                     "supports" : "aLRT",
-                }
+                },
                 "newick" : ((,),),
             },
             {
@@ -90,7 +90,7 @@ Project metadata format
                 "notes" : "This is the old tree.",
                 "stats" : {
                     "supports" : "SH",
-                }
+                },
                 "newick" : ((,),),
             }
         ],
@@ -109,6 +109,7 @@ Project metadata format
                         "id" : "anc0000001",
                         "mlsequence" : "AGAKKLGATKLLSMA",
                         "posterior" : [],
+                    }
                 ],
             },
             {
@@ -125,6 +126,7 @@ Project metadata format
                         "id" : "anc0000001",
                         "mlsequence" : "AGAKKLGATKLLSMA",
                         "posterior" : [],
+                    }
                 ],
             },
         ],
@@ -184,7 +186,7 @@ Tree metadata format
         "notes" : "This is the best tree.",
         "stats" : {
             "supports" : "aLRT",
-        }
+        },
         "newick" : ((,),),
     }
 
@@ -207,5 +209,6 @@ AncestorSet metadata format
                 "id" : "anc0000001",
                 "mlsequence" : "AGAKKLGATKLLSMA",
                 "posterior" : [],
+            }
         ],
     },
