@@ -3,10 +3,16 @@
 # --------------------------------------
 from __future__ import absolute_import
 
-import os, re, pickle, subprocess, time
+import os, re, pickle, subprocess, time, datetime
 
 class SubclassError(Exception):
     """Exception raised in parent objects for methods that must be inherited."""
+
+def get_time():
+    """Get a string of the date and time."""
+    now = datetime.datetime.now()
+    date = "%d-%d-%d_%dh%dm" % (now.month, now.day, now.year, now.hour, now.minute)
+    return date
 
 def timeit(func, *args, **kwargs):
     """ Time how long a function takes. """
@@ -113,39 +119,3 @@ def concatenate_files(filenames, output):
             with open(fname) as infile:
                 for line in infile:
                     outfile.write(line)
-
-def get_fasta_names(filename):
-    """ Get everthing after the `>` in a fasta file (without the sequence)"""
-    f = open(filename, "r")
-    lines = f.readlines()
-    f.close()
-
-    names = list()
-    for l in lines:
-        # Find start of sequence data
-        if l[0] == ">":
-            # Append this line to names list, stripping all white space
-            # after the last character.
-            names.append(l[1:].rstrip())
-
-    return names
-
-
-def read_fasta(filename):
-    """ Reads in a fasta file, returning a dict with defline
-        as key and sequence as value.
-    """
-    f = open(filename, "r")
-    lines = f.readlines()
-    f.close()
-
-    keys = []
-    vals = []
-    for l in lines:
-        val = ""
-        if l[0] == ">":
-            keys.append(l[1:].strip())
-            vals.append("")
-        else:
-            vals[-1] += "".join(l.strip())
-    return dict(zip(keys, vals))

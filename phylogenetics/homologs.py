@@ -3,6 +3,8 @@ from __future__ import absolute_import
 
 import os, string
 
+from .base import BaseClass
+
 # Reading and Writing modules to HomologSet
 import phylogenetics.dataio.homologio as homologio
 import phylogenetics.dataio.homologsetio as homologsetio
@@ -27,12 +29,14 @@ import phylogenetics.utils as utils
 # Things that you often do with HomologSets
 # ---------------------------------------------------
 
+ID_PREFIX = "seq"
+
 def unique_id(start, end=None):
     """ Returns a set of unique names """
     if end is None:
         end = int(start)
         start = 0
-    return ["XX%08d" % i for i in range(start, end+1)]
+    return [ID_PREFIX+"%07d" % i for i in range(start, end+1)]
 
 def concat_homolog_sets(hs1, hs2, renumber=False):
     """ Concatenate two homolog set. If told, will renumber the `id` attributes
@@ -125,22 +129,23 @@ def rank_homologs(homolog_set,
 # Main Homolog objects for package
 # ---------------------------------------------------
 
-class Homolog(object):
+class Homolog(BaseClass):
+    """ Inialize a Homolog Object.
 
+    The `Homolog` object provides a data-structure for sequence metadata
+    in a phylogenetics project.
+
+
+    Arguments:
+    ---------
+    unique_id : str
+        a unique id key that to track sequence for projects moving forward.
+
+    Keyword Arguments
+    -----------------
+    Become attributes to the sequence.
+    """
     def __init__(self, unique_id, **kwargs):
-        """ Inialize a Homolog Object.
-
-            The `Homolog` object provides a data-structure for sequence metadata
-            in a phylogenetics project.
-
-
-            Arguments:
-            ---------
-            unique_id: str
-                ID number for homolog, unique from any set.
-
-            kwargs become tags/
-        """
         # Initialize all attributes
         self._attrs = {}
 
@@ -161,78 +166,38 @@ class Homolog(object):
         self.Write = homologio.Write(self)
         self.Read = homologio.Read(self)
 
-    @classmethod
-    def download(self, accession):
-        """ """
+class HomologSet(BaseClass):
+    """ Initialize a HomologSet object.
 
-    @property
-    def attrs(self):
-        """ """
-        return self._attrs
+    A HomologSet object provides a data-structure for metadata from a set
+    of sequences for a phylogenetics project.
 
-    @property
-    def seqlen(self):
-        """ Get the length of sequence """
-        return len(self.sequence)
-
-    def get(self, *attrs):
-        """ Get specific attributes from Homolog.
-
-        Arguments
-        ---------
-        *attrs : list
-            list of attributes to retrieve from Homolog object.
-
-        If no attrs are given, return all attrs.
-
-        Returns
-        -------
-        metadata : dict
-            returns attributes that were given.
-        """
-        metadata = {}
-        for a in attrs:
-            metadata[a] = self._attrs[a]
-
-        if len(metadata) == 0:
-            metadata = self.attrs
-
-        return metadata
-
-    def addattr(self, key, value):
-        """ Add attributes to homolog object. """
-        # Set in attrs dict
-        self._attrs[key] = value
-
-        # Set the object attribute as well
-        setattr(self, key, value)
-
-    def rmattr(self, attr):
-        """ remove an attribute from Homologs. """
-        # Remove from _attrs dict
-        del self._attrs[attr]
-
-        # Remove from object
-        delattr(self, attr)
-
-
-class HomologSet(object):
-
-    def __init__(self, homologs=[]):
-        """ Initialize a HomologSet object.
-
-            A HomologSet object provides a data-structure for metadata from a set
-            of sequences for a phylogenetics project.
-
-        """
-        self._homologs = {}
+    Parameters
+    ----------
+    homologs : list
+        an initial list of homolog objects to keep in the HomologSet
+    name : str
+        name of this HomologSet
+    notes : str
+        a short description for the dataset.
+    """
+    def __init__(self, homologs=[], name="homologset", notes=""):
+        super(HomologSet, self).__init__(self)
+        # Add attributes to metadata
+        self.addattr(name=name, notes=notes)
+        # Add homologs to list
         self.add(homologs)
-
         # Attach Write-ing object
         self.Write = homologsetio.Write(self)
         self.Read = homologsetio.Read(self)
-
         setattr(self, "download", self._download)
+
+    @property
+    def metadata(self):
+        """Get metadata from the HomologSet"""
+        metadata = super(HomologSet, self).metadata
+        metadata["homologs"] = [h.metadata for h in self.homologs]
+        return metadata
 
     @classmethod
     def download(cls, accessions, email):
@@ -347,8 +312,8 @@ class HomologSet(object):
         HomologSet. The metadat for each Homolog only includes the attributes
         named as arguments.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         *attrs : strings
             Arguments to include in dictionary
 
@@ -367,10 +332,6 @@ class HomologSet(object):
             metadata[h] = Homolog.get(*attrs)
 
         return metadata
-
-    def homolog(self, id):
-        """ Return Homolog with id. """
-        return self.homologs[id]
 
     def map(self, attr1, attr2=None):
         """ Return mapping between two attributes in homolog set, OR
@@ -419,21 +380,23 @@ class HomologSet(object):
 
     def renumber(self):
         """ Renumber the ID numbers for homologs in the set, starting at
-            0 to len(homologs).
+        0 to len(homologs).
         """
         n = len(self.homologs)
         for i in range(n):
-            unique_id = "XX%08d" % i
+            unique_id = ID_PREFIX+"%07d" % i
             self._homologs[i].id = unique_id
 
-    def add(self, homologs={}, **kw_homologs):
-        """ Append a list of homolog objects to the set.
-
-            NOTE: does not renumber the homolog set. this must be called
-            manually.
+    def add(self, *homologs):
+        """Append a list of homolog objects to the set.
         """
-        # If a single homolog is given, format it into a list
-        # for loop below.
+        for h in homologs:
+            if h.__class__ is not Homolog:
+                raise Exception("""Argument is not a Homolog object.""")
+            self.homologs
+
+
+
         if isinstance(homologs, list) == False:
             homologs = [homologs]
 
