@@ -32,25 +32,34 @@ def read(data, tags=["defline"]):
         sequences.append(homolog)
     return sequences
 
-def write(metadata):
-    """Write a fasta string.
+
+def write(sequences):
+    """ Write a fasta string.
 
     Note: to write to file, replace the `data` arguemnt the keyword argument `fname`
 
     Arguments:
     ---------
-    metadata : list of dictionarys
-        sequence metadata.
+
+    sequences = [
+        ((tag0, tag1,...), sequence),
+        ...
+    ]
     """
-    if type(metadata) != list:
-        metadata = [metadata]
+    if type(sequences) != list:
+        sequences = [sequences]
+
     data = ""
+
     for s in sequences:
         # Get the header data from tuple pair
         header = s[0]
         header_str = "|".join(header).strip()
+
         # Get sequence data
         sequence = s[1]
+
         # Add fasta string to data string
         data += ">%s\n%s\n" %(header_str, sequence)
+
     return data.strip()
