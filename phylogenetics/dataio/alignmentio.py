@@ -7,11 +7,11 @@ from .formats import fasta, phylip, json, pickle
 class Write(base.Write):
 
     def __init__(self, Alignment):
-        """ Object for reading and writing alignment data from a homolog set. """
+        """Object for reading and writing alignment data from a homolog set. """
         self._Alignment = Alignment
 
     def _object_to_sequences(self, alignment="latest"):
-        """ Convert alignment data to sequence data type. """
+        """Convert alignment data to sequence data type. """
         sequences = []
         alignment = self._Alignment._alignments[alignment]
         for a in alignment:
@@ -20,21 +20,6 @@ class Write(base.Write):
 
     def _object_to_data(self):
         """ Write alignment data to metadata format.
-
-            sequence_metadata = [
-                {
-                    "species": "seq0",
-                    "organism": "agasda",
-                    "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
-                },
-                {
-                    "species": "seq1",
-                    "organism": "afher",
-                    "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
-                },
-                ...
-            ]
-
         """
         return self._Alignment._alignments
 
@@ -83,15 +68,6 @@ class Read(base.Read):
 
     def _sequences_to_object(self, data, tags=["id"]):
         """ Add sequence_data to alignment
-
-        example:
-        data = [
-            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
-            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
-            ...
-        ]
-
-
         """
         # Check for ids in alignment
         try:
@@ -135,13 +111,6 @@ class Read(base.Read):
 
     def _data_to_object(self, data):
         """Add phylip data to alignment.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
         """
         # Initialize a list to old all ids in file.
         ids_in_alignment_file = [homolog["id"] for homolog in data]

@@ -38,15 +38,15 @@ class Write(base.Write):
     def _object_to_sequences(self, tags=[]):
         """ Write Homolog as sequence_data datatype.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         tags : list
             list of attributes in Homolog object to write
 
         Returns
         -------
         sequence_data : dict
-
+            sequence data in format.
         """
         # Built a tuple of tags
         tag_data = tuple()
@@ -67,7 +67,7 @@ class Write(base.Write):
     def fasta(self, tags=[], aligned=False):
         """ Return fasta formatted string with named tags (in order given).
 
-            If no tags are given, prints id with sequence.
+        If no tags are given, prints id with sequence.
         """
         sequence_data = self._object_to_sequences()
         output = fasta.write(sequence_data)
@@ -115,7 +115,7 @@ class Read(base.Read):
 
     def _sequences_to_object(self, sequence_data, tags=None):
         """ Method to take transform sequence data-structure from reading methods
-            to a Homolog.
+        to a Homolog.
         """
         # Split the sequence tuple into relevent parts
         attributes = sequence_data[0]
@@ -143,8 +143,8 @@ class Read(base.Read):
     def _data_to_object(self, sequence_metadata):
         """Use read take to populate a Homolog object.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         data : dict
             dict with all the metdata.
         """
@@ -156,13 +156,12 @@ class Read(base.Read):
     def fasta(self, data, tags=None):
         """ Read a fasta string.
 
-            Arguments:
-            ---------
-            data: None
-
-            tag: tuple
-                attributes to add fasta headers.
-
+        Parameters
+        ----------
+        data: None
+            data
+        tag: tuple
+            attributes to add fasta headers.
         """
         # Read fasta file
         sequence_data = fasta.read(data)

@@ -11,7 +11,8 @@ setup(name = 'phylogenetics',
     packages = ['phylogenetics'],
     install_requires=[
         'dendropy',
-        'biopython'
+        'biopython',
+        'requests'
     ],
     #scripts = 'scripts/blast-download',
         #'scripts/blast-process',

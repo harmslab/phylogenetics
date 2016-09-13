@@ -4,9 +4,8 @@ from __future__ import absolute_import
 import re
 
 def read(data):
-    """
-        Read PAML output, return a newick tree with ancestors labeled and
-        ancestor_data in nested dictionary.
+    """Read PAML output, return a newick tree with ancestors labeled and
+    ancestor_data in nested dictionary.
     """
     # Match tree with ancestor labels
     regex = re.compile("tree with node labels for Rod Page's TreeView\n.+\n")

@@ -27,7 +27,7 @@ def get_organism(defline):
     return defline[defline.find("[")+1:defline.find("]")]
 
 def query(fasta_input, output, remote=True, **kwargs):
-    """ Construct Blast+ application command. Send this command to subprocess.
+    """Construct Blast+ application command. Send this command to subprocess.
     """
     # blastp -query input_file -out output_file -db nr -entrez_query taxa -remote
     args = OrderedDict({
@@ -60,14 +60,16 @@ def query(fasta_input, output, remote=True, **kwargs):
 def seeds(fasta, as_homologset=True, rm_blast=False, **kwargs):
     """ Blast a set of seed sequences.
 
-        Arguments:
-        ---------
-        fasta : str
-            filename for fasta containing seed sequences.
-        as_homologset: bool [default=true]
-            Convert blast results to homolog set.
+    Arguments
+    ---------
+    fasta : str
+        filename for fasta containing seed sequences.
+    as_homologset : bool [default=true]
+        Convert blast results to homolog set.
 
-        kwargs are passed to blasting method.
+    Notes
+    -----
+    ``kwargs`` are passed to blasting method.
     """
     # grab just the name
     filename = os.path.splitext(fasta)[0]
@@ -136,25 +138,23 @@ def reverse(master_file, organism):
 # ----------------------------------------------------
 
 def parse_blast_xml(xml_string, tag_list=DEFAULTS):
+    """Parse XML file of hits returned after BLASTing a sequence
+    against a database.
+
+    Parameters
+    ----------
+    filename : str
+        XML filename returned from BLAST
+    tag_list : tuple
+        Tuple of XML tags that will be included in output data for
+        each sequence.
+
+    Returns
+    -------
+    all_hits : list of dicts
+        List of sequence data for all hits in XML file (with key,values
+        given by tag_list).
     """
-        Parse XML file of hits returned after BLASTing a sequence
-        against a database.
-
-        Args:
-        ----
-        filename: str
-            XML filename returned from BLAST
-        tag_list: tuple
-            Tuple of XML tags that will be included in output data for
-            each sequence.
-
-        Returns:
-        -------
-        all_hits: list of dicts
-            List of sequence data for all hits in XML file (with key,values
-            given by tag_list).
-    """
-
     # Fix screwed up XML if blasts were done in series...
     blast_input = flatten_concatenated_XML(xml_string,"BlastOutput_iterations")
 
@@ -211,16 +211,16 @@ def parse_blast_xml(xml_string, tag_list=DEFAULTS):
 def to_homologset(filenames, tag_list=DEFAULTS):
     """ Turn multiple blast hit XML files into homolog object
 
-        Arguments:
-        ---------
-        filenames: string or list
-            list of filenames for several blast results to compile into a homologset
-        tag_list: tuple
-            XML tags to strip from blast results and make attributes in homolog objects
+    Arguments
+    ---------
+    filenames : string or list
+        list of filenames for several blast results to compile into a homologset
+    tag_list : tuple
+        XML tags to strip from blast results and make attributes in homolog objects
 
-        Returns:
-        -------
-        homologset: HomologSet object
+    Returns
+    -------
+    homologset : HomologSet object
     """
     # If only given one filename, don't stress! just load that file
     if type(filenames) != list:
@@ -256,8 +256,7 @@ def to_homologset(filenames, tag_list=DEFAULTS):
     return homologset
 
 def name_variants(name):
-    """
-        Create all variants of camelcase names.
+    """Create all variants of camelcase names.
     """
     variants = []
     variants.append(name.upper()) # all upper case
@@ -275,8 +274,7 @@ def name_variants(name):
     return variants
 
 def organism_in_blast(name, filename):
-    """
-        Is organism in blast results?
+    """Is organism in blast results?
     """
     # make a variants possible for name
     variants = name_variants(name)

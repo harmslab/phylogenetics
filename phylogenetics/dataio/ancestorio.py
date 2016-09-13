@@ -12,15 +12,6 @@ class Write(base.Write):
 
     def _ancestor_to_sequence_data(self, tags=("id",)):
         """ Write Ancestor as sequence_data datatype.
-
-            Arguments:
-            ---------
-            sequence_data
-
-
-            Output Format:
-            -------------
-
         """
         # Built a tuple of tags
         tag_data = tuple()
@@ -136,13 +127,12 @@ class Read(base.Read):
     def fasta(self, data, tags=None):
         """ Read a fasta string.
 
-            Arguments:
-            ---------
-            data: None
-
-            tag: tuple
-                attributes to add fasta headers.
-
+        Parameters
+        ----------
+        data : None
+            data
+        tag : tuple
+            attributes to add fasta headers.
         """
         # Read fasta file
         sequence_data = fasta.read(data)

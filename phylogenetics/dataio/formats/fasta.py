@@ -11,7 +11,9 @@ def read(data, tags=["defline"]):
     Returns a list of tuple pairs. First value is header tags. Second
     value is sequence.
 
-    Note: to read from file, replace the `data` arguemnt the keyword argument `fname`
+    Notes
+    -----
+    To read from file, replace the `data` arguemnt the keyword argument `fname`
     """
     # Match the pattern for fasta files
     matches = REGEX.findall(data)
@@ -37,8 +39,8 @@ def write(metadata):
 
     Note: to write to file, replace the `data` arguemnt the keyword argument `fname`
 
-    Arguments:
-    ---------
+    Parameters
+    ----------
     metadata : list of dictionarys
         sequence metadata.
     """

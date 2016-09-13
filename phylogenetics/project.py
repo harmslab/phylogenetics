@@ -15,21 +15,6 @@ from .exttools import (cdhit,
                         msaprobs,
                         phyml,
                         paml)
-                        
-__doc__ = """Phylogenetics package entry point.
-
-`Project` class is a versatile object that manages all data for a phylogenetics
-project.
-
-Example:
-
->>> Project.Alignment
-            .Tree
-            .HomologSet
-            .AncestorSet
-
-
-"""
 
 class Project(object):
     """Container object for managing all data for a phylogenetics project.
@@ -190,7 +175,6 @@ class Project(object):
         # Set the HomologSet object
         self.HomologSet = HomologSet
         # Expose the align method of this object to user
-        setattr(self, "cluster", self._cluster)
         setattr(self, "align", self._align)
 
     def _add_Alignment(self, Alignment):
@@ -218,50 +202,6 @@ class Project(object):
         """Add a AncestorSet object to PhylogeneticsProject object."""
         self._components["AncestorSet"] = AncestorSet
         self.AncestorSet = AncestorSet
-
-    def _cluster(
-        self,
-        redund_cutoff=0.99,
-        tmp_file_suffix="oB_cdhit",
-        word_size=5,
-        cores=1,
-        keep_tmp=False,
-        accession=(),
-        positive=(),
-        negative=("putative","hypothetical", "unnamed", "possible", "predicted",
-                    "unknown", "uncharacterized","mutant", "isoform"),
-        ):
-        """Remove redundant sequences from HomologSet based on some sequence redundancy
-        cutoff threshold.
-
-        This method moves the original HomologSet to a new object inside project
-        called `HomologSet_original`. Clustering always happens on this set. The
-        results are set as the new HomologSet object.
-        """
-        # If the original set is old, use it for clustering
-        if hasattr(self, "HomologSet_original"):
-            HomologSet_to_cluster = self.HomologSet_original
-        # Else HomologSet is the original set.
-        else:
-            HomologSet_to_cluster = self.HomologSet
-            setattr(self, "HomologSet_original", self.HomologSet)
-
-        # Cluster original set
-        new_HomologSet = HomologSet_to_cluster.cluster(
-            redund_cutoff=redund_cutoff,
-            tmp_file_suffix=tmp_file_suffix,
-            word_size=word_size,
-            cores=cores,
-            keep_tmp=keep_tmp,
-            accession=accession,
-            positive=positive,
-            negative=negative,
-            inplace=False
-        )
-
-        # Set the resulting subset HomologSet as the new HomologSet.
-        self.HomologSet = new_HomologSet
-        self.save()
 
     def _align(self,
         fname="alignment.fasta",

@@ -30,30 +30,30 @@ class Read(base.Read):
 
     def _ancestor_data_to_ancestor_set(self, tree, ancestor_data):
         """ Take the ancestor tree, and ancestor data dictionary, and map it
-            to the tree attached to AncestorSet object.
+        to the tree attached to AncestorSet object.
 
-            Must take a newick tree format.
+        Must take a newick tree format.
 
-            Ancestor data:
-            -------------
-            {"ZZ00000000":
-                {0:
-                    "A":0.0, "C":0.0, ...
-                },
-                {1:
-                    "A":0.8, "C":0.0, ...
-                }
-                ...,
-             "ZZ00000001":
-                {0:
-                    "A":0.1, "C":0.6, ...
-                },
-                {1:
-                    "A":0.3, "C":0.0, ...
-                }
-                ...,
-            ...
+        Ancestor data:
+        -------------
+        {"ZZ00000000":
+            {0:
+                "A":0.0, "C":0.0, ...
+            },
+            {1:
+                "A":0.8, "C":0.0, ...
             }
+            ...,
+         "ZZ00000001":
+            {0:
+                "A":0.1, "C":0.6, ...
+            },
+            {1:
+                "A":0.3, "C":0.0, ...
+            }
+            ...,
+        ...
+        }
         """
         # Read newick file into dendropy tree object
         new_tree = dendropy.datamodel.treemodel.Tree.get_from_string(tree, schema="newick")
@@ -84,7 +84,7 @@ class Read(base.Read):
 
     @base.read_from_file
     def rst(self, data):
-        """ Read ancestor set from paml file. """
+        """Read ancestor set from paml file. """
         tree, ancestor_data = rst.read(data)
         self._ancestor_data_to_ancestor_set(tree, ancestor_data)
         return self._AncestorSet

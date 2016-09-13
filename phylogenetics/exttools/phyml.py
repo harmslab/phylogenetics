@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import os, shlex, shutil, re
 import subprocess
 
-from phylogenetics.utils import read_fasta, run_subprocess
+from phylogenetics.utils import run_subprocess
 
 def parse_phyml_stats(data_string):
     """ Parse phyml output. """

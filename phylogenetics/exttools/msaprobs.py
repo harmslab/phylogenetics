@@ -4,9 +4,6 @@ from __future__ import absolute_import
 import os, shlex
 import subprocess
 
-# Local imports
-from phylogenetics.utils import read_fasta
-
 def run(fasta_fname="alignment", cores=2, rm_tmp=True):
     """ Wrapper for MSAProbs.
 

@@ -8,31 +8,6 @@ class Write(base.Write):
     """Object for writing out the metadata of a HomologSet object.
 
     There are two basic output data-structures for the HomologSet.
-
-    1. Sequence data::
-
-        data = [
-            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
-            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
-            ...
-        ]
-
-    2. Sequence Metadata::
-
-        sequence_metadata = [
-            {
-                "species": "seq0",
-                "organism": "agasda",
-                "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
-            },
-            {
-                "species": "seq1",
-                "organism": "afher",
-                "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
-            },
-            ...
-        ]
-
     """
     def __init__(self, HomologSet):
         self._HomologSet = HomologSet
@@ -81,32 +56,6 @@ class Write(base.Write):
 
 class Read(base.Read):
     """Object bound to HomologSets for reading homolog set data.
-
-    There are two basic output data-structures for the HomologSet.
-
-    1. Sequence data::
-
-        data = [
-            (("XX00000001", "dog"), "ASHASHSAEFASHAS"),
-            (("XX00000002", "cat"), "ASTASHSAASDGAWE"),
-            ...
-        ]
-
-    2. Sequence Metadata::
-
-        sequence_metadata = [
-            {
-                "species": "seq0",
-                "organism": "agasda",
-                "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
-            },
-            {
-                "species": "seq1",
-                "organism": "afher",
-                "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
-            },
-            ...
-        ]
 
     Parameters
     ----------

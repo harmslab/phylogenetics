@@ -1,41 +1,4 @@
 from __future__ import absolute_import
-
-__doc__ = """Input/Output module for saving phylogenetics Project objects to disk.
-
-Writes metadata as so:
-
-{
-    "HomologSet" : [
-        {
-            "id" : "XX00000000",
-            "sequence" : "XJSMHTELTWF...",
-            "accver" : "#########",
-        },
-        {
-            "id" : "XX00000001",
-            "sequence" : "DSHASTEJOGASHJ...",
-            "accver" : "######"
-        }
-    ],
-    "Alignment" :
-
-    "Tree" : (,),
-
-    "AncestorSet" : [
-        {
-            "id" : "ZZ00000000",
-            "sequence" : "XJSMHTELTWF...",
-            "posterior" : "0.99"
-        },
-        {
-            "id" : "ZZ00000001",
-            "sequence" : "DSHASTEJOGASHJ...",
-            "posterior" : "0.95"
-        }
-    ]
-}
-"""
-
 from collections import OrderedDict
 
 from . import base

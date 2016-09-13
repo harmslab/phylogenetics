@@ -3,8 +3,8 @@ from __future__ import absolute_import
 def read(data, delimiter=","):
     """ Read a fasta string.
 
-        Returns a list of tuple pairs. First value is header tags. Second
-        value is sequence.
+    Returns a list of tuple pairs. First value is header tags. Second
+    value is sequence.
     """
     # Split data by rows
     rows = data.split("\n")
@@ -28,24 +28,6 @@ def read(data, delimiter=","):
 
 def write(sequence_metadata, tags=None, delimiter=","):
     """ Write a fasta string.
-
-        Arguments:
-        ---------
-
-        sequence_metadata = [
-            {
-                "species": "seq0",
-                "organism": "agasda",
-                "sequence": "SHDAHADJAEAHASDASDHASDGBSHERW",
-            },
-            {
-                "species": "seq1",
-                "organism": "afher",
-                "sequence": "OENGBSDMLWETJALSGMSDALGMASDFW",
-            },
-            ...
-        ]
-
     """
     if tags is None:
         # Get tags for each sequence

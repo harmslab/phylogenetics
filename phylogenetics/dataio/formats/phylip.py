@@ -13,11 +13,9 @@ def sequential_regex(n, l):
 def read(data):
     """ Read a phylip string.
 
-        Returns a list of tuple pairs. First value is header tags. Second
-        value is sequence.
-
-        Currently, this function does not read phylip files in interleaved format.
-
+    Returns a list of tuple pairs. First value is header tags. Second
+    value is sequence. Currently, this function does not read phylip files in
+    interleaved format.
     """
     # Strip phylip header
     header = HEADER_REGEX.search(data)
@@ -49,16 +47,7 @@ def read(data):
 
 def write(phylip_data):
     """ Write a fasta string.
-
-        Arguments:
-        ---------
-
-        phylip_data = [
-            ((10_digit_id,), sequence),
-            ...
-        ]
-
-        Currently, this does not write phylip files in the interleaved format.
+    Currently, this does not write phylip files in the interleaved format.
     """
     # If not already, convert phylip data to list of pairwise tuples
     if type(phylip_data) != list and len(phylip_data[0]) != 2:

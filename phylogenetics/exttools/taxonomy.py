@@ -3,19 +3,16 @@ from __future__ import absolute_import
 import re
 import requests
 
-
 __doc__ = """Ping the NCBI Taxonomy web service and retrieve data about a sequence.
 
 Stupidly simple module... probably needs more intelligent/safe parsing of data.
 """
-
-
 def query(keyword, type="name", **kwargs):
     """Send a query to retrieve taxonomic data about keyword from NCBI Taxonomy
     Web service
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     keyword : str
         query string for BLAST Taxonomy. Can be common names, scientific names,
         taxonomic ID, etc.

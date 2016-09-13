@@ -5,19 +5,18 @@ import re
 from xml.etree import ElementTree as ET
 
 def read(xml_string):
-    """
-        Parse Blast's Fasta/XML formatted file, returning a list of each
-        sequence's data.
+    """Parse Blast's Fasta/XML formatted file, returning a list of each
+    sequence's data.
 
-        Parameters
-        ----------
-        xml_string : str
-            Fasta/XML formatted string from Blast Output.
+    Parameters
+    ----------
+    xml_string : str
+        Fasta/XML formatted string from Blast Output.
 
-        Returns
-        -------
-        sequences : list of dicts
-            List of sequences data in their own lists.
+    Returns
+    -------
+    sequences : list of dicts
+        List of sequences data in their own lists.
     """
     # Fix screwed up XML because sequences downloaded and output concatenated
     sequence_input = flatten_concatenated_XML(xml_string, "TSeqSet")
@@ -40,11 +39,10 @@ def read(xml_string):
 
 
 def flatten_concatenated_XML(xml_string,key_tag):
-    """
-        Clean up naively concatenated XML files by deleting begin/end tags that
-        occur at the place where the two files were concatenated.
-        NOTE: This will break and break royally if the key_tags are on the same
-        lines as other important entries.
+    """Clean up naively concatenated XML files by deleting begin/end tags that
+    occur at the place where the two files were concatenated.
+    NOTE: This will break and break royally if the key_tags are on the same
+    lines as other important entries.
     """
     input = xml_string.split("\n")
     set_start = re.compile("<%s>" % key_tag)
