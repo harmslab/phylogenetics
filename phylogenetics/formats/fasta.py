@@ -1,7 +1,10 @@
 __doc__ = """A module for parsing fasta strings from various database.
 
 ``FORMATS`` is a dictionary describing different fasta header formats for
-different databases
+different databases.
+
+The output from the parser is a list of sequence dictionaries that can be passed
+directly into the HomologSet object.
 
 Example
 -------
@@ -22,6 +25,8 @@ Example
         },
     ]
 """
+
+import warnings as _warnings
 
 FORMATS = {
     "gb" : {
@@ -46,7 +51,11 @@ FORMATS = {
     },
     "sp" : {
         "header" : ["dbid", "accession", "entry name"],
-        "database" : "SWISS-PROT"
+        "database" : "UniProtKB/Swiss-Prot"
+    },
+    "tr" : {
+        "header" : ["dbid", "accession", "entry name"],
+        "database" : "UniProtKB/TrEMBL"
     },
     "pdb" : {
         "header" : ["dbid", "entry", "chain"],
@@ -91,14 +100,14 @@ def parser(fasta_string):
         the sequence metadata pulled from fasta file.
     """
     # Get lines from fasta
-    lines = string.split("\n")
+    lines = fasta_string.strip().split("\n")
     # separate headers from sequences
     mapping = {}
     for line in lines:
         # Check if current line is a header or portion of the sequence
         if line[0] == ">":
             # Set the new header
-            header = lline[1:]
+            header = line[1:]
             # Initialize the new string
             sequence = ""
             mapping[header] = sequence
@@ -108,7 +117,7 @@ def parser(fasta_string):
     # separate from
     sequences = []
     n_warnings = 0
-    for header, sequence in mapping:
+    for header, sequence in mapping.items():
         # attempt to identify fasta style
         try:
             # parse the header with specific parser
@@ -125,5 +134,5 @@ def parser(fasta_string):
         sequences.append(metadata)
     # Return number of warnings if any were given
     if n_warnings > 0:
-        raise Warning("""%d warnings were raised for unidentified fasta header formats""" % n_warnings)
+        _warnings.warn("""%d warnings were raised for unidentified fasta header formats""" % n_warnings)
     return sequences
