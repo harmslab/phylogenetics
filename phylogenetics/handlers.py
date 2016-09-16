@@ -1,4 +1,11 @@
-import time
+__doc__ = """Defines handlers for all objects in the phylogenetics package.
+
+Basic Handler template has a set of attributes that are written to disk.
+
+Basic ContainerHandler template has contents with multple objects.
+"""
+
+import time, copy
 
 def history(method):
     """Update the history of the object by adding the current time to history
@@ -17,7 +24,7 @@ def Handler(object):
     """Provides a template class for adding/removing attributes and metadata.
     """
     def __init__(self, **kwargs):
-        self.metadata = {}
+        self.attrs = {}
         # On initialization, set the datetime
         now = time.strftime("%c")
         action = "init"
@@ -30,14 +37,14 @@ def Handler(object):
         """Add attributes to object and metadata."""
         for key, value in kwargs:
             setattr(self, key, value)
-            self.metadata[key] = value
+            self.attrs[key] = value
 
     @history
     def rmattr(self, *arg):
         """Remove attribute from object and metadata."""
         for a in args:
             delattr(self, a)
-            del self.metadata[a]
+            del self.attrs[a]
 
 
 def ContainerHandler(Handler):
@@ -48,6 +55,14 @@ def ContainerHandler(Handler):
     def __init__(self, *arg, **kwargs):
         super(Container, self).__init__(**kwargs)
         self._contents = {}
+        self.add(*args)
+
+    @property
+    def metadata(self):
+        """Get the attributes and content metadata of this object"""
+        data = dict([(c.id, c.metadata), for c in self._contents])
+        data.update(**self.attrs)
+        return data
 
     @property
     def _type_exception_message(self):
@@ -59,6 +74,9 @@ def ContainerHandler(Handler):
 
     @property
     def _child_type(self):
+        """The specific objects that are contained in this object.
+        Note that child type must be a list. If only a single object,
+        """
         raise Exception("""Must be implemented in a Subclass.""")
 
     def _check_type(self, item):
@@ -76,10 +94,14 @@ def ContainerHandler(Handler):
         # If the object doesn't already have an ID, give it one
         if hasattr(item, "id") is False:
             number = 0
-            new_id = item._prefix + "%06d" % number   # 9-character ID
+            prefix = item._prefix
+            num_size = 10 - len(prefix)
+            label = str(number)
+            new_id = prefix + "0"*(numsize - len(label)) + label
             while new_id in self._contents.keys():
                 number += 1
-                new_id = item._prefix + "%06d" % number
+                label = str(number)
+                new_id = prefix + "0"*(numsize - len(label)) + label
             item.addattr(id=new_id)
         # If ID exists in object, check that it isn't in this object already
         else:
