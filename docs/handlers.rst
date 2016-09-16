@@ -41,15 +41,15 @@ groups of handlers as well.
     class CustomContainer(HandlerContainer):
         """Put your docstring here.
         """
-        def __init__(self, **kwargs):
-            super(CustomHandler, self).__init__(**kwargs)
+        def __init__(self, *Handlers, **kwargs):
+            super(CustomHandler, self).__init__(*Handlers, **kwargs)
 
         @property
         def _prefix(self):
             return "ITEM"
 
         @property
-        def _child_type(self)
+        def _child_type(self):
             """The Handler object subclass passed into this Container. Must be
             a contained in a list. Can take in many types of Handlers
             """

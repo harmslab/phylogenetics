@@ -1,11 +1,6 @@
-__doc__ = """Defines handlers for all objects in the phylogenetics package.
-
-Basic Handler template has a set of attributes that are written to disk.
-
-Basic ContainerHandler template has contents with multple objects.
+__doc__ = """Basic ``Handler`` objects for managing phylogenetic data.
 """
-
-import time, copy
+import time, copy, json
 
 def history(method):
     """Update the history of the object by adding the current time to history
@@ -18,13 +13,13 @@ def history(method):
         info = (now, action)
         obj.history.append(info)
         return method(*args, **kwargs)
-    return method
+    return update_history
 
-def Handler(object):
+class Handler(object):
     """Provides a template class for adding/removing attributes and metadata.
     """
     def __init__(self, **kwargs):
-        self.attrs = {}
+        self.attrs = {"type": type(self).__name__}
         # On initialization, set the datetime
         now = time.strftime("%c")
         action = "init"
@@ -32,10 +27,20 @@ def Handler(object):
         self.history = [info]
         self.addattr(**kwargs)
 
+    @property
+    def _prefix(self):
+        """"""
+        raise Exception("""Must be implemented in a Subclass.""")
+
+    @property
+    def metadata(self):
+        """alias for attrs"""
+        return self.attrs
+
     @history
     def addattr(self, **kwargs):
         """Add attributes to object and metadata."""
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             setattr(self, key, value)
             self.attrs[key] = value
 
@@ -47,20 +52,22 @@ def Handler(object):
             del self.attrs[a]
 
 
-def HandlerContainer(Handler):
+class HandlerContainer(Handler):
     """A general container to manage a collection instances of a the same object.
 
-    All changes to the object are stored in history.
+    Note
+    ----
+    All changes to the object are stored in the history attribute.
     """
-    def __init__(self, *arg, **kwargs):
-        super(Container, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(HandlerContainer, self).__init__(**kwargs)
         self._contents = {}
         self.add(*args)
 
     @property
     def metadata(self):
         """Get the attributes and content metadata of this object"""
-        data = dict([(c.id, c.metadata), for c in self._contents])
+        data = {"contents": [content.metadata for content in self._contents.values()]}
         data.update(**self.attrs)
         return data
 
@@ -69,11 +76,7 @@ def HandlerContainer(Handler):
         return """And object already exists in contents with the same ID."""
 
     @property
-    def _prefix(self):
-        raise Exception("""Must be implemented in a Subclass.""")
-
-    @property
-    def _child_type(self):
+    def _child_types(self):
         """The specific objects that are contained in this object.
         Note that child type must be a list. If only a single object,
         """
@@ -82,9 +85,9 @@ def HandlerContainer(Handler):
     def _check_type(self, item):
         """ Check that the item is an expected object.
         """
-        if item.__class__ not in self._child_type:
-            raise Exception("Argument must be a(n) `" + \
-                self._child_type.__name__ + "` object!")
+        if item.__class__ not in self._child_types:
+            names = [c.__name__ for c in self._child_types]
+            raise Exception("Argument must be one of the following objects: " + ", ".join(names))
 
     def _assign_id(self, item):
         """Assigns an `id` to object, with a given prefix.
@@ -97,11 +100,11 @@ def HandlerContainer(Handler):
             prefix = item._prefix
             num_size = 10 - len(prefix)
             label = str(number)
-            new_id = prefix + "0"*(numsize - len(label)) + label
+            new_id = prefix + "0"*(num_size - len(label)) + label
             while new_id in self._contents.keys():
                 number += 1
                 label = str(number)
-                new_id = prefix + "0"*(numsize - len(label)) + label
+                new_id = prefix + "0"*(num_size - len(label)) + label
             item.addattr(id=new_id)
         # If ID exists in object, check that it isn't in this object already
         else:
@@ -118,9 +121,9 @@ def HandlerContainer(Handler):
             self._contents[a.id] = a
 
     @history
-    def rm(self, *ids):
+    def rm(self, **ids):
         """Remove an instance of the main object from this container.
         """
         for id in ids:
             delattr(self, id)
-            del self._contents[id]
+            del self.content[id]
