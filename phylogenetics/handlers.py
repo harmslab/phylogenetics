@@ -47,7 +47,7 @@ def Handler(object):
             del self.attrs[a]
 
 
-def ContainerHandler(Handler):
+def HandlerContainer(Handler):
     """A general container to manage a collection instances of a the same object.
 
     All changes to the object are stored in history.
@@ -82,7 +82,7 @@ def ContainerHandler(Handler):
     def _check_type(self, item):
         """ Check that the item is an expected object.
         """
-        if item.__class__ != self._child_type:
+        if item.__class__ not in self._child_type:
             raise Exception("Argument must be a(n) `" + \
                 self._child_type.__name__ + "` object!")
 

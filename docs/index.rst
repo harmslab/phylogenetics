@@ -52,6 +52,7 @@ Table of Contents
    reading
    writing
    metadata
+   handlers
 
 Indices and tables
 ==================

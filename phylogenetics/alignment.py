@@ -11,7 +11,7 @@ class AlignedHomolog(handlers.Handler):
         """
         pass
 
-class Alignment(handlers.ContainerHandler):
+class Alignment(handlers.HandlerContainer):
     """Alignment object. Contains a collection of AlignedHomologs.
     """
     def __init__(self, *AlignedHomologs, **kwargs):
@@ -33,3 +33,14 @@ class Alignment(handlers.ContainerHandler):
         """Link Homologs to Alignment
         """
         pass
+
+
+class AlignmentList(handlers.HandlerContainer):
+    """Container object for managing multiple Alignments.
+    """
+    def __init__(self, *Alignments, **kwargs):
+        super(AlignmentList, self).__init__(*Alignments, **kwargs)
+
+    @property
+    def _assign_id(self):
+        return "Alignment"
