@@ -27,6 +27,10 @@ class Handler(object):
         self.history = [info]
         self.addattr(**kwargs)
 
+    def print(self):
+        """Print metadata"""
+        print(json.dumps(self.metadata, indent=4, separators=(',', ': ')))
+
     @property
     def _prefix(self):
         """"""
@@ -65,9 +69,13 @@ class HandlerContainer(Handler):
         self.add(*args)
 
     @property
+    def list(self):
+        return [content.metadata for content in self._contents.values()]
+
+    @property
     def metadata(self):
         """Get the attributes and content metadata of this object"""
-        data = {"contents": [content.metadata for content in self._contents.values()]}
+        data = {"contents": self.list}
         data.update(**self.attrs)
         return data
 

@@ -24,16 +24,12 @@ class Tree(handlers.Handler):
         except AttributeError:
             raise DendropyError
 
-    def link_homologs(self):
-        """Link homolog handlers to tree.
-        """
-
-    def link_ancestors(self):
-        """Link ancestor handlers to tree.
+    def link(self):
+        """Link sequence handlers to tree.
         """
 
     def remove(self):
-        """Remove Homologs from tree.
+        """Remove Sequence from tree.
         """
 
     def reroot(self):
@@ -45,7 +41,7 @@ class Tree(handlers.Handler):
         """
 
     def prune(self):
-        """Remove a homolog, ancestor (and children), or branch from tree.
+        """Remove a sequence, ancestor (and children), or branch from tree.
         """
 
     def place(self):

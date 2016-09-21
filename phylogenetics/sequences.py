@@ -1,4 +1,6 @@
 from . import handlers
+from .dataio import sequenceio, sequencelistio
+
 
 class Sequence(handlers.Handler):
     """Creates an object for managing data for a single homolog sequence.
@@ -16,6 +18,7 @@ class Sequence(handlers.Handler):
         # Attach Write-ing object
         #self.Write = homologio.Write(self)
         #self.Read = homologio.Read(self)
+        self.Write = sequenceio.Write(self)
 
     @property
     def _prefix(self):
@@ -26,6 +29,7 @@ class SequenceList(handlers.HandlerContainer):
     """
     def __init__(self, *Sequences, **kwargs):
         super(SequenceList, self).__init__(*Sequences, **kwargs)
+        self.Write = sequencelistio.Write(self)
 
     @property
     def sequences(self):

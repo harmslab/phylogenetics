@@ -1,7 +1,7 @@
 import warnings
 
 from . import handlers
-from .sequences import Sequence
+from .sequences import Sequence, SequenceList
 
 class AlignedSequence(handlers.Handler):
     """Aligned sequence.
@@ -20,10 +20,13 @@ class AlignedSequence(handlers.Handler):
 
     @handlers.history
     def link(self, Sequence):
-        """Link a sequence object to this Alignment
+        """Link a Sequence object to this Alignment.
+
+        A call-by-reference link is made to the Sequence, and a new attribute is
+        added to self.
         """
         id = Sequence.id
-        self.addattr(homolog=id)
+        self.addattr(Sequence=id)
         self.Sequence = Sequence
 
     @handlers.history
@@ -35,7 +38,7 @@ class AlignedSequence(handlers.Handler):
             self.rmattr(Sequence)
             delattr(self, "Sequence")
         except AttributeError:
-            warnings.warn("No Homolog was linked to the AlignedSequence object.")
+            warnings.warn("No Sequence was linked to the AlignedSequence object.")
 
 
 class Alignment(handlers.HandlerContainer):
@@ -54,16 +57,26 @@ class Alignment(handlers.HandlerContainer):
 
     @property
     def _child_types(self):
+        """"""
         return [AlignedSequence]
 
+    @property
+    def _link_types(self):
+        """"""
+        return [SequenceList]
+
     @handlers.history
-    def link(self, *Sequences):
-        """Link Sequences to Alignment
+    def link(self, SequenceList):
+        """Link SequenceList to Alignment.
         """
-        for Sequence in Sequences:
-            id_number = Sequence.id[3:]
-            aligned_seq = self._contents["Ali"+id_number]
-            aligned_seq._link_sequence(Sequence)
+        for Sequence in SequenceList.list:
+            obj = type(Sequence)
+            if obj in self._link_types:
+                id_number = Sequence.id[3:]
+                aligned_seq = self._contents["Ali"+id_number]
+                aligned_seq.link(Sequence)
+            else:
+                raise Exception
 
     @handlers.history
     def unlink(self, *ids):

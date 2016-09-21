@@ -2,12 +2,11 @@ Project Class
 =============
 
 The ``project`` class provides a single, persisent object that walks you through
-a phylogenetics pipeline. As you construct your project, new methods and attributes emerge
-to analyze your sequence data.
+a phylogenetics pipeline. As you construct a project, new methods and attributes
+become accessible to analyze your sequence data.
 
 This object also acts as a container for all your data, and saves its current state
 at each step. (To see what a saved project looks like, checkout the the `Metadata page`_.)
-The ```phylogenetics`` API, then, makes it easy to walk through your data/analysis.
 
 .. _Metadata page:
 
@@ -24,11 +23,16 @@ The diagram below shows the architecture of the ``Project`` class and its API.
 
 .. image:: _images/project-fig.png
 
-Each object inside the Project class attaches a set of useful methods for analyzing
-each type of data. Each piece of a phylogenetics package lives shallow in the project
-class, and can be accessed through this single object's API. The modular design
-of this package also enables you to build each piece of a project separately. You
-can always add it to a new/old project later!
+Each ``HandlerContainer`` object inside the Project class attaches a set of useful methods for analyzing
+each type of data. The API for these HandlerContainers live in project
+class and are accessible as subobjects. The project class creates the links, shown in the figure above,
+if they exist in the Container's metadata. Links aid in mapping objects throughout
+the API. For example, a Sequence object might be linked to a taxon on a Tree object, or an
+AncestorSequnce might be linked to a node on a Tree object.
+
+Without links, all objects are independent. This makes it possible to start at any
+step in the project class. For example, if you already have a list of aligned sequences,
+you can skip building a ``SequenceList``, begin with an ``AlignmentList``, and continue building a ``Tree``.
 
 Basic Usage
 -----------

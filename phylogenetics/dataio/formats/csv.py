@@ -8,22 +8,18 @@ def read(data, delimiter=","):
     """
     # Split data by rows
     rows = data.split("\n")
-
     # First row is table header
     header = rows[0]
     # Further rows are sequence data
     sequences = rows[1:]
-
     # Get attributes from header line
     tags = header.split(delimiter)
-
     # Construct metadata for each sequence
     sequence_metadata = []
     for s in sequences:
         values = s.split(delimiter)
         metadata = dict([(tags[i], values[i]) for i in range(len(tags))])
         sequence_metadata.append(metadata)
-
     return sequence_metadata
 
 def write(sequence_metadata, tags=None, delimiter=","):
@@ -32,12 +28,9 @@ def write(sequence_metadata, tags=None, delimiter=","):
     if tags is None:
         # Get tags for each sequence
         tags = list(sequence_metadata[0].keys())
-
     # Header to csv string
     data = delimiter.join(tags) + "\n"
-
     for s in sequence_metadata:
         string = ",".join([s[t] for t in tags]) + "\n"
         data += string
-
     return data.strip()

@@ -26,12 +26,10 @@ Project metadata format
         "name" : "human-project",
         "date" : "",
         "edited" : "",
-        "HomologSet" :
+        "SequenceList" :
             {
-                "name" : "dataset1",
-                "date" : "",
-                "edited" : "",
-                "homologs" : [
+                "history" : [],
+                "contents" : [
                     {
                         "id" : "XX00000000",
                         "sequence" : "AGAMAMGATKLLSMA",
@@ -44,57 +42,71 @@ Project metadata format
                     }
                 ]
             },
-        "Alignments" : [
-            {
-                "name" : "latest",
-                "date" : "",
-                "alignment" : [
-                    {
-                        "id" : "seq0000000",
-                        "sequence" : "",
-                    },
-                    {
-                        "id" : "seq0000001",
-                        "sequence" : "",
-                    },
-                ],
-            },
-            {
-                "name" : "old",
-                "date" : "",
-                "alignment" : [
-                    {
-                        "id" : "seq0000000",
-                        "sequence" : "",
-                    },
-                    {
-                        "id" : "seq0000001",
-                        "sequence" : "",
-                    },
-                ],
-            }
-        ],
-        "Trees" : [
-            {
-                "name" : "tree0",
-                "date" : "",
-                "notes" : "This is the best tree.",
-                "stats" : {
-                    "supports" : "aLRT",
+        "AlignmentList" : {
+            "id" : "AlignmentList0",
+            "history" : [],
+            "contents" : [
+                {
+                    "id" : "Alignment0",
+                    "history" : [],
+                    "contents" : [
+                        {
+                            "id" : "Ali0000000",
+                            "sequence" : "AGAMAMGATKLLSMA",
+                            "Sequence" : "Seq0000000"
+                        },
+                        {
+                            "id" : "Ali0000001",
+                            "sequence" : AGAKKLGATKLLSMA"",
+                            "Sequence" : "Seq0000001"
+                        },
+                    ],
+                },
+                {
+                    "name" : "old",
+                    "history" : [],
+                    "alignment" : [
+                        {
+                            "id" : "Ali0000000",
+                            "sequence" : "",
+                            "Sequence" : "Seq0000000"
+
+                        },
+                        {
+                            "id" : "Ali0000001",
+                            "sequence" : "",
+                            "Sequence" : "Seq0000001"
+
+                        },
+                    ],
                 }
-                "newick" : ((,),),
-            },
-            {
-                "name" : "tree1",
-                "date" : "",
-                "notes" : "This is the old tree.",
-                "stats" : {
-                    "supports" : "SH",
+            ],
+        },
+        "TreeList" : {
+            "id" : "TreeList0"
+            "contents" : [
+                {
+                    "id" : "tree000000",
+                    "date" : "",
+                    "notes" : "This is the best tree.",
+                    "Alignment" : "Alignment0",
+                    "stats" : {
+                        "supports" : "aLRT",
+                    }
+                    "newick" : ((,),),
+                },
+                {
+                    "name" : "tree1",
+                    "date" : "",
+                    "notes" : "This is the old tree.",
+                    "stats" : {
+                        "supports" : "SH",
+                    }
+                    "newick" : ((,),),
                 }
-                "newick" : ((,),),
-            }
-        ],
-        "Ancestors" : [
+            ],
+        },
+        "AncestorList" : [
             {
                 "tree" : "tree0",
                 "notes" : "",
