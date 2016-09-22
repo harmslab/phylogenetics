@@ -8,6 +8,9 @@ import os, re, pickle, subprocess, time, datetime
 class SubclassError(Exception):
     """Exception raised in parent objects for methods that must be inherited."""
 
+class LinkError(Exception):
+    """Exception raised when object linking fails."""
+
 def get_time():
     """Get a string of the date and time."""
     now = datetime.datetime.now()

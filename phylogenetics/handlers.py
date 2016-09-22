@@ -12,6 +12,7 @@ def history(method):
         obj = args[0]
         info = (now, action)
         obj.history.append(info)
+        obj.attrs["history"].append(info)
         return method(*args, **kwargs)
     return update_history
 
@@ -20,15 +21,21 @@ class Handler(object):
     """
     def __init__(self, **kwargs):
         self.attrs = {"type": type(self).__name__}
+        if "history" not in kwargs:
+            self._init_history()
+        self.addattr(**kwargs)
+
+    def _init_history(self):
+        """Initialize history."""
         # On initialization, set the datetime
         now = time.strftime("%c")
         action = "init"
         info = (now, action)
-        self.history = [info]
-        self.addattr(**kwargs)
+        self.attrs["history"] = [info]
+        self.history = self.attrs["history"]
 
     def print(self):
-        """Print metadata"""
+        """Print metadata as formated json."""
         print(json.dumps(self.metadata, indent=4, separators=(',', ': ')))
 
     @property
@@ -55,6 +62,16 @@ class Handler(object):
             delattr(self, a)
             del self.attrs[a]
 
+    @history
+    def append_to_attr(self,**kwargs):
+        """Update an attribute of the Handler. Only work for arguments that are
+        lists or dictionarys. If Argument is passed, append to list of
+        """
+        for key, value in kwargs.items():
+            old = getattr(self, key)
+            old.append(value)
+            self.attrs[key] = old
+            setattr(self, key, old)
 
 class HandlerContainer(Handler):
     """A general container to manage a collection instances of a the same object.
@@ -70,12 +87,13 @@ class HandlerContainer(Handler):
 
     @property
     def list(self):
-        return [content.metadata for content in self._contents.values()]
+        """A list of the Handlers contained in this Container."""
+        return [content for content in self._contents.values()]
 
     @property
     def metadata(self):
         """Get the attributes and content metadata of this object"""
-        data = {"contents": self.list}
+        data = {"contents": [item.metadata for item in self.list]}
         data.update(**self.attrs)
         return data
 

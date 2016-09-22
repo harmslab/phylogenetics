@@ -4,11 +4,14 @@ from . import alignments
 from . import trees
 from . import ancestors
 
-def create_checkpoint(method):
-    """Wrap an object's method save a checkpoint of the object before performing
+def checkpoint(method):
+    """Wrap an project's method tp save a checkpoint of the object after performing
     the function
     """
-    def checkpoint(*args, **kwargs):
+    def write_checkpoint(*args, **kwargs):
+        """
+        """
+        project = args[0]
         return method(*args, **kwargs)
     return checkpoint
 
@@ -39,9 +42,14 @@ class Project(handlers.HandlerContainer):
                 method(item)
             except:
                 raise BadHandlerException(itemname + "is not a valid object for Project class.")
-        # Add links between objects
+        # Add manual links between objects
         for source, target in links.items():
             source.link(target)
+
+    def link(self):
+        """"""
+    def unlink(self):
+        """"""
 
     @handlers.history
     def _align(self):

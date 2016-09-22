@@ -2,23 +2,23 @@ import warnings
 
 from . import handlers
 from .sequences import Sequence, SequenceList
+from .utils import LinkError
 
 class AlignedSequence(handlers.Handler):
     """Aligned sequence.
     """
     def __init__(self, sequence, **kwargs):
-        super(AlignedSequence, self).__init__(sequence=sequence, **kwargs)
+        super(AlignedSequence, self).__init__(links=[], sequence=sequence, **kwargs)
 
     @property
     def _prefix(self):
-        return "Ali"
+        return "Seq"
 
     @property
     def _link_types(self):
         """"""
         return [Sequence]
 
-    @handlers.history
     def link(self, Sequence):
         """Link a Sequence object to this Alignment.
 
@@ -26,17 +26,22 @@ class AlignedSequence(handlers.Handler):
         added to self.
         """
         id = Sequence.id
-        self.addattr(Sequence=id)
+        # Get old links
+        links = self.links
+        # append new link
+        links.append(id)
+        # update link attribute
+        self.addattr(links=links)
+        # add Sequence to object attribute, without included in contents.
         self.Sequence = Sequence
 
-    @handlers.history
     def unlink(self):
         """Unlink a sequence to this Alignment.
         """
         # Try to remove a Homolog
         try:
-            self.rmattr(Sequence)
             delattr(self, "Sequence")
+            self.addattr(links=[])
         except AttributeError:
             warnings.warn("No Sequence was linked to the AlignedSequence object.")
 
@@ -45,7 +50,7 @@ class Alignment(handlers.HandlerContainer):
     """Alignment object. Contains a collection of AlignedSequence.
     """
     def __init__(self, *AlignedSequences, **kwargs):
-        super(Alignment, self).__init__(*AlignedSequences, **kwargs)
+        super(Alignment, self).__init__(links=[], *AlignedSequences, **kwargs)
 
     @property
     def alignment(self):
@@ -65,24 +70,39 @@ class Alignment(handlers.HandlerContainer):
         """"""
         return [SequenceList]
 
-    @handlers.history
     def link(self, SequenceList):
         """Link SequenceList to Alignment.
         """
-        for Sequence in SequenceList.list:
-            obj = type(Sequence)
-            if obj in self._link_types:
+        # Check that a SequenceList was given
+        if type(SequenceList) in self._link_types:
+            # Get links attribute
+            links = self.links
+            # Update attribute
+            links.append(SequenceList.id)
+            self.addattr(links=links)
+            # Add Sequencelist as attribute not stored in metadata.
+            self.SequenceList = SequenceList
+            # Link individual sequences too.
+            for Sequence in SequenceList.list:
                 id_number = Sequence.id[3:]
-                aligned_seq = self._contents["Ali"+id_number]
+                aligned_seq = self._contents["Seq"+id_number]
                 aligned_seq.link(Sequence)
-            else:
-                raise Exception
+        else:
+            raise LinkError("Argument must be type == SequenceList.")
 
-    @handlers.history
-    def unlink(self, *ids):
-        """Link Sequence from Alignment
+    def unlink(self):
+        """Remove SequenceList from Alignment
         """
-
+        # Try to remove a SequenceList
+        try:
+            # Remove links from individual aligned seqs.
+            for aligned_seq in self.list:
+                aligned_seq.unlink()
+            # Remove sequencelist if it exists.
+            delattr(self, "SequenceList")
+            self.addattr(links=[])
+        except AttributeError:
+            warnings.warn("No Sequence was linked to the AlignedSequence object.")
 
 class AlignmentList(handlers.HandlerContainer):
     """Container object for managing multiple Alignments.

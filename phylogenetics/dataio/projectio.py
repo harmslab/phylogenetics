@@ -2,11 +2,10 @@ from __future__ import absolute_import
 from collections import OrderedDict
 
 from . import base
-from phylogenetics.homologs import Homolog, HomologSet
-from phylogenetics.alignment import Alignment
-from phylogenetics.tree import Tree
-from phylogenetics.ancestors import Ancestor, AncestorSet
-from phylogenetics.reconstruction import Reconstruction
+from phylogenetics.sequences import Sequence, SequenceLists
+from phylogenetics.alignment import Alignment, AlignmentList
+from phylogenetics.tree import Tree, TreeList
+from phylogenetics.ancestors import Ancestor, AncestorSet, AncestorSetList
 
 from .formats import (csv,
                         entrez_xml,
@@ -25,16 +24,19 @@ class Read(base.Read):
     def _data_to_object(self, data):
         """Reads a project object from dictionary metadata.
         """
-        meta = OrderedDict()
-        meta["HomologSet"] = HomologSet()
-        meta["Alignment"] = Alignment(meta["HomologSet"])
-        meta["Tree"] = Tree(meta["HomologSet"])
-        meta["AncestorSet"] = AncestorSet(meta["Tree"])
-        #meta["Reconstruction"] = Reconstruction(
-        #    meta["Alignment"],
-        #    meta["Tree"],
-        #    meta["AncestorSet"],
-        #)
+        objects = {
+            #"Alignment" : Alignment,
+            "AlignmentList" : AlignmentList,
+            #"Ancestor" : Ancestor,
+            #"AncestorSet" : AncestorSet,
+            "AncestorSetList" : AncestorSetList,
+            #"Sequence" : Sequence
+            "SequenceList" : SequenceList,
+            #"Tree" : Tree,
+            "TreeList" : TreeList
+        }
+
+        for 
 
         for name, item in meta.items():
             if name in data:
@@ -75,8 +77,8 @@ class Write(base.Write):
     def _object_to_data(self):
         """Write project object to metadata dictionary."""
         data = {}
-        for key, object in self._Project._components.items():
-            data[key] = object.Write._object_to_data()
+        for key, obj in self._Project._components.items():
+            data[key] = obj.Write._object_to_data()
         return data
 
     def _object_to_sequences(self):
