@@ -1,6 +1,7 @@
 __doc__ = """Basic ``Handler`` objects for managing phylogenetic data.
 """
 import time, copy, json
+from .dataio import read, write, formats
 
 def history(method):
     """Update the history of the object by adding the current time to history
@@ -84,6 +85,39 @@ class HandlerContainer(Handler):
         super(HandlerContainer, self).__init__(**kwargs)
         self._contents = {}
         self.add(*args)
+
+    @classmethod
+    @read.file
+    def get(cls, data, schema, **kwargs):
+        """"""
+        instance = cls()
+        instance.read(data, schema)
+        return instance
+
+    @write.file
+    def write(self, schema):
+        """Write Container to metadata."""
+        writer = getattr(formats, schema).write
+        try:
+            return writer(self.metadata)
+        except:
+            contents = self.metadata["contents"]
+            return writer(contents)
+
+    @read.file
+    def read(self, data, schema):
+        """Read data with schema to object."""
+        parser = getattr(formats, schema).read
+        metadata = parser(data)
+        # rip out contents
+        contents = metadata.pop("contents")
+        obj_type = metadata["type"]
+        # Add contents
+        for m in contents:
+            handler = obj_type(**m)
+            self.add(handler)
+        # Add other attributes to objects
+        self.addattr(**metadata)
 
     @property
     def list(self):
