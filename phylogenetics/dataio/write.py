@@ -4,22 +4,22 @@ def file(function):
 
     Output must be a string.
     """
-    def wrapper(self, fname=None, *args, **kwargs):
+    def wrapper(self, path=None, *args, **kwargs):
         """ """
         # Create a string of whatever datatype
         string = function(self, *args, **kwargs)
         # If a filename is not given, return string.
-        if fname is None:
+        if path is None:
             return string
         # Write to a file
         else:
             try:
                 # Try to write a straight string.
-                with open(fname, "w") as f:
+                with open(path, "w") as f:
                     f.write(string)
             except:
                 # IF writing string failed, try writing bytes.
-                with open(fname, "wb") as f:
+                with open(path, "wb") as f:
                     f.write(string)
             #return string
     return wrapper

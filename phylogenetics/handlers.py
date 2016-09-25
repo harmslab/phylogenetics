@@ -1,6 +1,6 @@
 __doc__ = """Basic ``Handler`` objects for managing phylogenetic data.
 """
-import time, copy, json
+import time, copy, json, importlib
 from .dataio import read, write, formats
 
 def history(method):
@@ -21,18 +21,25 @@ class Handler(object):
     """Provides a template class for adding/removing attributes and metadata.
     """
     def __init__(self, **kwargs):
-        self.attrs = {"type": type(self).__name__}
-        if "history" not in kwargs:
-            self._init_history()
+        # Some basic attributes to save
+        self.attrs = {
+            "type": type(self).__name__,
+            "module" : self.__module__
+        }
+        # Initialize history keywords.
+        self._init_history(**kwargs)
         self.addattr(**kwargs)
 
-    def _init_history(self):
+    def _init_history(self, **kwargs):
         """Initialize history."""
-        # On initialization, set the datetime
-        now = time.strftime("%c")
-        action = "init"
-        info = (now, action)
-        self.attrs["history"] = [info]
+        if "history" not in kwargs:
+            # On initialization, set the datetime
+            now = time.strftime("%c")
+            action = "init"
+            info = (now, action)
+            self.attrs["history"] = [info]
+        else:
+            self.attrs["history"] = kwargs["history"]
         self.history = self.attrs["history"]
 
     def print(self):
@@ -87,11 +94,10 @@ class HandlerContainer(Handler):
         self.add(*args)
 
     @classmethod
-    @read.file
     def get(cls, data, schema, **kwargs):
         """"""
         instance = cls()
-        instance.read(data, schema)
+        instance.read(data=data, schema=schema)
         return instance
 
     @write.file
@@ -111,10 +117,11 @@ class HandlerContainer(Handler):
         metadata = parser(data)
         # rip out contents
         contents = metadata.pop("contents")
-        obj_type = metadata["type"]
         # Add contents
         for m in contents:
-            handler = obj_type(**m)
+            mod = importlib.import_module(m["module"])
+            Obj = getattr(mod, m["type"])
+            handler = Obj(**m)
             self.add(handler)
         # Add other attributes to objects
         self.addattr(**metadata)

@@ -7,7 +7,7 @@ def file(function):
     def wrapper(self, data=None, path=None, *args, **kwargs):
         """ """
         # If a filename is not given, return string.
-        if fname is None:
+        if path is None:
             # Make sure data was given since no file is named.
             if data is None:
                 raise Exception("""`data` cannot be type, NoneType.""")
@@ -15,11 +15,11 @@ def file(function):
         else:
             try:
                 # Try to write a straight string.
-                with open(fname, "r") as f:
+                with open(path, "r") as f:
                     data = f.read()
             except:
                 # IF writing string failed, try writing bytes.
-                with open(fname, "rb") as f:
+                with open(path, "rb") as f:
                     data = f.read()
         # Create a string of whatever datatype
         string = function(self, data, *args, **kwargs)
