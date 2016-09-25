@@ -15,7 +15,7 @@ def checkpoint(method):
         return method(*args, **kwargs)
     return checkpoint
 
-class BadHandlerException(Exception):
+class BadHandlerError(Exception):
     """Error message for passing in a bad handler to the Project class."""
 
 class Project(handlers.HandlerContainer):
@@ -24,27 +24,26 @@ class Project(handlers.HandlerContainer):
     def __init__(self, **kwargs):
         super(Project, self).__init__(**kwargs)
 
-    def save(self, fname):
-        """Write metadata of handler container to json file.
-        """
-        with open(fname, "w") as f:
-            json.dump(self.metadata, f)
+    def add(self, *Handlers, **links):
+        """Add phylogenetic handlers to a Project class.
 
-    def add(self, *items, **links):
-        """Add various items to a Project class. Also, links can be made between
-        objects. They are not assumed.
+        Also, links can be made between objects. They are not assumed.
         """
         # Add items to the project class
-        for item in items:
-            itemname = type(item).__name__
+        for Handler in Handlers:
+            itemname = Handler.type
+            # Try to add the Handler. If its a bad Handler, raise exception.
             try:
                 method = getattr(self, "_add_" + itemname)
-                method(item)
+                method(Handler)
             except:
-                raise BadHandlerException(itemname + "is not a valid object for Project class.")
+                raise BadHandlerError(itemname + " is not a valid object for Project class.")
+
         # Add manual links between objects
         for source, target in links.items():
-            source.link(target)
+            Source = getattr(self, source)
+            Target = getattr(self, target)
+            Source.link(Target)
 
     def link(self):
         """"""

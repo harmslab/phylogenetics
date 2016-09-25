@@ -19,6 +19,7 @@ class AlignedSequence(handlers.Handler):
         """"""
         return [Sequence]
 
+    @handlers.history
     def link(self, Sequence):
         """Link a Sequence object to this Alignment.
 
@@ -31,17 +32,18 @@ class AlignedSequence(handlers.Handler):
         # append new link
         links.append(id)
         # update link attribute
-        self.addattr(links=links)
+        self._addattr(links=links)
         # add Sequence to object attribute, without included in contents.
         self.Sequence = Sequence
 
+    @handlers.history
     def unlink(self):
         """Unlink a sequence to this Alignment.
         """
         # Try to remove a Homolog
         try:
             delattr(self, "Sequence")
-            self.addattr(links=[])
+            self._addattr(links=[])
         except AttributeError:
             warnings.warn("No Sequence was linked to the AlignedSequence object.")
 
@@ -70,6 +72,7 @@ class Alignment(handlers.HandlerContainer):
         """"""
         return [SequenceList]
 
+    @handlers.history
     def link(self, SequenceList):
         """Link SequenceList to Alignment.
         """
@@ -83,13 +86,14 @@ class Alignment(handlers.HandlerContainer):
             # Add Sequencelist as attribute not stored in metadata.
             self.SequenceList = SequenceList
             # Link individual sequences too.
-            for Sequence in SequenceList.list:
-                id_number = Sequence.id[3:]
-                aligned_seq = self._contents["Seq"+id_number]
-                aligned_seq.link(Sequence)
+            for AlignedSequence in self.list:
+                id = AlignedSequence.id
+                Sequence = self.SequenceList.contents[id]
+                AlignedSequence.link(Sequence)
         else:
             raise LinkError("Argument must be type == SequenceList.")
 
+    @handlers.history
     def unlink(self):
         """Remove SequenceList from Alignment
         """
@@ -100,7 +104,7 @@ class Alignment(handlers.HandlerContainer):
                 aligned_seq.unlink()
             # Remove sequencelist if it exists.
             delattr(self, "SequenceList")
-            self.addattr(links=[])
+            self._addattr(links=[])
         except AttributeError:
             warnings.warn("No Sequence was linked to the AlignedSequence object.")
 

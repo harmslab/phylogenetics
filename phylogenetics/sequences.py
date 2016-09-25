@@ -19,7 +19,7 @@ class Sequence(handlers.Handler):
         return "Seq"
 
 class SequenceList(handlers.HandlerContainer):
-    """A homolog container object.
+    """A Sequence container object.
     """
     def __init__(self, *Sequences, **kwargs):
         super(SequenceList, self).__init__(*Sequences, **kwargs)
