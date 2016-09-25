@@ -11,7 +11,7 @@ def history(method):
         now = time.strftime("%c")
         action = method.__name__
         obj = args[0]
-        info = (now, action)
+        info = [now, action]
         obj.history.append(info)
         obj.attrs["history"].append(info)
         return method(*args, **kwargs)
@@ -28,7 +28,7 @@ class Handler(object):
         }
         # Initialize history keywords.
         self._init_history(**kwargs)
-        self.addattr(**kwargs)
+        self._addattr(**kwargs)
 
     def _init_history(self, **kwargs):
         """Initialize history."""
@@ -36,7 +36,7 @@ class Handler(object):
             # On initialization, set the datetime
             now = time.strftime("%c")
             action = "init"
-            info = (now, action)
+            info = [now, action]
             self.attrs["history"] = [info]
         else:
             self.attrs["history"] = kwargs["history"]
@@ -59,6 +59,10 @@ class Handler(object):
     @history
     def addattr(self, **kwargs):
         """Add attributes to object and metadata."""
+        self._addattr(**kwargs)
+
+    def _addattr(self, **kwargs):
+        """see addattr doc."""
         for key, value in kwargs.items():
             setattr(self, key, value)
             self.attrs[key] = value
@@ -66,6 +70,10 @@ class Handler(object):
     @history
     def rmattr(self, *arg):
         """Remove attribute from object and metadata."""
+        self._rmattr(*arg)
+
+    def _rmattr(self, *args):
+        """see rmattr doc."""
         for a in args:
             delattr(self, a)
             del self.attrs[a]
@@ -91,7 +99,7 @@ class HandlerContainer(Handler):
     def __init__(self, *args, **kwargs):
         super(HandlerContainer, self).__init__(**kwargs)
         self._contents = {}
-        self.add(*args)
+        self._add(*args)
 
     @classmethod
     def get(cls, data, schema, **kwargs):
@@ -122,9 +130,9 @@ class HandlerContainer(Handler):
             mod = importlib.import_module(m["module"])
             Obj = getattr(mod, m["type"])
             handler = Obj(**m)
-            self.add(handler)
+            self._add(handler)
         # Add other attributes to objects
-        self.addattr(**metadata)
+        self._addattr(**metadata)
 
     @property
     def list(self):
@@ -172,7 +180,7 @@ class HandlerContainer(Handler):
                 number += 1
                 label = str(number)
                 new_id = prefix + "0"*(num_size - len(label)) + label
-            item.addattr(id=new_id)
+            item._addattr(id=new_id)
         # If ID exists in object, check that it isn't in this object already
         else:
             if item.id in self._contents:
@@ -182,14 +190,24 @@ class HandlerContainer(Handler):
     def add(self, *args):
         """Add an instance of the main object type to this container.
         """
+        self._add(*args)
+
+    def _add(self, *args):
+        """see add doc.
+        """
         for a in args:
             self._assign_id(a)
             setattr(self, a.id, a)
             self._contents[a.id] = a
 
     @history
-    def rm(self, **ids):
+    def rm(self, *ids):
         """Remove an instance of the main object from this container.
+        """
+        self._rm(*ids)
+
+    def _rm(self, *ids):
+        """See rm doc.
         """
         for id in ids:
             delattr(self, id)
