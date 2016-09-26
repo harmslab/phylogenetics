@@ -22,10 +22,11 @@ class Handler(object):
     """
     def __init__(self, **kwargs):
         # Some basic attributes to save
-        self.attrs = {
-            "type": type(self).__name__,
-            "module" : self.__module__
-        }
+        self.attrs = {}
+        self._addattr(
+            type=type(self).__name__,
+            module=self.__module__
+        )
         # Initialize history keywords.
         self._init_history(**kwargs)
         self._addattr(**kwargs)
@@ -47,6 +48,11 @@ class Handler(object):
         print(json.dumps(self.metadata, indent=4, separators=(',', ': ')))
 
     @property
+    def _schemas(self):
+        """"""
+        return Exception("""Must be implemented in a subclass.""")
+
+    @property
     def _prefix(self):
         """"""
         raise Exception("""Must be implemented in a Subclass.""")
@@ -55,6 +61,9 @@ class Handler(object):
     def metadata(self):
         """alias for attrs"""
         return self.attrs
+
+    def _metadata_to_object(self, metadata):
+        self._addattr(**metadata)
 
     @history
     def addattr(self, **kwargs):
@@ -123,16 +132,25 @@ class HandlerContainer(Handler):
         """Read data with schema to object."""
         parser = getattr(formats, schema).read
         metadata = parser(data)
-        # rip out contents
-        contents = metadata.pop("contents")
+        self._metadata_to_object(metadata)
+
+    def _metadata_to_object(self, metadata):
         # Add contents
+        contents = metadata.pop("contents")
         for m in contents:
             mod = importlib.import_module(m["module"])
             Obj = getattr(mod, m["type"])
-            handler = Obj(**m)
+            # Initialize the object
+            handler = Obj()
+            # If its also a container, add its contents
+            handler._metadata_to_object(m)
             self._add(handler)
         # Add other attributes to objects
         self._addattr(**metadata)
+
+    @property
+    def contents(self):
+        return self._contents
 
     @property
     def list(self):

@@ -4,22 +4,22 @@ from __future__ import absolute_import
 import os, shlex
 import subprocess
 
-def run(fasta_fname="alignment", cores=2, rm_tmp=True):
+def run(fasta_fname="alignment", cores=1, rm_tmp=True):
     """ Wrapper for MSAProbs.
 
-        Runs a multiple sequence alignment for sequences in a named fasta file.
+    Runs a multiple sequence alignment for sequences in a named fasta file.
 
-        Args:
-        ----
-        fasta_fname: str
-            filename for temporary files
-        rm_tmp: bool
-            If true, removes the temporary files that it creates.
+    Parameters
+    ----------
+    fasta_fname : str
+        filename for temporary files
+    rm_tmp : bool
+        If true, removes the temporary files that it creates.
 
-        Returns:
-        -------
-        oname : str
-            Output fasta filename
+    Returns
+    -------
+    oname : str
+        Output fasta filename
     """
 
     # Create a temporary fasta file from homologs as input to CDHIT.

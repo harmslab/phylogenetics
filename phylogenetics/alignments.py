@@ -7,8 +7,12 @@ from .utils import LinkError
 class AlignedSequence(handlers.Handler):
     """Aligned sequence.
     """
-    def __init__(self, sequence, **kwargs):
+    def __init__(self, sequence="", **kwargs):
         super(AlignedSequence, self).__init__(links=[], sequence=sequence, **kwargs)
+
+    @property
+    def _schemas(self):
+        return ["fasta", "phylip", "json", "pickle"]
 
     @property
     def _prefix(self):

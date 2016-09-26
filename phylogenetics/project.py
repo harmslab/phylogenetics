@@ -1,8 +1,13 @@
+import importlib
+
 from . import handlers
 from . import sequences
 from . import alignments
 from . import trees
 from . import ancestors
+
+from .dataio import read, write, formats
+from .exttools import msaprobs, phyml, paml
 
 def checkpoint(method):
     """Wrap an project's method tp save a checkpoint of the object after performing
@@ -24,10 +29,22 @@ class Project(handlers.HandlerContainer):
     def __init__(self, **kwargs):
         super(Project, self).__init__(**kwargs)
 
-    def add(self, *Handlers, **links):
-        """Add phylogenetic handlers to a Project class.
+    @property
+    def _schemas(self):
+        """Read/Write schemas available to project class.
+        """
+        return ["pickle", "json"]
 
-        Also, links can be made between objects. They are not assumed.
+    @property
+    def _child_types(self):
+        return [sequences.SequenceList,
+            alignments.AlignmentList,
+            trees.TreeList,
+            ancestors.AncestorList
+        ]
+
+    def add(self, *Handlers):
+        """Add phylogenetic handlers to a Project class.
         """
         # Add items to the project class
         for Handler in Handlers:
@@ -39,20 +56,27 @@ class Project(handlers.HandlerContainer):
             except:
                 raise BadHandlerError(itemname + " is not a valid object for Project class.")
 
+    def link(self, **links):
+        """Create a link between two objects.
+        """
         # Add manual links between objects
         for source, target in links.items():
             Source = getattr(self, source)
             Target = getattr(self, target)
             Source.link(Target)
 
-    def link(self):
-        """"""
     def unlink(self):
         """"""
 
     @handlers.history
-    def _align(self):
-        """"""
+    def _align(self, **options):
+        """
+        """
+        self.SequenceList
+        output = msaprobs.run(**options)
+        alignment = alignments.Alignment()
+        alignment.read(path=output, schema="fasta")
+
 
     @handlers.history
     def _tree(self):

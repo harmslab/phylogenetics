@@ -11,7 +11,7 @@ class Sequence(handlers.Handler):
     Keyword arguments
     -----------------
     """
-    def __init__(self, sequence, **kwargs):
+    def __init__(self, sequence="", **kwargs):
         super(Sequence, self).__init__(sequence=sequence, **kwargs)
 
     @property
