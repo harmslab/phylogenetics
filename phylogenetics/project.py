@@ -69,14 +69,21 @@ class Project(handlers.HandlerContainer):
         """"""
 
     @handlers.history
-    def _align(self, **options):
+    def _align(self, sequence_list_name="SequenceList", **options):
+        """Run alignment using MSAProbs.
         """
-        """
-        self.SequenceList
-        output = msaprobs.run(**options)
+        fname = "pre-alignment"
+        path = fname + ".fasta"
+        # Get list of sequences to align
+        SequenceList = getattr(self, sequence_list_name)
+        # Write sequence list to disk
+        SequenceList.write(path=path, schema="fasta")
+        # Run alignment and read it
+        output = msaprobs.run(fasta_fname=fname,**options)
         alignment = alignments.Alignment()
         alignment.read(path=output, schema="fasta")
-
+        # Add to project
+        self._add_Alignment(alignment)
 
     @handlers.history
     def _tree(self):
@@ -89,17 +96,20 @@ class Project(handlers.HandlerContainer):
     def _add_SequenceList(self, SequenceList):
         """Add HomologSet Set to PhylogeneticsProject object."""
         # Expose the align method of this object to user
-        self.SequenceList=SequenceList
-        self._contents["SequenceList"] = self.SequenceList
+        # Enforce that the id is standardized and not numbered
+        SequenceList._addattr(id="SequenceList")
+        setattr(self, SequenceList.id, SequenceList)
+        self._contents[SequenceList.id] = SequenceList
         setattr(self, "align", self._align)
 
     def _add_AlignmentList(self, AlignmentList=None):
         """Initialize an AlignmentList for the project.
         """
+        AlignmentList._addattr(id="AlignmentList")
         if AlignmentList is None:
             AlignmentList=alignments.AlignmentList()
-        self.AlignmentList=AlignmentList
-        self._contents["AlignmentList"] = self.AlignmentList
+        setattr(self, AlignmentList.id, AlignmentList)
+        self._contents[AlignmentList.id] = AlignmentList
 
     def _add_Alignment(self, Alignment):
         """Add Alignment to PhylogeneticsProject object."""
@@ -113,10 +123,11 @@ class Project(handlers.HandlerContainer):
     def _add_TreeList(self, TreeList=None):
         """Initialize an TreeList for the project.
         """
+        TreeList._add(id="TreeList")
         if TreeList is None:
             TreeList=trees.TreeList()
-        self.TreeList=TreeList
-        self._contents["TreeList"] = self.TreeList
+        setattr(self, TreeList.id, TreeList)
+        self._contents[TreeList.id] = TreeList
 
     def _add_Tree(self, Tree):
         """Add Tree to Phylogenetics Project object."""
@@ -130,5 +141,3 @@ class Project(handlers.HandlerContainer):
 
     def _add_AncestorList(self):
         """Add a AncestorSet object to PhylogeneticsProject object."""
-        self.AncestorList=AncestorList
-        self._contents["AncestorList"] = self.AncestorList

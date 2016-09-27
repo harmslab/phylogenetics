@@ -135,8 +135,16 @@ class HandlerContainer(Handler):
         self._metadata_to_object(metadata)
 
     def _metadata_to_object(self, metadata):
+        """parse metadata and construct objects from its info.
+        """
+        # Check for type of metadata
+        if type(metadata) == dict:
+            contents = metadata.pop("contents")
+        elif type(metadata) == list:
+            contents = metadata
+        else:
+            raise Exception("Don't know how to read this type of data")
         # Add contents
-        contents = metadata.pop("contents")
         for m in contents:
             mod = importlib.import_module(m["module"])
             Obj = getattr(mod, m["type"])
