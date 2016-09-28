@@ -11,39 +11,36 @@ def sequential_regex(n, l):
     return re.compile("[A-Z0-9 ]{10}[ABCDEFGHIJKLMNOPQRSTUVWXYZ*?-]{45}|[A-Z0-9 \t]{1,10}\n[ABCDEFGHIJKLMNOPQRSTUVWXYZ*?-]{45}")
 
 def read(data):
-    """ Read a phylip string.
-
-    Returns a list of tuple pairs. First value is header tags. Second
-    value is sequence. Currently, this function does not read phylip files in
-    interleaved format.
+    """Read a phylip string and return an Alignment metadata dictionary.
     """
     # Strip phylip header
     header = HEADER_REGEX.search(data)
-
     if header is None:
-        raise Exception("""Phylip file appears to have no header.""" )
-
+        raise Exception("Phylip file appears to have no header.")
     # Parse header
     header_vals = HEADER_VAL_REGEX.findall(header.group())
-
     n_sequences = header_vals[0] # A string with the number of sequences in file
     l_sequences = header_vals[1] # a string with length of sequences.
-
     # Construct the appropriate regular expression
     regex = sequential_regex(n_sequences, l_sequences)
-
     # Get sequences
     sequences = regex.findall(data)
-
     # Construct phylip data-structure
-    phylip_data = []
+    alignment = dict(
+        type="Alignment",
+        module="phylogenetics.alignments"
+    )
     for s in sequences:
         sequence = s[-(int(l_sequences)):]
         name = s[-len(s):-(int(l_sequences))].lstrip().rstrip()
-
-        phylip_data.append((name, sequence))
-
-    return phylip_data
+        metadata = dict(
+            id=name,
+            sequence=sequence,
+            type="AlignedSequence",
+            module="phylogenetics.alignments"
+        )
+        contents.append(metadata)
+    return contents
 
 def write(phylip_data):
     """ Write a fasta string.

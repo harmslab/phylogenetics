@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 def file(function):
     """ Decorator to write the output of a function to a file if `fname` kwarg exists.
     Otherwise, output is just returned.

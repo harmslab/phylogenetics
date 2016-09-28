@@ -12,7 +12,7 @@ class AlignedSequence(handlers.Handler):
 
     @property
     def _schemas(self):
-        return ["fasta", "phylip", "json", "pickle"]
+        return ["fasta", "phylip", "json", "pickle", "ali"]
 
     @property
     def _prefix(self):
@@ -57,6 +57,10 @@ class Alignment(handlers.HandlerContainer):
     """
     def __init__(self, *AlignedSequences, **kwargs):
         super(Alignment, self).__init__(links=[], *AlignedSequences, **kwargs)
+
+    @property
+    def _schemas(self):
+        return ["fasta", "phylip", "json", "pickle", "ali"]
 
     @property
     def alignment(self):
@@ -117,6 +121,10 @@ class AlignmentList(handlers.HandlerContainer):
     """
     def __init__(self, *Alignments, **kwargs):
         super(AlignmentList, self).__init__(*Alignments, **kwargs)
+
+    @property
+    def _schemas(self):
+        return ["json", "pickle"]
 
     @property
     def _prefix(self):

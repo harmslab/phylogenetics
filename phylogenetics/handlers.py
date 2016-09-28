@@ -127,6 +127,7 @@ class HandlerContainer(Handler):
             contents = self.metadata["contents"]
             return writer(contents)
 
+    @history
     @read.file
     def read(self, data, schema):
         """Read data with schema to object."""
@@ -134,17 +135,17 @@ class HandlerContainer(Handler):
         metadata = parser(data)
         self._metadata_to_object(metadata)
 
+    #@read.file
+    def update(self, obj, data, schema):
+        """Update one of the pieces of a phylogenetics project which already
+        contains data.
+        """
+
     def _metadata_to_object(self, metadata):
         """parse metadata and construct objects from its info.
         """
-        # Check for type of metadata
-        if type(metadata) == dict:
-            contents = metadata.pop("contents")
-        elif type(metadata) == list:
-            contents = metadata
-        else:
-            raise Exception("Don't know how to read this type of data")
-        # Add contents
+        contents = metadata.pop("contents")
+        # Add contents.
         for m in contents:
             mod = importlib.import_module(m["module"])
             Obj = getattr(mod, m["type"])

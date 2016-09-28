@@ -83,26 +83,14 @@ FORMATS = {
     },
 }
 
-
-def read(fasta_string, alignment_style=False):
-    """Parse a fasta string and return a list of sequence dictionaries.
-
-    Uses defined formats from databases above.
-
-    Parameters
-    ----------
-    fasta_string : str
-        fasta string
-    alignment_style : bool
-        if True, reads header as id and sequence as alignment sequence.
-
-    Returns
-    -------
-    sequences : list of dictionaries
-        the sequence metadata pulled from fasta file.
+def parse(string):
+    """Parse a fasta string.
     """
+    # ----------------------------------------------------------------------
+    # Parse the fasta file
+    # ----------------------------------------------------------------------
     # Get lines from fasta
-    lines = fasta_string.strip().split("\n")
+    lines = string.strip().split("\n")
     # separate headers from sequences
     mapping = {}
     for line in lines:
@@ -116,34 +104,63 @@ def read(fasta_string, alignment_style=False):
         else:
             # Append to the sequence.
             mapping[header] += line
-    # separate from
-    sequences = []
-    # Check for alignment_style
-    if alignment_style:
-        return mapping
-    else:
-        n_warnings = 0
-        for header, sequence in mapping.items():
-            # attempt to identify fasta style
-            try:
-                # parse the header with specific parser
-                header_pieces = header.split("|")
-                # get dbformat from header piece
-                dbformat = header_pieces[0]
-                # create the metadata dict
-                metadata = dict(zip(FORMATS[dbformat]["header"], header_pieces))
-                # add sequence to metadata
-            except:
-                n_warnings += 1
-                metadata = {"fasta_header" : header}
-            metadata["sequence"] = sequence
-            sequences.append(metadata)
-        # Return number of warnings if any were given
-        if n_warnings > 0:
-            _warnings.warn("""%d warnings were raised for unidentified fasta header formats""" % n_warnings)
-            return sequences
+    return mapping
 
-def write(metadata, alignment_style=False):
+
+def read(fasta_string):
+    """Parse a fasta string and return a list of sequence dictionaries.
+
+    Uses defined formats from databases above.
+
+    Parameters
+    ----------
+    fasta_string : str
+        fasta string
+    alignment_style : bool
+        if True, reads header as id and sequence as alignment sequence.
+
+    Returns
+    -------
+    sequencelist : dict
+        SequenceList metadata dictionary
+    """
+    mapping = parse(fasta_string)
+    sequencelist = dict(
+        type="SequenceList",
+        module="phylogenetics.sequences",
+        contents=[]
+    )
+    # ----------------------------------------------------------------------
+    # Construct a metadata object.
+    # ----------------------------------------------------------------------
+    n_warnings = 0
+    for header, sequence in mapping.items():
+        # attempt to identify fasta style
+        try:
+            # parse the header with specific parser
+            header_pieces = header.split("|")
+            # get dbformat from header piece
+            dbformat = header_pieces[0]
+            # create the metadata dict
+            metadata = dict(zip(FORMATS[dbformat]["header"], header_pieces))
+            # add sequence to metadata
+        except:
+            n_warnings += 1
+            metadata = {"fasta_header" : header}
+        # Construct the dictionary.
+        metadata.update(
+            sequence=sequence,
+            module="phylogenetics.sequences",
+            type="Sequence"
+        )
+        # Add to list of sequences
+        sequencelist["contents"].append(metadata)
+    # Return number of warnings if any were given
+    if n_warnings > 0:
+        _warnings.warn("""%d warnings were raised for unidentified fasta header formats""" % n_warnings)
+    return sequencelist
+
+def write(metadata):
     """Return fasta string from sequence metadata.
 
     Parameters
@@ -158,20 +175,14 @@ def write(metadata, alignment_style=False):
         metadata = [metadata]
     fasta_string = ""
     # Simple fasta string is just id-to-sequence
-    if alignment_style:
-        for d in metadata:
+    for d in metadata:
+        # Try getting database
+        try:
+            database = d["database"]
+            headers = FORMATS[database]
+            header = "|".join([d[h] for h in headers])
+        except KeyError:
             header = d["id"]
-            line = ">" + header + "\n" + d["sequence"] + "\n"
-            fasta_string += line
-    else:
-        for d in metadata:
-            # Try getting database
-            try:
-                database = d["database"]
-                headers = FORMATS[database]
-                header = "|".join([d[h] for h in headers])
-            except KeyError:
-                header = d["id"]
-            line = ">" + header + "\n" + d["sequence"] + "\n"
-            fasta_string += line
+        line = ">" + header + "\n" + d["sequence"] + "\n"
+        fasta_string += line
     return fasta_string

@@ -20,6 +20,47 @@ def checkpoint(method):
         return method(*args, **kwargs)
     return checkpoint
 
+
+def project_metadata(schema, metadata):
+    """Implant sub-metadata into a project metadata dictionary.
+    """
+    options = {
+        "fasta" : dict(
+            type="Project",
+            module="phylogenetics.project",
+            contents=[metadata]
+        ),
+        "ali" : dict(
+            type="Project",
+            module="phylogenetics.project",
+            contents=[dict(
+                type="AlignmentList",
+                module="phylogenetics.alignments",
+                contents=[metadata]
+            )]
+        ),
+        "newick" : dict(
+            type="Project",
+            module="phylogenetics.project",
+            contents=[dict(
+                type="TreeList",
+                module="phylogenetics.trees",
+                contents=[metadata]
+            )]
+        ),
+        "rst" : dict(
+            type="Project",
+            module="phylogenetics.project",
+            contents=[dict(
+                type="AncestorList",
+                module="phylogenetics.ancestors",
+                contents=[metadata]
+            )]
+        ),
+    }
+    return options[schema]
+
+
 class BadHandlerError(Exception):
     """Error message for passing in a bad handler to the Project class."""
 
@@ -33,7 +74,7 @@ class Project(handlers.HandlerContainer):
     def _schemas(self):
         """Read/Write schemas available to project class.
         """
-        return ["pickle", "json"]
+        return ["pickle", "json", "fasta", "ali"]
 
     @property
     def _child_types(self):
@@ -43,7 +84,16 @@ class Project(handlers.HandlerContainer):
             ancestors.AncestorList
         ]
 
-    def add(self, *Handlers):
+    @handlers.history
+    @read.file
+    def read(self, data, schema):
+        """Read data with schema to object."""
+        parser = getattr(formats, schema).read
+        metadata = parser(data)
+        metadata = project_metadata(schema, metadata)
+        self._metadata_to_object(metadata)
+
+    def _add(self, *Handlers):
         """Add phylogenetic handlers to a Project class.
         """
         # Add items to the project class
