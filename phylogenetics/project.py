@@ -20,7 +20,6 @@ def checkpoint(method):
         return method(*args, **kwargs)
     return checkpoint
 
-
 def project_metadata(schema, metadata):
     """Implant sub-metadata into a project metadata dictionary.
     """
@@ -125,13 +124,12 @@ class Project(handlers.HandlerContainer):
         fname = "pre-alignment"
         path = fname + ".fasta"
         # Get list of sequences to align
-        SequenceList = getattr(self, sequence_list_name)
         # Write sequence list to disk
-        SequenceList.write(path=path, schema="fasta")
+        self.SequenceList.write(path=path, schema="ali")
         # Run alignment and read it
         output = msaprobs.run(fasta_fname=fname,**options)
         alignment = alignments.Alignment()
-        alignment.read(path=output, schema="fasta")
+        alignment.read(path=output, schema="ali")
         # Add to project
         self._add_Alignment(alignment)
 

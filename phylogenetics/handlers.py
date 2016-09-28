@@ -18,7 +18,19 @@ def history(method):
     return update_history
 
 class Handler(object):
-    """Provides a template class for adding/removing attributes and metadata.
+    """Provides a template class that attaches an API to metadata dictionary.
+
+    Example
+    -------
+    ..code::
+
+        metadata = {
+            "type" : "MyObject",
+            "module" : "foo.bar",
+            "history" = ["Tues September 27 9:00:00AM", "init"]
+        }
+
+    
     """
     def __init__(self, **kwargs):
         # Some basic attributes to save
