@@ -1,2 +1,5 @@
+pandas
 biopython
 dendropy
+phylopandas
+pyasr
