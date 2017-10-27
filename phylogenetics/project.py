@@ -106,6 +106,16 @@ class TreeProject(object):
         method = getattr(self, '_add_{}'.format(dtype))
         method(data)
         return self
+
+    @track_in_history
+    def read_data(self, dtype, path, schema='fasta', **kwargs):
+        """Read data from file.
+        """
+        method_read = getattr(phylopandas, 'read_{}'.format(schema))
+        df = method_read(path, **kwargs)
+        method_add = getattr(self, '_add_{}'.format(dtype))
+        method_add(df)
+        return self
         
     def draw_tree(self, **kwargs):
         """
