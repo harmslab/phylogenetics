@@ -1,6 +1,8 @@
 # Python API for managing a phylogenetics project
 
-This package provide a minimalist 
+Phylogenetics is a minimal Python API for doing phylogenetics. It manages the annoying
+aspects of phylogenetics (i.e. file conversion) for you and lets you focus on exploring
+and interpreting the data.  
 
 ## The Basics
 
@@ -12,10 +14,16 @@ phylogenetics project. Below is an example of how to use the `Project` class.
 from phylogenetics import TreeProject
 
 # Initialize a project class
-project = TreeProject()
-```
+project = TreeProject(project_dir='project')
+project.read_data(dtype='tips', path='alignment.fasta', schema='fasta')
 
-Add 
+# Run PhyML to construct a phylogenetic 
+# tree by maximum likelihood.
+project.run_tree()
+
+# Reconstruct ancestral sequences.
+project.run_reconstruction(alpha=1.2)
+```
 
 ## Installation
 
@@ -36,7 +44,7 @@ pip install -e .
 3. `phyml` - building maximum likelihood trees
 4. `paml` - reconstructing ancestors
 
-Python dependencies includes:
+`phylogenetics` is built on top of following python stack:
 
 1. Pandas 
 2. Biopython

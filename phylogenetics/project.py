@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import subprocess
 import pkg_resources
@@ -11,7 +12,6 @@ from time import localtime, strftime
 
 from Bio.Phylo.Applications import PhymlCommandline
 from Bio.Phylo.PAML import codeml
-
 
 def track_in_history(method):
     """Track this call in the history DataFrame"""
@@ -49,16 +49,7 @@ class TreeProject(object):
         
         # Set up a project directory
         self.project_dir = project_dir
-        if os.path.exists(self.project_dir):
-            reply = input('Project directory already exists. Overwrite? [Y/n]')
-            if reply != 'Y':
-                raise Exception('Please give a new directory name.')
-            else:
-                shutil.rmtree(self.project_dir)
-        
-        # Create directory.
-        os.makedirs(self.project_dir)
-        
+
         # DataFrame for storing data.
         self.data = {'tips':None, 'ancs':None, 'tree':None}
         
@@ -126,7 +117,42 @@ class TreeProject(object):
     
     @classmethod
     def load(cls, project_dir):
-        pass
+        """Load a project from a project directory."""
+        if not os.path.exists(project_dir):
+            raise Exception("project_dir does not exist")
+        
+        # load history
+        history_path = os.path.join(project_dir, 'history.csv')
+        history = pandas.read_csv(history_path, index_col=0)
+        
+        # Initialize a TreeProject class.
+        self = cls(project_dir)
+        
+        # Append old history.
+        self.history = history
+        
+        # Try reading tips
+        try: 
+            tips_path = os.path.join(self.project_dir, 'tips.csv')
+            tips_df = phylopandas.read_csv(tips_path, index_col=0)
+            self._add_tips(tips_df)
+        except: pass
+
+        # Try reading ancestors
+        try: 
+            ancs_path = os.path.join(self.project_dir, 'ancs.csv')
+            ancs_df = phylopandas.read_csv(ancs_path, index_col=0)
+            self._add_ancs(ancs_df)
+        except: pass
+
+        # Try reading tree
+        try: 
+            tree_path = os.path.join(self.project_dir, 'tree.newick')
+            tree = dendropy.Tree.get(path=tree_path, schema='newick')
+            self._add_tree(tree)
+        except: pass
+        
+        return self            
     
     @track_in_history
     def test(self, blah, blah2=None):
@@ -198,7 +224,7 @@ class TreeProject(object):
         return self
     
     @track_in_history
-    def run_tree(self,
+    def run_tree(self, id_col='unique_id', sequence_col='sequence',
         datatype='aa',
         bootstrap='0',
         model='LG',
@@ -209,7 +235,7 @@ class TreeProject(object):
         
         # Write file to disk
         fasta_file = os.path.join(self.project_dir, 'alignment.phy')
-        df.to_phylip(fasta_file, sequence_col='alignment', id_col='unique_id')
+        df.to_phylip(fasta_file, sequence_col=sequence_col, id_col=id_col)
         
         # Prepare options
         options = {
@@ -232,114 +258,43 @@ class TreeProject(object):
         return self
 
     @track_in_history
-    def run_reconstruction(self,
-        verbose=None,
-        CodonFreq=None,
-        cleandata=None,
-        fix_blength=None,
-        NSsites=None,
-        fix_omega=None,
-        clock=None,
-        ncatG=None,
-        runmode=None,
-        fix_kappa=None,
-        fix_alpha=None,
-        Small_Diff=None,
-        method=None,
-        Malpha=None,
-        aaDist=None,
-        RateAncestor=None,
-        aaRatefile='lg',
-        icode=None,
-        alpha=None,
-        seqtype=None,
-        omega=None,
-        getSE=None,
-        noisy=None,
-        Mgene=None,
-        kappa=None,
-        model=3,
-        ndata=None):
+    def run_reconstruction(self, id_col='unique_id', sequence_col='sequence', **kwargs):
         """Use PAML to build a phylogenetic tree."""
-        df = self.data['tips']
+        df_seqs = self.data['tips']
         tree = self.data['tree']
 
-        # Write file to disk
-        ### NEED TO FIX SEQUENCE COL!!
-
-        n, m = len(df), len(df['sequence'][0])
-        alignment_file = 'alignment.phy'
-        alignment_path = os.path.join(self.project_dir, alignment_file)
-        alignment_str = df.to_fasta(sequence_col='sequence', id_col='unique_id', id_only=True)
-        alignment_str = "{} {}\n".format(n,m) + alignment_str
+        ###### BIT OF A HACK
+        # Parse PhyML stats for alpha
+        data = {}
+        phyml_file = os.path.join(self.project_dir, 'alignment.phy_phyml_stats.txt')
+        with open(phyml_file, 'r') as f:
+            data_string = f.read()
         
-        with open(alignment_path, 'w') as f:
-            f.write(alignment_str)
         
-        # Write tree to file
-        tree_file = 'tree-to-reconstruct.newick'
-        tree_path = os.path.join(self.project_dir, tree_file)
-        tree.write(path=tree_path, schema='newick', 
-            suppress_internal_taxon_labels=True,
-            suppress_internal_node_labels=True)
-        
-        output_file = 'results.txt'
-        output_path = os.path.join(self.project_dir, output_file)
-        
-        # copy model from package to project directory. 
-        path_to_model = pkg_resources.resource_filename('phylogenetics', os.path.join('dat', '{}.dat'.format(aaRatefile)))
-        model_file = '{}.dat'.format(aaRatefile)
-        model_path = os.path.join(self.project_dir, model_file)
-        shutil.copyfile(path_to_model, model_path)
-    
-        # Build control file.
-        cml = codeml.Codeml(alignment=alignment_path, 
-            tree=tree_path,
-            out_file=output_path,
-            working_dir=self.project_dir)
-        cml.set_options(
-            verbose = verbose,
-            CodonFreq = CodonFreq,
-            cleandata = cleandata,
-            fix_blength = fix_blength,
-            NSsites = NSsites,
-            fix_omega = fix_omega,
-            clock = clock,
-            ncatG = ncatG,
-            runmode = runmode,
-            fix_kappa = fix_kappa,
-            fix_alpha = fix_alpha,
-            Small_Diff = Small_Diff,
-            method = method,
-            Malpha = Malpha,
-            aaDist = aaDist,
-            RateAncestor = RateAncestor,
-            aaRatefile = model_file,
-            icode = icode,
-            alpha = alpha,
-            seqtype = seqtype,
-            omega = omega,
-            getSE = getSE,
-            noisy = noisy,
-            Mgene = Mgene,
-            kappa = kappa,
-            model = model,
-            ndata = ndata)
+        option_regex = re.compile("\.[\w\t ]+:.+\n|\- [\w\t ]+:.+\n")
+        for pair in option_regex.findall(data_string):
+            # Split the pair
+            parse = pair.split(":")
+            # Each pair has either a `. ` or `- ` in front. Remove those
+            key = parse[0][2:]
+            # Remove whitespace
+            value = parse[1].lstrip().rstrip()
+            # add to data dict
+            data[key] = value
             
-        # Write out control file.
-        cml.ctl_file = os.path.join(self.project_dir, 'codeml_options.ctl')
-        cml.write_ctl_file()     
-
-        # Run PAML: 1. change directory, 2. run codeml, 3. parse results and 4. switch back to current dir.
-        current_dir = os.getcwd()
-        project_dir = os.path.join(current_dir, self.project_dir)
-        os.chdir(project_dir)
-        output = subprocess.run(['codeml', 'codeml_options.ctl'])
-        os.chdir(current_dir)
+        # Get alpha
+        alpha = data['Gamma shape parameter']
         
-        # Parse output.
-        rst_file = os.path.join(self.project_dir, 'rst')
-        tree_ancs, df_ancs = pyasr.read_codeml_output(rst_file)
+        ###### END HACK
+
+        # Write file to disk
+        df_seqs, df_ancs, tree_ancs = pyasr.reconstruct(df_seqs, tree, 
+            working_dir=self.project_dir,
+            id_col=id_col, sequence_col=sequence_col,
+            alpha=alpha,
+            **kwargs)
+            
+        # Add data to TreeProject.
         self._add_ancs(df_ancs)
         self._add_tree(tree_ancs)
         return self
@@ -366,7 +321,7 @@ class TreeProject(object):
         
         # Tip settings
         tree_tips_labels = tree.get_tip_labels()
-        tree_ancs_labels = tree.get_node_values('name', show_root=False, show_tips=False)
+        tree_ancs_labels = tree.get_node_values('support', show_root=False, show_tips=False)
         
         # Get tips
         tips = self.data['tips']
