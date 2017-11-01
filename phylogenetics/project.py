@@ -226,10 +226,9 @@ class TreeProject(object):
     @track_in_history
     def run_tree(self, id_col='unique_id', sequence_col='sequence',
         datatype='aa',
-        bootstrap='0',
+        bootstrap='-1',
         model='LG',
-        frequencies='e',
-        ):
+        frequencies='e'):
         """Use PhyML to build a phylogenetic tree."""
         df = self.data['tips']
         
