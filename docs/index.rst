@@ -17,6 +17,7 @@ The main object in phylogenetics is the ``TreeProject``. Start by initializing t
 object, pointing to a directory where you'd like to store all the phylogenetic data/output. 
 
 .. code-block:: python
+
   # Imports
   from phylogenetics import TreeProject
 
@@ -49,7 +50,8 @@ You can quickly view your tree anytime using the `draw_tree` method.
       use_edge_lengths=True,
       node_labels='id') 
 
-<img src="_images/jlab.png" align="middle">
+.. image:: _images/jlab.png
+  :align: center
 
 Installation
 ------------
@@ -92,6 +94,12 @@ Dependencies
 .. _PhyloPandas: https://github.com/Zsailer/phylopandas
 .. _PyASR: https://github.com/Zsailer/pyasr
 
+TreeProject Class
+-----------------
+
+.. autoclass:: project.TreeProject
+  :members:
+  
 Table of Contents
 =================
 

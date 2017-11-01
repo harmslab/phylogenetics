@@ -43,7 +43,21 @@ def track_in_history(method):
     return wrapper
 
 class TreeProject(object):
-    """Main Phylogenetics Project class."""
+    """A lightweight python object that manages phylogenetic data. 
+    
+    There are three datatypes stored in a TreeProject object
+        * 'tips' : A DataFrame with an alignment and information about the tips of
+                the tree.
+        * 'ancs' : A DataFrame with information about the ancestors of the tree.
+        * 'tree' : A dendropy.Tree object containing the topology of the phylogenetic tree.    
+    
+    Parameters
+    ----------
+    project_dir : str
+        the directory to store the phylogenetic data.
+    overwrite : bool (default: False)
+        allow overwriting a project that already exists in project_dir location.
+    """
     def __init__(self, project_dir, overwrite=False):
         # Get current time for history.
         time = strftime("%Y-%m-%d %H:%M:%S", localtime())
@@ -51,6 +65,8 @@ class TreeProject(object):
         # Set up a project directory
         if os.path.exists(project_dir) and overwrite is False:
             raise Exception("Project already exists! Use `TreeProject.load` or delete the project.")
+        else:
+            os.makedirs(project_dir)
         
         self.project_dir = project_dir
 

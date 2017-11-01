@@ -1,5 +1,8 @@
 # Python API for managing a phylogenetics project
 
+[![Documentation Status](http://readthedocs.org/projects/phylogenetics/badge/?version=latest)](http://phylogenetics.readthedocs.io/en/latest/?badge=latest)
+
+
 Phylogenetics is a minimal Python API for doing phylogenetics. It manages the annoying aspects of phylogenetics (i.e. file conversion) for you and lets you focus on exploring and interpreting the data.  
 
 **Note** The `phylogenetics` package has been completely rewritten between v0.3 and v0.4. v0.3 is now deprecated and no longer maintained. v0.4 has significantly simplified the API. I hope you enjoy it.
