@@ -29,8 +29,12 @@ project.run_reconstruction(alpha=1.2)
 
 ## Installation
 
-`phylogenetics` has been rewritten from scratch. The version on PyPi is outdated
-and will not work with the new version. For now, install from source. 
+Install from PyPi:
+```
+pip install phylogenetics
+```
+
+To install a development version:
 ```
 git clone https://github.com/Zsailer/phylogenetics
 cd phylogenetics
