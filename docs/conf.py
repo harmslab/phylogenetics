@@ -40,7 +40,6 @@ MOCK_MODULES = [
     'pandas',
     'toytree',
     'dendropy',
-    'Bio',
     'Bio.Phylo.Applications',
     'Bio.Phylo.PAML'
 ]
