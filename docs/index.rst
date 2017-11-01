@@ -102,10 +102,3 @@ Table of Contents
 
    _pages/install
    _pages/project
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

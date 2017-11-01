@@ -22,6 +22,34 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath("../phylogenetics"))
 
+# importing modules with weird dependencies
+try:
+    from mock import Mock as MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = [
+    'pyasr',
+    'phylopandas',
+    'biopython',
+    'pandas',
+    'toytree',
+    'dendropy',
+    'Bio',
+    'Bio.Phylo.Applications',
+    'Bio.Phylo.PAML'
+]
+
+try:
+    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+except RecursionError:
+    pass
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
