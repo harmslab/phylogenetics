@@ -262,13 +262,13 @@ class TreeProject(object):
         df_seqs = self.data['tips']
         tree = self.data['tree']
 
-        ###### BIT OF A HACK
+        ###### BIT OF A HACK  ########################
+        
         # Parse PhyML stats for alpha
         data = {}
         phyml_file = os.path.join(self.project_dir, 'alignment.phy_phyml_stats.txt')
         with open(phyml_file, 'r') as f:
             data_string = f.read()
-        
         
         option_regex = re.compile("\.[\w\t ]+:.+\n|\- [\w\t ]+:.+\n")
         for pair in option_regex.findall(data_string):
@@ -284,7 +284,7 @@ class TreeProject(object):
         # Get alpha
         alpha = data['Gamma shape parameter']
         
-        ###### END HACK
+        ###### END HACK #################################
 
         # Write file to disk
         df_seqs, df_ancs, tree_ancs = pyasr.reconstruct(df_seqs, tree, 

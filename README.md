@@ -4,10 +4,10 @@ Phylogenetics is a minimal Python API for doing phylogenetics. It manages the an
 
 **Note** The `phylogenetics` package has been completely rewritten between v0.3 and v0.4. v0.3 is now deprecated and no longer maintained. v0.4 has significantly simplified the API. I hope you enjoy it.
 
-## The Basics
+## Basic Example
 
-The main entry-point to the API is the `Project` object, which acts as a container object for all pieces of a
-phylogenetics project. Below is an example of how to use the `Project` class.
+The main object in phylogenetics is the `TreeProject`. Start by initializing the `TreeProject`
+object, pointing to a directory where you'd like to store all the phylogenetic data/output. 
 
 ```python
 # Imports
@@ -15,15 +15,31 @@ from phylogenetics import TreeProject
 
 # Initialize a project class
 project = TreeProject(project_dir='project')
+```
+
+Then, add an alignment (using any file schema you'd like). These sequences will be the
+tips of your tree. You can now begin building trees and reconstructing ancestral sequences.
+
+```python
 project.read_data(dtype='tips', path='alignment.fasta', schema='fasta')
 
 # Run PhyML to construct a phylogenetic 
 # tree by maximum likelihood.
 project.run_tree()
 
-# Reconstruct ancestral sequences.
-project.run_reconstruction(alpha=1.2)
+# Reconstruct ancestral sequences using default settings.
+project.run_reconstruction()
 ```
+
+`phylogenetics` imports the `toytree` library to quickly plot trees in Jupyter Notebooks.
+You can quickly view your tree anytime using the `draw_tree` method. 
+```python
+p.draw_tree(width=700,
+    tip_labels='id',
+    tip_labels_align=True,
+    use_edge_lengths=True,
+    node_labels='id')
+``` 
 
 <img src="docs/_images/jlab.png" align="middle">
 
