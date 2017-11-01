@@ -11,8 +11,7 @@ import dendropy
 from functools import wraps
 from time import localtime, strftime
 
-from Bio.Phylo.Applications import PhymlCommandline
-from Bio.Phylo.PAML import codeml
+import Bio.Phylo.Applications
 
 def track_in_history(method):
     """Track this call in the history DataFrame"""
@@ -330,7 +329,7 @@ class TreeProject(object):
         options.update(**kwargs)
         
         # Build command line arguments for PhyML.
-        cml = PhymlCommandline(**options)
+        cml = Bio.Phylo.Applications.PhymlCommandline(**options)
         cml_args = str(cml).split()
         output = subprocess.run(cml_args)
         
