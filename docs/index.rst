@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Phylogenetics package
-=====================
+Phylogenetics
+=============
+
+Phylogenetics is a minimal Python API for doing phylogenetics. It manages the annoying
+aspects of phylogenetics (i.e. file conversion) for you and lets you focus on exploring
+and interpreting the data.  
 
 Table of Contents
 =================
