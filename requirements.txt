@@ -1,3 +1,6 @@
-phylogenetics
+pandas
 biopython
 dendropy
+phylopandas
+pyasr
+toytree

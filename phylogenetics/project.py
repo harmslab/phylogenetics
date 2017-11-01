@@ -1,354 +1,370 @@
-from __future__ import absolute_import
+import os
+import re
+import shutil
+import subprocess
+import pkg_resources
+import pandas
+import toytree
+import phylopandas
+import pyasr
+import dendropy
+from time import localtime, strftime
 
-import os, pickle, datetime, copy
+from Bio.Phylo.Applications import PhymlCommandline
+from Bio.Phylo.PAML import codeml
 
-# import objects to bind to Project class
-from phylogenetics.homologs import Homolog, HomologSet
-from phylogenetics.alignment import Alignment
-from phylogenetics.tree import Tree
-from phylogenetics.ancestors import Ancestor, AncestorSet
-from phylogenetics.reconstruction import Reconstruction
-from phylogenetics.dataio import projectio
+def track_in_history(method):
+    """Track this call in the history DataFrame"""
+    def wrapper(self, *args, **kwargs):
+        """"""
+        # Now run method
+        output = method(self, *args, **kwargs)
+        
+        # Store method in history.
+        # Prepare data for history dataframe
+        time =strftime("%Y-%m-%d %H:%M:%S", localtime())
+        args_as_str = ",".join([str(a) for a in args])
+        kwargs_as_str = ",".join([str((key, val)) for key, val in kwargs.items()])
+                
+        # Create row
+        history = pandas.DataFrame({'time':[time], 
+            'method':[method.__name__], 
+            'args':[args_as_str], 
+            'kwargs':[kwargs_as_str]}, dtype=str)
 
-# imports for running external tools.
-from .exttools import (cdhit,
-                        msaprobs,
-                        phyml,
-                        paml)
-                        
-__doc__ = """Phylogenetics package entry point.
+        # Append to main history dataframe
+        self.history = self.history.append(history, ignore_index=True)
+        
+        # Write history to file.
+        history_file = os.path.join(self.project_dir, 'history.csv')
+        self.history.to_csv(history_file)
+        return output
+    return wrapper
 
-`Project` class is a versatile object that manages all data for a phylogenetics
-project.
+class TreeProject(object):
+    """Main Phylogenetics Project class."""
+    def __init__(self, project_dir):
+        # Get current time for history.
+        time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        
+        # Set up a project directory
+        self.project_dir = project_dir
 
-Example:
+        # DataFrame for storing data.
+        self.data = {'tips':None, 'ancs':None, 'tree':None}
+        
+        # Create a history database.
+        self.history = pandas.DataFrame({'time':[time], 
+            'method':['__init__'],
+            'args':[project_dir], 
+            'kwargs':[None]}, dtype=str)
+            
+        # Write history to file.
+        history_file = os.path.join(self.project_dir, 'history.csv')
+        self.history.to_csv(history_file)
+          
+    def __str__(self):
+        # Get history
+        history = self.history.iloc[-1]
+        tips_bool = self.data['tips'] is not None
+        ancs_bool = self.data['ancs'] is not None
+        tree_bool = self.data['tree'] is not None
+        
+        # Start building history.
+        info = ["TreeProject(project_dir={})\n".format(self.project_dir),
+                "    last modified\t{}\n".format(history['time']),
+                "    last edit\t\t{}\n".format(history['method'])]
+                
+        # If leafs, add stats
+        info += ["    tips\t\t{}\n".format(tips_bool)]
+        if tips_bool:
+            leafs = self.data['tips']
+            info += ["        - num of tips\t{}\n".format(len(leafs))]
+    
+        # If ancestors, add stats.
+        info += ["    ancs\t\t{}\n".format(ancs_bool)]
+        if ancs_bool:            
+            ancs = self.data['ancs']
+            info += ["        - num of ancs\t{}\n".format(len(ancs))]            
+        
+        # If tree, add stats.
+        info += ["    tree\t\t{}\n".format(tree_bool)]
+        return "".join(info).strip()
+                
+    def __repr__(self):
+        return self.__str__()
+    
+    def save(self):
+        # Save history
+        history_path = os.path.join(self.project_dir, 'history.csv')
+        self.history.to_csv(history_path)
+        
+        # Save tips data.
+        if self.data['tips'] is not None:
+            tips_path = os.path.join(self.project_dir, 'tips.csv')
+            self.data['tips'].to_csv(tips_path)
+        
+        # Save ancs data.
+        if self.data['ancs'] is not None:
+            ancs_path = os.path.join(self.project_dir, 'ancs.csv')
+            self.data['ancs'].to_csv(ancs_path)
 
->>> Project.Alignment
-            .Tree
-            .HomologSet
-            .AncestorSet
-
-
-"""
-
-class Project(object):
-    """Container object for managing all data for a phylogenetics project.
-
-    Optional arguments can be passed into the Project class. These must be
-    objects from the `phylogenetics` package (i.e. HomologSet, Alignment, Tree,
-    Reconstruction, AncestorSet, etc.)
-
-    Examples
-    --------
-
-    There a few ways in which you can construct a project object.
-
-    1. Start fresh
-        - initialize a project object
-            >>> project = phylogenetics.Project()
-        - download a list of accession ids
-            >>> project.download(accessions_list)
-        - run pipeline,
-            >>> project.cluster()
-            >>> project.align()
-            >>> project.tree()
-            >>> project.reconstruct()
-
-    2. Start with existing `phylogenetics` objects/data
-        - Initialize project class with other objects given as arguments
-            >>> project = phylogenetics.Project(
-                            HomologSet,
-                            Alignment,
-                        )
-        - Continue through pipeline
-        - Or add separate objects later.
-            >>> project = phylogenetics.add(Tree)
-
-    3. Load existing phylogenetics file from file.
-        - Each action in the phylogenetics package saves a copy to disk by default.
-            >>> project.load("project-#####.pickle")
-
-    4. Read phylogenetic data from files into project class.
-        - Initialize a project object
-            >>> project = phylogenetics.Project()
-        - Read files containing phylogenetic information using the `files` method.
-            >>> project.files(
-                HomologSet="sequences.fasta",
-                Alignment="alignment.fasta",
-                Tree="tree.newick",
-            )
-        - Or read in files individually.
-            >>> project.Read.fasta("sequences.fasta")
-
-    """
-    def __init__(self, *args):
-        # components
-        self._components = {}
-        # Bind Reading module to class
-        self.Read = projectio.Read(self)
-        self.Write = projectio.Write(self)
-        # Add any objects that were given to Project
-        for a in args:
-            self.add(a)
-
+        # Save tree data.
+        if self.data['tree'] is not None:
+            tree_path = os.path.join(self.project_dir, 'tree.newick')
+            self.data['tree'].write(path=tree_path, schema='newick')
+        return self
+    
     @classmethod
-    def load(cls, path):
-        """ Load a project from pickle file. """
-        project = cls()
-        project.Read.pickle(fname=path)
-        return project
+    def load(cls, project_dir):
+        """Load a project from a project directory."""
+        if not os.path.exists(project_dir):
+            raise Exception("project_dir does not exist")
+        
+        # load history
+        history_path = os.path.join(project_dir, 'history.csv')
+        history = pandas.read_csv(history_path, index_col=0)
+        
+        # Initialize a TreeProject class.
+        self = cls(project_dir)
+        
+        # Append old history.
+        self.history = history
+        
+        # Try reading tips
+        try: 
+            tips_path = os.path.join(self.project_dir, 'tips.csv')
+            tips_df = phylopandas.read_csv(tips_path, index_col=0)
+            self._add_tips(tips_df)
+        except: pass
 
-    def subproject(self, ids):
-        """Subset a project. Subsets the project instance as new project that
-        only includes the set of homologs given by ids.
+        # Try reading ancestors
+        try: 
+            ancs_path = os.path.join(self.project_dir, 'ancs.csv')
+            ancs_df = phylopandas.read_csv(ancs_path, index_col=0)
+            self._add_ancs(ancs_df)
+        except: pass
 
-        NOTE: This method still under development, and will change as project
-        develops. A bit of a hack right now.
+        # Try reading tree
+        try: 
+            tree_path = os.path.join(self.project_dir, 'tree.newick')
+            tree = dendropy.Tree.get(path=tree_path, schema='newick')
+            self._add_tree(tree)
+        except: pass
+        
+        return self            
+    
+    @track_in_history
+    def test(self, blah, blah2=None):
+        return self
+
+    def _add_tips(self, data):
+        """"""
+        if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
+            raise Exception('Bad datatype.')
+        
+        # Add unique ids
+        if 'unique_id' not in data:
+            unique_ids = ["tip{:07d}".format(i) for i in range(len(data))]
+            col = phylopandas.Series(unique_ids, index=data.index)
+            data['unique_id'] = col
+        
+        self.data['tips'] = data
+        self.tips = data
+
+    def _add_ancs(self, data):
+        """"""
+        if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
+            raise Exception('Bad datatype.')
+        
+        # Add unique ids
+        if 'unique_id' not in data:
+            unique_ids = ["anc{:07d}".format(i) for i in range(len(data))]
+            col = phylopandas.Series(unique_ids, index=data.index)
+            data['unique_id'] = col
+        
+        self.data['ancs'] = data
+        self.ancestors = data
+        
+    def _add_tree(self, data):
+        """"""
+        if isinstance(data, dendropy.Tree) == False:
+            raise Exception('Bad datatype.')
+        self.data['tree'] = data
+        self.tree = data
+
+    @track_in_history
+    def add_data(self, dtype, data):
         """
-        alignment = self.Alignment._alignments["latest"]
-        subset_alignment = dict([(id, alignment[id]) for id in ids])
-        HomologSet_ = self.HomologSet.subset(ids, inplace=False)
-        Alignment_ = Alignment(HomologSet_, subset_alignment)
-        project = Project(
-            HomologSet_,
-            Alignment_
-        )
-        return project
-
-    def save(self, fname="project-%s.pickle" % \
-        datetime.date.today().isoformat()):
-        """ Save Project to path. """
-        self.Write.pickle(fname=fname)
-
-    def files(self, **files):
-        """Load files into project object.
-
-        **files are keyword arguments.
         """
-        # Object types accessible to Project object
-        object_types = {
-            "HomologSet" : HomologSet,
-            "Alignment" : Alignment,
-            "Tree" : Tree,
-            "AncestorSet" : AncestorSet,
-            "Reconstruction" : Reconstruction,
-        }
+        if dtype not in ['tips', 'ancs', 'tree']:
+            raise Exception('dtype is not valid.')
+        
+        # Call method on data.
+        method = getattr(self, '_add_{}'.format(dtype))
+        method(data)
+        return self
 
-        # File extensions used by project object
-        ext_types = {
-            "fasta" : "fasta",
-            "json" : "json",
-            "nwk" : "newick",
-            "nxs" : "nexus",
-            "pickle" : "pickle",
-            "rst" : "rst",
-            "csv" : "csv",
-            "xml" : "entrez_xml",
-            "phy" : "phylip"
-        }
-
-        for key, fname in files.items():
-            # Find file-type
-            filename, extension = os.path.splitext(fname)
-            filetype = ext_types[extension[1:]]
-            # Initialize the object that this file populates
-            new_object = object_types[key]()
-            # Get the reading method from new object
-            read_method = getattr(new_object.Read, filetype)
-            # Read into that object
-            read_method(fname=fname)
-            # Add object to project object.
-            self.add(new_object)
-
-    def add(self, item):
-        """Add data to project.
+    @track_in_history
+    def read_data(self, dtype, path, schema='fasta', **kwargs):
+        """Read data from file.
         """
-        # possible objects to add
-        items = {
-            HomologSet: self._add_HomologSet,
-            Alignment: self._add_Alignment,
-            Tree: self._add_Tree,
-            Reconstruction: self._add_Reconstruction,
-            AncestorSet: self._add_AncestorSet
-        }
-
-        # Find item type in set of possible items
-        adding_method = items[item.__class__]
-
-        # Add that item to project
-        adding_method(item)
-
-    def download(self, ids, email):
-        """ Download a set of Homologs"""
-        hs = HomologSet()
-        self._add_HomologSet( hs )
-        self.HomologSet.download(ids, email)
-
-    def _add_HomologSet(self, HomologSet):
-        """Add HomologSet Set to PhylogeneticsProject object."""
-        self._components["HomologSet"] = HomologSet
-        # Set the HomologSet object
-        self.HomologSet = HomologSet
-        # Expose the align method of this object to user
-        setattr(self, "cluster", self._cluster)
-        setattr(self, "align", self._align)
-
-    def _add_Alignment(self, Alignment):
-        """Add Alignment to PhylogeneticsProject object."""
-        self._components["Alignment"] = Alignment
-        # Set the Alignment object
-        self.Alignment = Alignment
-        # Expose the tree methods of this project object
-        setattr(self, "tree", self._tree)
-
-    def _add_Tree(self, Tree):
-        """Add Tree to PhylogeneticsProject object."""
-        self._components["Tree"] = Tree
-        # Set the Tree object of project
-        self.Tree = Tree
-        # Expose the reconstruction methods of this project object
-        setattr(self, "reconstruct", self._reconstruct)
-
-    def _add_Reconstruction(self, Reconstruction):
-        """Add Reconstruction to PhylogeneticsProject object."""
-        self._components["Reconstruction"] = Reconstruction
-        self.Reconstruction = Reconstruction
-
-    def _add_AncestorSet(self, AncestorSet):
-        """Add a AncestorSet object to PhylogeneticsProject object."""
-        self._components["AncestorSet"] = AncestorSet
-        self.AncestorSet = AncestorSet
-
-    def _cluster(
-        self,
-        redund_cutoff=0.99,
-        tmp_file_suffix="oB_cdhit",
-        word_size=5,
-        cores=1,
-        keep_tmp=False,
-        accession=(),
-        positive=(),
-        negative=("putative","hypothetical", "unnamed", "possible", "predicted",
-                    "unknown", "uncharacterized","mutant", "isoform"),
+        method_read = getattr(phylopandas, 'read_{}'.format(schema))
+        df = method_read(path, **kwargs)
+        method_add = getattr(self, '_add_{}'.format(dtype))
+        method_add(df)
+        return self
+    
+    def write_data(self, data, path, schema='fasta', **kwargs):
+        """
+        """
+        df = self.data[data]
+        method_write = getattr(df, 'to_{}'.format(schema))
+        method_write(filename=path)
+        return self
+    
+    @track_in_history
+    def run_tree(self, id_col='unique_id', sequence_col='sequence',
+        datatype='aa',
+        bootstrap='0',
+        model='LG',
+        frequencies='e',
         ):
-        """Remove redundant sequences from HomologSet based on some sequence redundancy
-        cutoff threshold.
+        """Use PhyML to build a phylogenetic tree."""
+        df = self.data['tips']
+        
+        # Write file to disk
+        fasta_file = os.path.join(self.project_dir, 'alignment.phy')
+        df.to_phylip(fasta_file, sequence_col=sequence_col, id_col=id_col)
+        
+        # Prepare options
+        options = {
+            'input':fasta_file,
+            'datatype':datatype,
+            'bootstrap':bootstrap,
+            'model':model,
+            'frequencies':frequencies
+        }
+        
+        # Build command line arguments for PhyML.
+        cml = PhymlCommandline(**options)
+        cml_args = str(cml).split()
+        output = subprocess.run(cml_args)
+        
+        # # Get path
+        tree_file = os.path.join(self.project_dir, 'alignment.phy_phyml_tree.txt')
+        tree = dendropy.Tree.get(path=tree_file, schema='newick')
+        self._add_tree(tree)
+        return self
 
-        This method moves the original HomologSet to a new object inside project
-        called `HomologSet_original`. Clustering always happens on this set. The
-        results are set as the new HomologSet object.
+    @track_in_history
+    def run_reconstruction(self, id_col='unique_id', sequence_col='sequence', **kwargs):
+        """Use PAML to build a phylogenetic tree."""
+        df_seqs = self.data['tips']
+        tree = self.data['tree']
+
+        ###### BIT OF A HACK
+        # Parse PhyML stats for alpha
+        data = {}
+        phyml_file = os.path.join(self.project_dir, 'alignment.phy_phyml_stats.txt')
+        with open(phyml_file, 'r') as f:
+            data_string = f.read()
+        
+        
+        option_regex = re.compile("\.[\w\t ]+:.+\n|\- [\w\t ]+:.+\n")
+        for pair in option_regex.findall(data_string):
+            # Split the pair
+            parse = pair.split(":")
+            # Each pair has either a `. ` or `- ` in front. Remove those
+            key = parse[0][2:]
+            # Remove whitespace
+            value = parse[1].lstrip().rstrip()
+            # add to data dict
+            data[key] = value
+            
+        # Get alpha
+        alpha = data['Gamma shape parameter']
+        
+        ###### END HACK
+
+        # Write file to disk
+        df_seqs, df_ancs, tree_ancs = pyasr.reconstruct(df_seqs, tree, 
+            working_dir=self.project_dir,
+            id_col=id_col, sequence_col=sequence_col,
+            alpha=alpha,
+            **kwargs)
+            
+        # Add data to TreeProject.
+        self._add_ancs(df_ancs)
+        self._add_tree(tree_ancs)
+        return self
+    
+    def draw_tree(self, width=200, height=500,
+        tip_labels=None,
+        tip_labels_color=None,
+        tip_labels_align=False,
+        use_edge_lengths=False,
+        edge_style=None,
+        edge_align_style=None,
+        node_labels=None,
+        node_size=None,
+        node_labels_style=None,
+        node_color=None,
+        **kwargs):
+        """Draw tree (using the toytree package.)
         """
-        # If the original set is old, use it for clustering
-        if hasattr(self, "HomologSet_original"):
-            HomologSet_to_cluster = self.HomologSet_original
-        # Else HomologSet is the original set.
-        else:
-            HomologSet_to_cluster = self.HomologSet
-            setattr(self, "HomologSet_original", self.HomologSet)
+        if hasattr(self, 'tree') is False:
+            raise Exception("TreeProject isn't away of any tree. Have you added it?")
 
-        # Cluster original set
-        new_HomologSet = HomologSet_to_cluster.cluster(
-            redund_cutoff=redund_cutoff,
-            tmp_file_suffix=tmp_file_suffix,
-            word_size=word_size,
-            cores=cores,
-            keep_tmp=keep_tmp,
-            accession=accession,
-            positive=positive,
-            negative=negative,
-            inplace=False
-        )
+        newick_str = self.tree.as_string(schema='newick')
+        tree = toytree.tree(newick_str)
+        
+        # Tip settings
+        tree_tips_labels = tree.get_tip_labels()
+        tree_ancs_labels = tree.get_node_values('support', show_root=False, show_tips=False)
+        
+        # Get tips
+        tips = self.data['tips']
+        ancs = self.data['ancs']
+        
+        # set tip labels to column in tip dataframe
+        if type(tip_labels) is str:
+            mapping = dict(zip(tree_tips_labels, tips[tip_labels]))
+            tip_labels = [mapping[label] for label in tree_tips_labels]
 
-        # Set the resulting subset HomologSet as the new HomologSet.
-        self.HomologSet = new_HomologSet
-        self.save()
+        # set tip label colors to column in tips dataframe
+        if type(tip_labels_color) is str:
+            mapping = dict(zip(tree_tips_labels, tips[tip_label_colors]))
+            tip_labels_color = [mapping[label] for label in tree_tips_labels]
 
-    def _align(self,
-        fname="alignment.fasta",
-        rm_tmp=True,
-        quiet=False,
-        cores=2
-        ):
-        """ Multiple sequence alignment of the HomologSet.
+        # # set anc labels to column in anc dataframe
+        # if type(node_labels) is str:
+        #     mapping = dict(zip(ancs['id'], ancs[node_labels]))
+        #     node_labels = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]            
+        # 
+        # # set anc labels to column in anc dataframe
+        # if type(node_size) is str:
+        #     mapping = dict(zip(ancs['id'], ancs[node_size]))
+        #     node_size = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]    
+        # 
+        # # set anc labels to column in anc dataframe
+        # if type(node_color) is str:
+        #     mapping = dict(zip(ancs['id'], ancs[node_color]))
+        #     node_color = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]  
 
-            Currently, only option is to use MSAProbs.
-        """
-        # Write out alignment file
-        self.HomologSet.Write.fasta(fname="alignment.fasta")
+        options = dict(
+            width=width,
+            height=height,
+            tip_labels=tip_labels,
+            tip_labels_color=tip_labels_color,
+            tip_labels_align=tip_labels_align,
+            use_edge_lengths=use_edge_lengths,
+            edge_style=edge_style,
+            edge_align_style=edge_align_style,
+            node_labels=tree_ancs_labels, #### FIX LATER
+            node_size=node_size,
+            node_labels_style=node_labels_style,
+            node_color=node_color)
 
-        # Run the alignment with MSAProbs
-        output_fname = msaprobs.run(fasta_fname="alignment", cores=cores, rm_tmp=rm_tmp)
-
-        # Attach an alignment object to HomologSet
-        self._add_Alignment(Alignment(self.HomologSet))
-
-        # Read alignment from output fasta and manage with Alignment object
-        self.Alignment.Read.fasta(fname=output_fname)
-
-        # Let us know when finished
-        if quiet is False:
-            print("Alignment finished.")
-
-        # Remove fasta file.
-        if rm_tmp:
-            os.remove(output_fname)
-        self.save()
-
-    def _tree(self, **kwargs):
-        """ Compute the maximum likelihood phylogenetic tree from
-            aligned dataset.
-        """
-        # Write the HomologSet out as a phylip.
-        self.Alignment.Write.phylip(fname="ml-tree.phy")
-
-        # Run phyml and parse results.
-        tree, stats = phyml.run("ml-tree", **kwargs)
-
-        # Add Tree object to HomologSet
-        self._add_Tree(Tree(self.HomologSet, tree, stats=stats))
-        self.Tree.Read.newick(fname="ml-tree.phy_phyml_tree.txt")
-        self.save()
-
-
-    def _reconstruct(self):
-        """ Resurrect Ancestors on Tree.
-        """
-        # Bind Ancestor Objects to each internal node.
-        ancestors = []
-        for node in self.Tree.DendroPy.internal_nodes():
-            id = node.label
-            ancestors.append( Ancestor(id, self.Tree))
-
-        # Bind an AncestorSet object to HomologSet
-        self._add_AncestorSet( AncestorSet(self.Tree, ancestors=ancestors) )
-        self.AncestorSet._nodes_to_ancestor()
-
-        seqfile = "asr-alignment.fasta"
-        outfile = "asr-output"
-        treefile = "asr-tree.nwk"
-
-        # Prepare input files for PAML
-        self.Tree.DendroPy.write(path=treefile, schema="newick", suppress_internal_node_labels=True)
-        self.Alignment.Write.fasta(fname=seqfile, tags=["id"])
-
-        # Construct a paml job
-        paml_job = paml.CodeML(
-            seqfile=seqfile,
-            outfile=outfile,
-            treefile=treefile,
-            fix_alpha=True,
-            alpha=self.Tree.stats["Gamma shape parameter"],
-        )
-
-        reconstruction = Reconstruction(self.Alignment, self.Tree, self.AncestorSet, paml_job)
-        self._add_Reconstruction( reconstruction )
-
-        # Run the PAML job
-        self.Reconstruction.paml_job.run()
-
-        # Read the paml output and bind data to tree
-        self.AncestorSet.Read.rst(fname="rst")
-
-        # Infer gaps.
-        self.Reconstruction.infer_gaps()
-        #self.save()
+        return tree.draw(**options)
+        
