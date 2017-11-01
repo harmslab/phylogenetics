@@ -38,16 +38,20 @@ def track_in_history(method):
         # Write history to file.
         history_file = os.path.join(self.project_dir, 'history.csv')
         self.history.to_csv(history_file)
+        self.save()
         return output
     return wrapper
 
 class TreeProject(object):
     """Main Phylogenetics Project class."""
-    def __init__(self, project_dir):
+    def __init__(self, project_dir, overwrite=False):
         # Get current time for history.
         time = strftime("%Y-%m-%d %H:%M:%S", localtime())
         
         # Set up a project directory
+        if os.path.exists(project_dir) and overwrite is False:
+            raise Exception("Project already exists! Use `TreeProject.load` or delete the project.")
+        
         self.project_dir = project_dir
 
         # DataFrame for storing data.
@@ -95,6 +99,7 @@ class TreeProject(object):
         return self.__str__()
     
     def save(self):
+        """Save this project to file."""
         # Save history
         history_path = os.path.join(self.project_dir, 'history.csv')
         self.history.to_csv(history_path)
@@ -126,7 +131,7 @@ class TreeProject(object):
         history = pandas.read_csv(history_path, index_col=0)
         
         # Initialize a TreeProject class.
-        self = cls(project_dir)
+        self = cls(project_dir, overwrite=True)
         
         # Append old history.
         self.history = history
@@ -159,7 +164,7 @@ class TreeProject(object):
         return self
 
     def _add_tips(self, data):
-        """"""
+        """Add data about the tips (must be a DataFrame) to the project class."""
         if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
             raise Exception('Bad datatype.')
         
@@ -173,7 +178,7 @@ class TreeProject(object):
         self.tips = data
 
     def _add_ancs(self, data):
-        """"""
+        """Add data about the ancestors (must be a DataFrame) to the project class."""
         if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
             raise Exception('Bad datatype.')
         
@@ -187,7 +192,7 @@ class TreeProject(object):
         self.ancestors = data
         
     def _add_tree(self, data):
-        """"""
+        """Add tree object (must be dendropy.Tree object) to the project class."""
         if isinstance(data, dendropy.Tree) == False:
             raise Exception('Bad datatype.')
         self.data['tree'] = data
@@ -195,7 +200,20 @@ class TreeProject(object):
 
     @track_in_history
     def add_data(self, dtype, data):
-        """
+        """Add data to this phylogenetic project. 
+        
+        Three types of data can be passed to this object.
+            'tips' : A DataFrame with an alignment and information about the tips of
+                    the tree.
+            'ancs' : A DataFrame with information about the ancestors of the tree.
+            'tree' : A dendropy.Tree object containing the topology of the phylogenetic tree.
+            
+        Parameters
+        ----------
+        dtype : str
+            the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+        data : 
+            the data to store.
         """
         if dtype not in ['tips', 'ancs', 'tree']:
             raise Exception('dtype is not valid.')
@@ -208,6 +226,22 @@ class TreeProject(object):
     @track_in_history
     def read_data(self, dtype, path, schema='fasta', **kwargs):
         """Read data from file.
+        
+        Three types of data can be passed to this object.
+            'tips' : A DataFrame with an alignment and information about the tips of
+                    the tree.
+            'ancs' : A DataFrame with information about the ancestors of the tree.
+            'tree' : A dendropy.Tree object containing the topology of the phylogenetic tree.
+            
+        Parameters
+        ----------
+        dtype : str
+            the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+        path : str
+            file path to the data.
+        schema : str
+            the format of the datafile. Must be one of the formats supported by
+            PhyloPandas.
         """
         method_read = getattr(phylopandas, 'read_{}'.format(schema))
         df = method_read(path, **kwargs)
@@ -215,10 +249,20 @@ class TreeProject(object):
         method_add(df)
         return self
     
-    def write_data(self, data, path, schema='fasta', **kwargs):
+    def write_data(self, dtype, path, schema='fasta', **kwargs):
+        """Write a piece of the project data to file.
+        
+        Parameters
+        ----------
+        dtype : str
+            the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+        path : str
+            file path to the data.
+        schema : str
+            the format of the datafile. Must be one of the formats supported by
+            PhyloPandas.        
         """
-        """
-        df = self.data[data]
+        df = self.data[dtype]
         method_write = getattr(df, 'to_{}'.format(schema))
         method_write(filename=path)
         return self
@@ -228,8 +272,32 @@ class TreeProject(object):
         datatype='aa',
         bootstrap='-1',
         model='LG',
-        frequencies='e'):
-        """Use PhyML to build a phylogenetic tree."""
+        frequencies='e',
+        **kwargs):
+        """Use PhyML to build a phylogenetic tree.
+        
+        Parameters
+        ----------
+        id_col : str (default: 'unique_id')
+            column in `tips` DataFrame to use as the labels in the tree. Don't change
+            this unless you know what you are doing. 
+        sequence_col : str (default: 'sequence')
+            Column in the `tips` DataFrame that contains the alignment sequences 
+            for constructing the phylogenetic tree.
+        bootstrap : str (default : -1 [aLRT values])
+            Bootstrap values to use as support for the nodes of the tree. See PhyML's
+            docs for more information. The default is to calculate aLRT supports.
+        model : str (default : 'lg')
+            the evolutionary transition matrix to use to model substitutions.
+        frequencies :  str (default : 'e')
+            Nucleotide or amino-acid frequencies.        
+        
+        Keyword Arguments
+        -----------------
+        Any extra keyword extra from what is mentioned above are translated to 
+        commandline arguments for PhyML. Read PhyML's docs to see a list of all
+        arguments that can passed to PhyML.
+        """
         df = self.data['tips']
         
         # Write file to disk
@@ -244,6 +312,8 @@ class TreeProject(object):
             'model':model,
             'frequencies':frequencies
         }
+        # Update with any kwargs manually set by users.
+        options.update(**kwargs)
         
         # Build command line arguments for PhyML.
         cml = PhymlCommandline(**options)
@@ -258,7 +328,23 @@ class TreeProject(object):
 
     @track_in_history
     def run_reconstruction(self, id_col='unique_id', sequence_col='sequence', **kwargs):
-        """Use PAML to build a phylogenetic tree."""
+        """Use PAML (via PyASR) to build a phylogenetic tree.
+        
+        Parameters
+        ----------
+        id_col : str (default: 'unique_id')
+            column in `tips` DataFrame to use as the labels in the tree. Don't change
+            this unless you know what you are doing. 
+        sequence_col : str (default: 'sequence')
+            Column in the `tips` DataFrame that contains the alignment sequences 
+            for constructing the phylogenetic tree.
+ 
+        Keyword Arguments
+        -----------------
+        Any extra keyword extra from what is mentioned above are translated to 
+        commandline arguments for PAML. Read PAML's docs to see a list of all
+        arguments that can passed to PAML.
+        """
         df_seqs = self.data['tips']
         tree = self.data['tree']
 
@@ -299,6 +385,28 @@ class TreeProject(object):
         self._add_tree(tree_ancs)
         return self
     
+    @track_in_history
+    def run_pipeline(self, id_col='unique_id', sequence_col='sequence', tree_kwargs={}, reconstruction_kwargs={}):
+        """Construct a phylogenetic tree from an alignment and reconstruct 
+        the ancestoral sequences in the resulting tree.
+        
+        Parameters
+        ----------
+        id_col : str (default: 'unique_id')
+            column in `tips` DataFrame to use as the labels in the tree. Don't change
+            this unless you know what you are doing. 
+        sequence_col : str (default: 'sequence')
+            Column in the `tips` DataFrame that contains the alignment sequences 
+            for constructing the phylogenetic tree.
+        tree_kwargs : dict
+            keyword arguments to pass to PhyML
+        reconstruction_kwargs: dict
+            keyword arguments to pass to PAML
+        """
+        self.run_tree(id_col=id_col, sequence_col=sequence_col, **tree_kwargs)
+        self.run_reconstruction(id_col=id_col, sequence_col=sequence_col, **reconstruct_kwargs)
+        return self
+    
     def draw_tree(self, width=200, height=500,
         tip_labels=None,
         tip_labels_color=None,
@@ -312,6 +420,12 @@ class TreeProject(object):
         node_color=None,
         **kwargs):
         """Draw tree (using the toytree package.)
+        
+        Keyword Arguments
+        -----------------
+        All keyword arguments are passed directly to ToyTree's draw method. However,
+        if you give the keyword arguments a column number in the tips/ancs DataFrames,
+        this method will map those values onto the paired tree attribute.
         """
         if hasattr(self, 'tree') is False:
             raise Exception("TreeProject isn't away of any tree. Have you added it?")
