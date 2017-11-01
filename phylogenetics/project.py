@@ -291,6 +291,7 @@ class TreeProject(object):
             working_dir=self.project_dir,
             id_col=id_col, sequence_col=sequence_col,
             alpha=alpha,
+            save_ancestors=True,
             **kwargs)
             
         # Add data to TreeProject.

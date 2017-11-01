@@ -34,7 +34,7 @@ project.run_reconstruction()
 `phylogenetics` imports the `toytree` library to quickly plot trees in Jupyter Notebooks.
 You can quickly view your tree anytime using the `draw_tree` method. 
 ```python
-p.draw_tree(width=700,
+project.draw_tree(width=700,
     tip_labels='id',
     tip_labels_align=True,
     use_edge_lengths=True,
@@ -61,10 +61,8 @@ pip install -e .
 
 `phylogenetics` manages phylogenetics data. Currently, it doesn't do any of the phylogenetic calculations itself. For this, use external tools like:
 
-1. `cdhit` - clustering redundant sequences
-2. `msaprobs` - multiple sequence alignment software
-3. `phyml` - building maximum likelihood trees
-4. `paml` - reconstructing ancestors
+3. [PhyML](http://www.atgc-montpellier.fr/phyml/) - building maximum likelihood trees.
+4. [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) - reconstructing ancestors.
 
 `phylogenetics` is built on top of following python stack:
 
@@ -73,3 +71,4 @@ pip install -e .
 3. DendroPy
 4. ToyTree
 5. PhyloPandas
+6. PyASR
