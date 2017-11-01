@@ -25,6 +25,8 @@ project.run_tree()
 project.run_reconstruction(alpha=1.2)
 ```
 
+<img src="docs/_images/jlab.png" align="middle">
+
 ## Installation
 
 `phylogenetics` has been rewritten from scratch. The version on PyPi is outdated
