@@ -8,6 +8,7 @@ import toytree
 import phylopandas
 import pyasr
 import dendropy
+from functools import wraps
 from time import localtime, strftime
 
 from Bio.Phylo.Applications import PhymlCommandline
@@ -15,6 +16,7 @@ from Bio.Phylo.PAML import codeml
 
 def track_in_history(method):
     """Track this call in the history DataFrame"""
+    @wraps(method)
     def wrapper(self, *args, **kwargs):
         """"""
         # Now run method
@@ -45,9 +47,9 @@ def track_in_history(method):
 class TreeProject(object):
     """A lightweight python object that manages phylogenetic data. 
     
-    There are three datatypes stored in a TreeProject object
-        * 'tips' : A DataFrame with an alignment and information about the tips of
-                the tree.
+    There are three datatypes stored in a TreeProject object:
+    
+        * 'tips' : A DataFrame with an alignment and information about the tips of the tree.
         * 'ancs' : A DataFrame with information about the ancestors of the tree.
         * 'tree' : A dendropy.Tree object containing the topology of the phylogenetic tree.    
     
@@ -174,10 +176,6 @@ class TreeProject(object):
         except: pass
         
         return self            
-    
-    @track_in_history
-    def test(self, blah, blah2=None):
-        return self
 
     def _add_tips(self, data):
         """Add data about the tips (must be a DataFrame) to the project class."""
@@ -308,9 +306,9 @@ class TreeProject(object):
         frequencies :  str (default : 'e')
             Nucleotide or amino-acid frequencies.        
         
-        Keyword Arguments
-        -----------------
-        Any extra keyword extra from what is mentioned above are translated to 
+        Note
+        ----
+        keyword arguments from what is mentioned above are translated to 
         commandline arguments for PhyML. Read PhyML's docs to see a list of all
         arguments that can passed to PhyML.
         """
@@ -355,9 +353,9 @@ class TreeProject(object):
             Column in the `tips` DataFrame that contains the alignment sequences 
             for constructing the phylogenetic tree.
  
-        Keyword Arguments
-        -----------------
-        Any extra keyword extra from what is mentioned above are translated to 
+        Note
+        ----
+        Keyword arguments from what is mentioned above are translated to 
         commandline arguments for PAML. Read PAML's docs to see a list of all
         arguments that can passed to PAML.
         """
@@ -437,9 +435,9 @@ class TreeProject(object):
         **kwargs):
         """Draw tree (using the toytree package.)
         
-        Keyword Arguments
-        -----------------
-        All keyword arguments are passed directly to ToyTree's draw method. However,
+        Note
+        ----
+        Keyword arguments are passed directly to ToyTree's draw method. However,
         if you give the keyword arguments a column number in the tips/ancs DataFrames,
         this method will map those values onto the paired tree attribute.
         """

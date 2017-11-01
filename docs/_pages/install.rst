@@ -6,8 +6,11 @@ Installing PhyML and PAML
 It's important that the following executables are callable from any location
 for ``phylogenetics`` to work properly with external tools:
 
-3. ``msaprobs``
-4. ``phyml``
+1. PhyML_: building maximum likelihood trees.
+2. PAML_: reconstructing ancestors.
+
+.. _PhyML: http://www.atgc-montpellier.fr/phyml/
+.. _PAML: http://abacus.gene.ucl.ac.uk/software/paml.html
 
 PhyML
 ^^^^^

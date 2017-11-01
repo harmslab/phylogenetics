@@ -93,20 +93,15 @@ Dependencies
 .. _ToyTree: https://github.com/eaton-lab/toytree
 .. _PhyloPandas: https://github.com/Zsailer/phylopandas
 .. _PyASR: https://github.com/Zsailer/pyasr
-
-TreeProject Class
------------------
-
-.. autoclass:: project.TreeProject
-  :members:
   
 Table of Contents
 =================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    _pages/install
+   _pages/project
 
 Indices and tables
 ==================
