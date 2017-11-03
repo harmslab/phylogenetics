@@ -491,7 +491,8 @@ class TreeProject(object):
             node_labels=tree_ancs_labels, #### FIX LATER
             node_size=node_size,
             node_labels_style=node_labels_style,
-            node_color=node_color)
+            node_color=node_color,
+            **kwargs)
 
         return tree.draw(**options)
         
