@@ -66,7 +66,7 @@ class TreeProject(object):
         # Set up a project directory
         if os.path.exists(project_dir) and overwrite is False:
             raise Exception("Project already exists! Use `TreeProject.load` or delete the project.")
-        else:
+        elif os.path.exists(project_dir) is False:
             os.makedirs(project_dir)
         
         self.project_dir = project_dir
