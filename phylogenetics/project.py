@@ -5,6 +5,7 @@ import subprocess
 import pkg_resources
 import pandas
 import toytree
+import toyplot
 import phylopandas
 import pyasr
 import dendropy
@@ -66,7 +67,7 @@ class TreeProject(object):
         # Set up a project directory
         if os.path.exists(project_dir) and overwrite is False:
             raise Exception("Project already exists! Use `TreeProject.load` or delete the project.")
-        elif os.path.exists(project_dir) is False:
+        elif not os.path.exists(project_dir):
             os.makedirs(project_dir)
         
         self.project_dir = project_dir
@@ -382,6 +383,7 @@ class TreeProject(object):
             
         # Get alpha
         alpha = data['Gamma shape parameter']
+        alpha = alpha[:5]
         
         ###### END HACK #################################
 
