@@ -505,25 +505,29 @@ class TreeProject(object):
         ###### Map Taxon info to tree
         # Iterate over index
         for uid in self.tips['unique_id']:
+            # Get row
+            row = self.tips[self.tips['unique_id'] == uid]
+            
             # Get node in tree
             node = self.tree.find_node_with_taxon_label(uid)
 
-            # Look up labels in df
+            # Set attributes
             for label in tips_attrs:
                 # add to annotations
-                value = self.tips[label][uid]
+                value = row[label].values[0]
                 node.taxon.annotations.add_new(label, value)
 
         # Map ancestors if info is given
-        if self.ancestors != None and len(anc_attrs) != 0:
-            for uid in self.ancestors['id']:
+        for uid in self.ancestors['id']:
+            # Get row
+            row = self.ancestors[self.ancestors['id'] == uid]
 
-                # Get node in tree
-                node = self.tree.find_node_with_label(uid)
+            # Get node in tree
+            node = self.tree.find_node_with_label(str(uid))
 
-                # Look up labels in df
+            # Set attributes
+            if node is not None:
                 for label in anc_attrs:
-
                     # add to annotations
-                    value = self.ancestors[label][uid]
-                    node.taxon.annotations.add_new(label, value)
+                    value = row[label].values[0]
+                    node.annotations.add_new(label, value)
