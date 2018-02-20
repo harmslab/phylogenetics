@@ -4,8 +4,9 @@ import shutil
 import subprocess
 import pkg_resources
 import pandas
-import toytree
-import toyplot
+# import toytree
+# import toyplot
+import phylovega
 import phylopandas
 import pyasr
 import dendropy
@@ -47,7 +48,7 @@ def track_in_history(method):
 class PhylogeneticsProject(object):
     """A lightweight python object that manages phylogenetic data.
 
-    There are three datatypes stored in a TreeProject object:
+    There are three datatypes stored in a PhylogeneticsProject object:
 
         * 'tips' : A DataFrame with an alignment and information about the tips of the tree.
         * 'ancs' : A DataFrame with information about the ancestors of the tree.
@@ -66,7 +67,7 @@ class PhylogeneticsProject(object):
 
         # Set up a project directory
         if os.path.exists(project_dir) and overwrite is False:
-            raise Exception("Project already exists! Use `TreeProject.load` or delete the project.")
+            raise Exception("Project already exists! Use `PhylogeneticsProject.load` or delete the project.")
         elif not os.path.exists(project_dir):
             os.makedirs(project_dir)
 
@@ -93,7 +94,7 @@ class PhylogeneticsProject(object):
         tree_bool = self.data['tree'] is not None
 
         # Start building history.
-        info = ["TreeProject(project_dir={})\n".format(self.project_dir),
+        info = ["PhylogeneticsProject(project_dir={})\n".format(self.project_dir),
                 "    last modified\t{}\n".format(history['time']),
                 "    last edit\t\t{}\n".format(history['method'])]
 
@@ -432,82 +433,100 @@ class PhylogeneticsProject(object):
         self.run_reconstruction(id_col=id_col, sequence_col=sequence_col, **reconstruct_kwargs)
         return self
 
-    def draw_tree(self, width=200, height=500,
-        tip_labels=None,
-        tip_labels_color=None,
-        tip_labels_align=False,
-        use_edge_lengths=False,
-        edge_style=None,
-        edge_align_style=None,
-        node_labels=None,
-        node_size=None,
-        node_labels_style=None,
-        node_color=None,
-        **kwargs):
-        """Draw tree (using the toytree package.)
+    # def draw_tree(self, width=200, height=500,
+    #     tip_labels=None,
+    #     tip_labels_color=None,
+    #     tip_labels_align=False,
+    #     use_edge_lengths=False,
+    #     edge_style=None,
+    #     edge_align_style=None,
+    #     node_labels=None,
+    #     node_size=None,
+    #     node_labels_style=None,
+    #     node_color=None,
+    #     **kwargs):
+    #     """Draw tree (using the toytree package.)
+    #
+    #     Note
+    #     ----
+    #     Keyword arguments are passed directly to ToyTree's draw method. However,
+    #     if you give the keyword arguments a column number in the tips/ancs DataFrames,
+    #     this method will map those values onto the paired tree attribute.
+    #     """
+    #     if hasattr(self, 'tree') is False:
+    #         raise Exception("TreeProject isn't away of any tree. Have you added it?")
+    #
+    #     newick_str = self.tree.as_string(schema='newick')
+    #     tree = toytree.tree(newick_str)
+    #
+    #     # Tip settings
+    #     tree_tips_labels = tree.get_tip_labels()
+    #     tree_ancs_labels = tree.get_node_values('support', show_root=False, show_tips=False)
+    #
+    #     # Get tips
+    #     tips = self.data['tips']
+    #     ancs = self.data['ancs']
+    #
+    #     # set tip labels to column in tip dataframe
+    #     if type(tip_labels) is str:
+    #         mapping = dict(zip(tree_tips_labels, tips[tip_labels]))
+    #         tip_labels = [mapping[label] for label in tree_tips_labels]
+    #
+    #     # set tip label colors to column in tips dataframe
+    #     if type(tip_labels_color) is str:
+    #         mapping = dict(zip(tree_tips_labels, tips[tip_label_colors]))
+    #         tip_labels_color = [mapping[label] for label in tree_tips_labels]
+    #
+    #     # # set anc labels to column in anc dataframe
+    #     # if type(node_labels) is str:
+    #     #     mapping = dict(zip(ancs['id'], ancs[node_labels]))
+    #     #     node_labels = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
+    #     #
+    #     # # set anc labels to column in anc dataframe
+    #     # if type(node_size) is str:
+    #     #     mapping = dict(zip(ancs['id'], ancs[node_size]))
+    #     #     node_size = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
+    #     #
+    #     # # set anc labels to column in anc dataframe
+    #     # if type(node_color) is str:
+    #     #     mapping = dict(zip(ancs['id'], ancs[node_color]))
+    #     #     node_color = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
+    #
+    #     options = dict(
+    #         width=width,
+    #         height=height,
+    #         tip_labels=tip_labels,
+    #         tip_labels_color=tip_labels_color,
+    #         tip_labels_align=tip_labels_align,
+    #         use_edge_lengths=use_edge_lengths,
+    #         edge_style=edge_style,
+    #         edge_align_style=edge_align_style,
+    #         node_labels=tree_ancs_labels, #### FIX LATER
+    #         node_size=node_size,
+    #         node_labels_style=node_labels_style,
+    #         node_color=node_color,
+    #         **kwargs)
+    #
+    #     return tree.draw(**options)
 
-        Note
-        ----
-        Keyword arguments are passed directly to ToyTree's draw method. However,
-        if you give the keyword arguments a column number in the tips/ancs DataFrames,
-        this method will map those values onto the paired tree attribute.
+
+    def show(self):
+        """Show rough interactive tree.
         """
-        if hasattr(self, 'tree') is False:
-            raise Exception("TreeProject isn't away of any tree. Have you added it?")
+        # Write a dummy tree
+        tree_path = os.path.join(self.project_dir, 'vega-tree.newick')
+        self.data['tree'].write(path=tree_path, schema='newick')
+        tree_df = phylopandas.read_newick(tree_path)
 
-        newick_str = self.tree.as_string(schema='newick')
-        tree = toytree.tree(newick_str)
+        # Create vega tree
+        vegatree = phylovega.VegaTree(tree_df)
 
-        # Tip settings
-        tree_tips_labels = tree.get_tip_labels()
-        tree_ancs_labels = tree.get_node_values('support', show_root=False, show_tips=False)
+        # Write vega tree.
+        vega_path = os.path.join(self.project_dir, 'vega-tree.vg.json')
+        vegatree.to_json(vega_path)
 
-        # Get tips
-        tips = self.data['tips']
-        ancs = self.data['ancs']
-
-        # set tip labels to column in tip dataframe
-        if type(tip_labels) is str:
-            mapping = dict(zip(tree_tips_labels, tips[tip_labels]))
-            tip_labels = [mapping[label] for label in tree_tips_labels]
-
-        # set tip label colors to column in tips dataframe
-        if type(tip_labels_color) is str:
-            mapping = dict(zip(tree_tips_labels, tips[tip_label_colors]))
-            tip_labels_color = [mapping[label] for label in tree_tips_labels]
-
-        # # set anc labels to column in anc dataframe
-        # if type(node_labels) is str:
-        #     mapping = dict(zip(ancs['id'], ancs[node_labels]))
-        #     node_labels = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
-        #
-        # # set anc labels to column in anc dataframe
-        # if type(node_size) is str:
-        #     mapping = dict(zip(ancs['id'], ancs[node_size]))
-        #     node_size = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
-        #
-        # # set anc labels to column in anc dataframe
-        # if type(node_color) is str:
-        #     mapping = dict(zip(ancs['id'], ancs[node_color]))
-        #     node_color = [mapping[tree_ancs_labels[i]] for i in range(len(tree_ancs_labels))]
-
-        options = dict(
-            width=width,
-            height=height,
-            tip_labels=tip_labels,
-            tip_labels_color=tip_labels_color,
-            tip_labels_align=tip_labels_align,
-            use_edge_lengths=use_edge_lengths,
-            edge_style=edge_style,
-            edge_align_style=edge_align_style,
-            node_labels=tree_ancs_labels, #### FIX LATER
-            node_size=node_size,
-            node_labels_style=node_labels_style,
-            node_color=node_color,
-            **kwargs)
-
-        return tree.draw(**options)
-
+        # Display vega tree
+        vegatree.display()
 
     def decorate_tree(self, tips_attrs, anc_attrs):
         """Map taxon attributes from dataframe to a dendropy tree.
