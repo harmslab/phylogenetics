@@ -1,1 +1,1 @@
-from .project import TreeProject
+from .project import PhylogeneticsProject

@@ -44,7 +44,7 @@ def track_in_history(method):
         return output
     return wrapper
 
-class TreeProject(object):
+class PhylogeneticsProject(object):
     """A lightweight python object that manages phylogenetic data.
 
     There are three datatypes stored in a TreeProject object:
@@ -157,14 +157,14 @@ class TreeProject(object):
         # Try reading tips
         try:
             tips_path = os.path.join(self.project_dir, 'tips.csv')
-            tips_df = phylopandas.read_csv(tips_path, index_col=0)
+            tips_df = pandas.read_csv(tips_path, index_col=0)
             self._add_tips(tips_df)
         except: pass
 
         # Try reading ancestors
         try:
             ancs_path = os.path.join(self.project_dir, 'ancs.csv')
-            ancs_df = phylopandas.read_csv(ancs_path, index_col=0)
+            ancs_df = pandas.read_csv(ancs_path, index_col=0)
             self._add_ancs(ancs_df)
         except: pass
 
@@ -179,13 +179,13 @@ class TreeProject(object):
 
     def _add_tips(self, data):
         """Add data about the tips (must be a DataFrame) to the project class."""
-        if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
+        if isinstance(data, pandas.DataFrame) is False:
             raise Exception('Bad datatype.')
 
         # Add unique ids
         if 'unique_id' not in data:
             unique_ids = ["tip{:07d}".format(i) for i in range(len(data))]
-            col = phylopandas.Series(unique_ids, index=data.index)
+            col = pandas.Series(unique_ids, index=data.index)
             data['unique_id'] = col
 
         self.data['tips'] = data
@@ -193,13 +193,13 @@ class TreeProject(object):
 
     def _add_ancs(self, data):
         """Add data about the ancestors (must be a DataFrame) to the project class."""
-        if isinstance(data, pandas.DataFrame) == False and isinstance(data, phylopandas.DataFrame) == False:
+        if isinstance(data, pandas.DataFrame) is False:
             raise Exception('Bad datatype.')
 
         # Add unique ids
         if 'unique_id' not in data:
             unique_ids = ["anc{:07d}".format(i) for i in range(len(data))]
-            col = phylopandas.Series(unique_ids, index=data.index)
+            col = pandas.Series(unique_ids, index=data.index)
             data['unique_id'] = col
 
         self.data['ancs'] = data
@@ -257,7 +257,11 @@ class TreeProject(object):
             the format of the datafile. Must be one of the formats supported by
             PhyloPandas.
         """
-        method_read = getattr(phylopandas, 'read_{}'.format(schema))
+        try:
+            method_read = getattr(phylopandas, 'read_{}'.format(schema))
+        except AttributeError:
+            method_read = getattr(pandas, 'read_{}'.format(schema))
+
         df = method_read(path, **kwargs)
         method_add = getattr(self, '_add_{}'.format(dtype))
         method_add(df)
@@ -277,7 +281,13 @@ class TreeProject(object):
             PhyloPandas.
         """
         df = self.data[dtype]
-        method_write = getattr(df, 'to_{}'.format(schema))
+
+        # Get write method.
+        try:
+            method_write = getattr(df, 'to_{}'.format(schema))
+        except AttributeError:
+            method_write = getattr(df.phylo, 'to_{}'.format(schema))
+
         method_write(filename=path)
         return self
 
@@ -316,7 +326,7 @@ class TreeProject(object):
 
         # Write file to disk
         fasta_file = os.path.join(self.project_dir, 'alignment.phy')
-        df.to_phylip(fasta_file, sequence_col=sequence_col, id_col=id_col)
+        df.phylo.to_phylip(fasta_file, sequence_col=sequence_col, id_col=id_col)
 
         # Prepare options
         options = {
@@ -507,7 +517,7 @@ class TreeProject(object):
         for uid in self.tips['unique_id']:
             # Get row
             row = self.tips[self.tips['unique_id'] == uid]
-            
+
             # Get node in tree
             node = self.tree.find_node_with_taxon_label(uid)
 
