@@ -379,7 +379,7 @@ class PhylogeneticsProject(object):
 
         ###### BIT OF A HACK  ########################
 
-        # Parse PhyML stats for alpha
+        # Parse PhyML stats for alpha (catch variations in phyml output file extensions)
         data = {}
         try:
             phyml_file = os.path.join(self.project_dir, 'alignment.phy_phyml_stats')
