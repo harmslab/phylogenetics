@@ -58,6 +58,7 @@ class PhylogeneticsProject(object):
     ----------
     project_dir : str
         the directory to store the phylogenetic data.
+
     overwrite : bool (default: False)
         allow overwriting a project that already exists in project_dir location.
     """
@@ -227,6 +228,7 @@ class PhylogeneticsProject(object):
         ----------
         dtype : str
             the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+            
         data :
             the data to store.
         """
@@ -252,8 +254,10 @@ class PhylogeneticsProject(object):
         ----------
         dtype : str
             the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+
         path : str
             file path to the data.
+
         schema : str
             the format of the datafile. Must be one of the formats supported by
             PhyloPandas.
@@ -275,8 +279,10 @@ class PhylogeneticsProject(object):
         ----------
         dtype : str
             the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
+
         path : str
             file path to the data.
+
         schema : str
             the format of the datafile. Must be one of the formats supported by
             PhyloPandas.
@@ -306,14 +312,18 @@ class PhylogeneticsProject(object):
         id_col : str (default: 'unique_id')
             column in `tips` DataFrame to use as the labels in the tree. Don't change
             this unless you know what you are doing.
+
         sequence_col : str (default: 'sequence')
             Column in the `tips` DataFrame that contains the alignment sequences
             for constructing the phylogenetic tree.
+
         bootstrap : str (default : -1 [aLRT values])
             Bootstrap values to use as support for the nodes of the tree. See PhyML's
             docs for more information. The default is to calculate aLRT supports.
+
         model : str (default : 'lg')
             the evolutionary transition matrix to use to model substitutions.
+
         frequencies :  str (default : 'e')
             Nucleotide or amino-acid frequencies.
 
@@ -366,6 +376,7 @@ class PhylogeneticsProject(object):
         id_col : str (default: 'unique_id')
             column in `tips` DataFrame to use as the labels in the tree. Don't change
             this unless you know what you are doing.
+
         sequence_col : str (default: 'sequence')
             Column in the `tips` DataFrame that contains the alignment sequences
             for constructing the phylogenetic tree.
@@ -435,11 +446,14 @@ class PhylogeneticsProject(object):
         id_col : str (default: 'unique_id')
             column in `tips` DataFrame to use as the labels in the tree. Don't change
             this unless you know what you are doing.
+
         sequence_col : str (default: 'sequence')
             Column in the `tips` DataFrame that contains the alignment sequences
             for constructing the phylogenetic tree.
+
         tree_kwargs : dict
             keyword arguments to pass to PhyML
+
         reconstruction_kwargs: dict
             keyword arguments to pass to PAML
         """
