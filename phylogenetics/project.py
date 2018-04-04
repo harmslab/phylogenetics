@@ -228,7 +228,7 @@ class PhylogeneticsProject(object):
         ----------
         dtype : str
             the type of data you are giving the project: 'tips', 'ancs', or 'tree'.
-            
+
         data :
             the data to store.
         """
