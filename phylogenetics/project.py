@@ -299,7 +299,7 @@ class PhylogeneticsProject(object):
         return self
 
     @track_in_history
-    def run_tree(self, id_col='unique_id', sequence_col='sequence',
+    def compute_tree(self, id_col='unique_id', sequence_col='sequence',
         datatype='aa',
         bootstrap='-1',
         model='LG',
@@ -368,7 +368,7 @@ class PhylogeneticsProject(object):
         return self
 
     @track_in_history
-    def run_reconstruction(self, id_col='unique_id', sequence_col='sequence', **kwargs):
+    def compute_reconstruction(self, id_col='unique_id', sequence_col='sequence', **kwargs):
         """Use PAML (via PyASR) to build a phylogenetic tree.
 
         Parameters
@@ -434,31 +434,6 @@ class PhylogeneticsProject(object):
         # Add data to TreeProject.
         self._add_ancs(df_ancs)
         self._add_tree(tree_ancs)
-        return self
-
-    @track_in_history
-    def run_pipeline(self, id_col='unique_id', sequence_col='sequence', tree_kwargs={}, reconstruction_kwargs={}):
-        """Construct a phylogenetic tree from an alignment and reconstruct
-        the ancestoral sequences in the resulting tree.
-
-        Parameters
-        ----------
-        id_col : str (default: 'unique_id')
-            column in `tips` DataFrame to use as the labels in the tree. Don't change
-            this unless you know what you are doing.
-
-        sequence_col : str (default: 'sequence')
-            Column in the `tips` DataFrame that contains the alignment sequences
-            for constructing the phylogenetic tree.
-
-        tree_kwargs : dict
-            keyword arguments to pass to PhyML
-
-        reconstruction_kwargs: dict
-            keyword arguments to pass to PAML
-        """
-        self.run_tree(id_col=id_col, sequence_col=sequence_col, **tree_kwargs)
-        self.run_reconstruction(id_col=id_col, sequence_col=sequence_col, **reconstruct_kwargs)
         return self
 
     def show(self):
