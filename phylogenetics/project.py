@@ -6,6 +6,7 @@ import phylopandas as ph
 
 import Bio.Phylo.Applications
 
+import pyasr
 
 class PhylogeneticsProject(object):
     """A lightweight Python object that populates a PhyloPandas DataFrame.
@@ -18,7 +19,6 @@ class PhylogeneticsProject(object):
     overwrite : bool (default: False)
         allow overwriting a project that already exists in project_dir location.
     """
-
     def __init__(self, project_dir, overwrite=False):
 
         # Set up a project directory
@@ -71,7 +71,7 @@ class PhylogeneticsProject(object):
         model='LG',
         frequencies='e',
         **kwargs):
-
+        """Compute tree."""
         fname = "compute_tree.phy"
         path = os.path.join(self.project_dir, fname)
 
@@ -117,6 +117,27 @@ class PhylogeneticsProject(object):
         self.data = self.data.phylo.combine(tree_data, on='uid')
 
 
-    def compute_reconstruction(self, sequence_col='sequence'):
+    def compute_reconstruction(
+        self,
+        id_col='uid',
+        sequence_col='sequence',
+        altall_cutoff=0.2,
+        aaRatefile='lg',
+        **kwargs
+        ):
+        """Run ancestral sequence reconstruction powered by PAML,
+
+        Parameters
+        ----------
+
         """
-        """
+        df = pyasr.reconstruct(
+            self.data,
+            id_col=id_col,
+            sequence_col=sequence_col,
+            working_dir=self.project_dir,
+            altall_cutoff=altall_cutoff,
+            aaRatefile=aaRatefile,
+            **kwargs
+        )
+        self.data = df
