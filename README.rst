@@ -3,10 +3,9 @@ Phylogenetics
 
 **A Python API for interactive phylogenetics**
 
-Phylogenetics provides a minimalist API for doing phylogenetics interactively
-in the Jupyter Notebook. Even better, it works in Jupyter Lab!
-
-The goal of this project is to trakc
+Phylogenetics is a minimal Python API that makes phylogenetics interactive and
+reproducible. It's main purpose is to take you from a multiple sequence alignment
+to a set of ancestral sequences.
 
 Basic Example
 -------------
@@ -57,8 +56,8 @@ Dependencies
 
 Phylogenetics manages phylogenetics data. Currently, it doesn't do any of the phylogenetic calculations itself. For this, it uses wraps external tools like:
 
-3. [PhyML](http://www.atgc-montpellier.fr/phyml/) - building maximum likelihood trees.
-4. [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) - reconstructing ancestors.
+3. PhyML: for building maximum likelihood trees. (http://www.atgc-montpellier.fr/phyml/)
+4. PAML: for reconstructing ancestors. http://abacus.gene.ucl.ac.uk/software/paml.html)
 
 Phylogenetics is built on top of following python stack:
 
