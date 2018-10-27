@@ -8,6 +8,9 @@ import Bio.Phylo.Applications
 
 import pyasr
 
+from .history import track_in_history
+
+
 class PhylogeneticsProject(object):
     """A lightweight Python object that populates a PhyloPandas DataFrame.
 
@@ -19,11 +22,12 @@ class PhylogeneticsProject(object):
     overwrite : bool (default: False)
         allow overwriting a project that already exists in project_dir location.
     """
+    @track_in_history
     def __init__(self, project_dir, overwrite=False):
 
         # Set up a project directory
         if os.path.exists(project_dir) and overwrite is False:
-            raise Exception("Project already exists! Use `PhylogeneticsProject.load` or delete the project.")
+            raise Exception("Project already exists! Use `PhylogeneticsProject.load_pickle` or delete the project.")
         elif not os.path.exists(project_dir):
             os.makedirs(project_dir)
 
@@ -41,6 +45,7 @@ class PhylogeneticsProject(object):
 
         self.project_dir = project_dir
         self.data = pd.DataFrame(columns=columns)
+        self.history = list()
 
     @staticmethod
     def load_pickle(filename):
@@ -53,6 +58,8 @@ class PhylogeneticsProject(object):
         with open(filename, 'wb') as f:
             pickle.dump(self, f)
 
+
+    @track_in_history
     def read_data(self, path, schema, **kwargs):
         """
         """
@@ -63,6 +70,8 @@ class PhylogeneticsProject(object):
             method = getattr(self.data, method_name)
         self.data = method(path, **kwargs)
 
+
+    @track_in_history
     def compute_tree(
         self,
         sequence_col='sequence',
@@ -117,6 +126,7 @@ class PhylogeneticsProject(object):
         self.data = self.data.phylo.combine(tree_data, on='uid')
 
 
+    @track_in_history
     def compute_reconstruction(
         self,
         id_col='uid',
