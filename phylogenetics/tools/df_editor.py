@@ -254,3 +254,74 @@ def from_external(input_file,df,input_type=None):
     output = pd.merge(to_merge, new_data, on=['uid'], how='left')
 
     return output
+
+"""
+Bring this in and mofify. 
+def cleanHomologs(homolog_list,ignore=("pdb","fragment","synthetic"),
+                  dubious=("putative","hypothetical","unnamed","possible",
+                  "predicted","unknown","uncharacterized","mutant","isoform"),
+                  gi_exclusion=(),rank_offset=0,min_length=None,max_length=None,
+                  quiet=False):
+
+    Clean up sets of homologs output.  Remove duplicate, "ignore" entries,
+    gi_exclusion.  Rank sequence by quality (1 by default, 2 if the hit definition
+    had a word in "dubious").  You can also specify rank_offset, which allows
+    you to specify a priori that this blast is better or worse than some other
+    (e.g., make a nr blast 0, an EST tblastn 10).
+
+
+    if not quiet:
+        print "Cleaning up sequences."
+
+    # Remove pure duplicates (with exactly the same accession number)
+    homolog_list = dict([(r.accession,r) for r in homolog_list]).values()
+
+    # Compile regular expressions
+    ignore_pattern = re.compile("|".join(ignore))
+    dubious_pattern = re.compile("|".join(dubious))
+
+    gi_removal = 0
+    short_removal = 0
+    long_removal = 0
+    ignore_removal = 0
+
+    clean_homologs = []
+    for r in homolog_list:
+
+        # Don't keep guys in gi_exclusion
+        if r.accession in gi_exclusion:
+            gi_removal += 1
+            continue
+
+        # Remove short and long sequences
+        if r.length != None:
+            if min_length != None and r.length < min_length:
+                short_removal += 1
+                continue
+            if max_length != None and r.length > max_length:
+                long_removal += 1
+                continue
+
+        # Sanitize names (remove \t, replace with " ")
+        r.definition = re.sub("\t"," ",r.definition)
+
+        # Does one of the ignore entries occur on this line?
+        tmp_definition = r.definition.lower()
+        if ignore_pattern.search(tmp_definition) != None:
+            ignore_removal += 1
+            continue
+
+        # Does one of the dubious entries occur on this line?
+        if dubious_pattern.search(tmp_definition) != None:
+            r.rank = 2 + rank_offset
+        else:
+            r.rank = 1 + rank_offset
+
+        clean_homologs.append(r)
+
+    num_rank_0 = len([h for h in clean_homologs if h.rank == 0])
+    num_rank_1 = len([h for h in clean_homologs if h.rank == 1])
+    num_rank_2 = len([h for h in clean_homologs if h.rank == 2])
+
+    return clean_homologs
+"""

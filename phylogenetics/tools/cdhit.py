@@ -48,9 +48,14 @@ def run(df,cutoff=0.9,keep_tmp=False):
     # Construct cd-hit command
     cmd = ['cd-hit', "-i", input_file, "-o", out_root,"-c",cutoff]
 
+
+
     # Run cd-hit
     try:
-        output = subprocess.run(cmd)
+        run = subprocess.Popen(cmd,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+        stdoutdata, stderrdata = run.communicate()
     except FileNotFoundError:
         err = "cd-hit does not appear to be in your path\n"
         raise RuntimeError(err)
