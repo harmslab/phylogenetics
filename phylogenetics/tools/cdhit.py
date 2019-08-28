@@ -49,7 +49,6 @@ def run(df,cutoff=0.9,keep_tmp=False):
     cmd = ['cd-hit', "-i", input_file, "-o", out_root,"-c",cutoff]
 
 
-
     # Run cd-hit
     try:
         run = subprocess.Popen(cmd,
@@ -61,7 +60,7 @@ def run(df,cutoff=0.9,keep_tmp=False):
         raise RuntimeError(err)
 
     # Make sure it returned successfully
-    if output.returncode != 0:
+    if run.returncode != 0:
         err = "cd-hit failed\n"
         raise RuntimeError(err)
 

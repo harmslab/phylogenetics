@@ -1,2 +1,2 @@
 
-from . import align, cdhit, df_editor, gblocks
+from . import align, cdhit, df_editor, gblocks, blast
