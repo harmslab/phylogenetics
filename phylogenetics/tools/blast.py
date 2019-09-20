@@ -11,7 +11,7 @@ import phylopandas as phy
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
 from Bio.Blast import NCBIWWW, NCBIXML
-from Bio.Blast.Applications import NcbiblastxCommandline as _local_blast
+import Bio.Blast.Applications as apps
 
 ## Modules for parsing XML
 #from xml.etree import ElementTree as ET
@@ -64,7 +64,6 @@ def ncbi_blast(df,db="nr",blast_program="blastp",
 def local_blast(df,db,blast_program="blastp",
                  keep_tmp=False,
                  hitlist_size=100,
-                 entrez_query='(none)',
                  e_value_cutoff=0.01,
                  gapcosts=(11,1),
                  **kwargs):
@@ -72,6 +71,24 @@ def local_blast(df,db,blast_program="blastp",
     Perform a blast query using sequences in the data frame against the subject
     database.
     """
+
+    recognized_functions = {"blastp":apps.NcbiblastpCommandline,
+                            "blastn":apps.NcbiblastnCommandline,
+                            "blastx":apps.NcbiblastxCommandline,
+                            "tblastn":apps.NcbitblastnCommandline,
+                            "tblastx":apps.NcbitblastxCommandline,
+                            "psiblast":apps.NcbipsiblastCommandline,
+                            "rpsblast":apps.NcbirpsblastCommandline,
+                            "rpstblastn":apps.NcbirpstblastnCommandline,
+                            "deltablast":apps.NcbideltablastCommandline}
+
+    try:
+        _local_blast = recognized_functions[blast_program]
+    except KeyError:
+        err = "\nblast_program '{}' not recognized.\n\nAllowed programs:\n".format(blast_program)
+        for k in recognized_functions.keys():
+            err += "    {}\n".format(k)
+        raise ValueError(err)
 
     gaps = '{} {}'.format(*gapcosts)
 
@@ -88,10 +105,10 @@ def local_blast(df,db,blast_program="blastp",
                  db=db,
                  out=out_file,
                  outfmt=5,
-                 hitlist_size=hitlist_size,
-                 entrez_query=entrez_query,
-                 expect=e_value_cutoff,
-                 gapcosts=gaps,
+                 max_target_seqs=hitlist_size,
+                 threshold=e_value_cutoff,
+                 gapopen=gapcosts[0],
+                 gapextend=gapcosts[1],
                  **kwargs)()
 
     out_df = phy.read_blast_xml(out_file)
@@ -101,24 +118,3 @@ def local_blast(df,db,blast_program="blastp",
         os.remove(out_file)
 
     return out_df
-
-def run(df,db="nr",blast_program="blastp",
-        keep_tmp=False,
-        hitlist_size=100,
-        entrez_query='(none)',
-        e_value_cutoff=0.01,
-        gapcosts=(11,1),
-        **kwargs):
-    """
-    Perform a blast query either locally or against an NCBI server.
-
-    ### HACK HACK HACK
-    # At moment, just runs ncbi blasting.  Local blast function works great,
-    # but need to figure out how to specify local vs. ncbi blast.  Maybe
-    # argument?  Maybe figure it out from reserved ncbi db names?
-    """
-
-    return ncbi_blast(df,db,blast_program,
-                      keep_tmp,
-                      hitlist_size,entrez_query,e_value_cutoff,
-                      gapcosts,**kwargs)

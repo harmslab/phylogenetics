@@ -101,16 +101,17 @@ def to_external(out_file,df,id_col=None,out_type=None,overwrite=False):
     overwrite: overwrite an existing output file.
     """
 
-    out_methods = {'fasta':phy.seqio.write.to_fasta,
-                   'phylip':phy.seqio.write.to_phylip,
-                   'clustal':phy.seqio.write.to_clustal,
-                   'embl':phy.seqio.write.to_embl,
-                   'nexus_seq':phy.seqio.write.to_nexus_seq,
-                   'swiss':phy.seqio.write.to_swiss,
-                   'fastq':phy.seqio.write.to_fastq,
-                   'newick':phy.treeio.write.to_newick,
-                   'nexml':phy.treeio.write.to_nexml,
-                   'nexus_tree':phy.treeio.write.to_nexus_tree}
+    seq_out_methods = {'fasta':phy.seqio.write.to_fasta,
+                       'phylip':phy.seqio.write.to_phylip,
+                       'clustal':phy.seqio.write.to_clustal,
+                       'embl':phy.seqio.write.to_embl,
+                       'nexus_seq':phy.seqio.write.to_nexus_seq,
+                       'swiss':phy.seqio.write.to_swiss,
+                       'fastq':phy.seqio.write.to_fastq}
+
+    tree_out_methods = {'newick':phy.treeio.write.to_newick,
+                        'nexml':phy.treeio.write.to_nexml,
+                        'nexus_tree':phy.treeio.write.to_nexus_tree}
 
     file_extension_synonym = {"fa":"fasta",
                               "fna":"fasta",
@@ -136,21 +137,31 @@ def to_external(out_file,df,id_col=None,out_type=None,overwrite=False):
             pass
 
         try:
-            out_method = out_methods[out_type]
-        except KeyError:
-            err = "\nCould not recognize output type from file extension.\n"
-            err += "Specify type in out_type.\n"
-            raise ValueError(err)
+            out_method = seq_out_methods[out_type]
+        except:
+            try:
+                out_method = tree_out_methods[out_type]
+            except KeyError:
+                err = "\nCould not recognize output type from file extension.\n"
+                err += "Specify type in out_type.\n"
+                raise ValueError(err)
 
     try:
-        out_method = out_methods[out_type]
-    except KeyError:
-        err = "\n\nout_type '{}' not recognized. Must be one of:\n"
+        out_method = seq_out_methods[out_type]
+        write_type = "seq"
+    except:
+        try:
+            out_method = tree_out_methods[out_type]
+            write_type = "tree"
 
-        to_show = out_methods.keys()
-        to_show.sort()
-        for m in to_show:
-            err += "    {}\n".format(m)
+        except KeyError:
+            err = "\n\nout_type '{}' not recognized. Must be one of:\n"
+
+            to_show = list(seq_out_methods.keys())
+            to_show.extend(tree_out_methods.keys())
+            to_show.sort()
+            for m in to_show:
+                err += "    {}\n".format(m)
 
         raise ValueError(err)
 
@@ -164,7 +175,12 @@ def to_external(out_file,df,id_col=None,out_type=None,overwrite=False):
                         for i in range(len(to_write_col))]
     df_to_write["to_write_col"] = to_write_col
 
-    out_method(df_to_write,id_col="to_write_col",filename=out_file)
+    if write_type == "seq":
+        out_method(df_to_write,id_col="to_write_col",filename=out_file)
+    elif write_type == "tree":
+        out_method(df_to_write,taxon_col="to_write_col",filename=out_file)
+    else:
+        pass
 
 
 def from_external(input_file,df,input_type=None):
@@ -238,8 +254,6 @@ def from_external(input_file,df,input_type=None):
 
             raise ValueError(err)
 
-
-
     new_data = in_method(input_file)
     uid = [entry.split("_")[0] for entry in new_data.id]
 
@@ -256,7 +270,7 @@ def from_external(input_file,df,input_type=None):
     return output
 
 """
-Bring this in and mofify. 
+Bring this in and mofify.
 def cleanHomologs(homolog_list,ignore=("pdb","fragment","synthetic"),
                   dubious=("putative","hypothetical","unnamed","possible",
                   "predicted","unknown","uncharacterized","mutant","isoform"),
