@@ -1,0 +1,1 @@
+[{"time": "2019-09-22 16:03:43", "method": "<function PhylogeneticsProject.__init__ at 0x121e39488>", "args": "('example',)", "kwargs": {"overwrite": true}}, {"time": "2019-09-22 16:03:43", "method": "<function PhylogeneticsProject.read_data at 0x12209ebf8>", "args": "('md2_seed_sequence.txt',)", "kwargs": {"schema": "fasta"}}]

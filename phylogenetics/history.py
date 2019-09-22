@@ -21,6 +21,9 @@ def track_in_history(method):
         # Append to main history list
         self.history.append(history)
 
+        # Write out current dataframe to csv
+        #new_df.to_csv(self.project_dir + "/" + self.history[0]["method"].split(".")[1].split(" ")[0]) + ".csv"
+
         # Write history to a json file.
         history_file = os.path.join(self.project_dir, 'history.json')
         with open(history_file, 'w') as f:
