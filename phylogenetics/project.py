@@ -136,7 +136,7 @@ class PhylogeneticsProject(object):
 
         print("Computing reconstruction...")
 
-        new_df = phylogenetics.tools.reconstruction.lazarus(self.data, self.project_dir)
+        new_df = phylogenetics.tools.ancestral_reconstruction.run(self.data, self.project_dir)
         self.data = new_df
 
         new_df.to_csv(self.project_dir + "/5_reconstruction_output.csv", **kwargs)
