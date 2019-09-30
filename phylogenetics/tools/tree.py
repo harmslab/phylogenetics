@@ -6,12 +6,12 @@ import phylopandas as ph
 import os
 
 def _phyml(input_file,
-sequence_col='sequence',
-datatype='aa',
-bootstrap='-1',
-model='LG',
-frequencies='e',
-**kwargs):
+           sequence_col='sequence',
+           datatype='aa',
+           bootstrap='-1',
+           model='LG',
+           frequencies='e',
+           **kwargs):
     """
     Compute tree using phyml.
     """

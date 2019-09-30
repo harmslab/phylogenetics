@@ -6,15 +6,13 @@ import phylopandas as ph
 import pyasr
 import shutil
 
-def lazarus(
-    df,
-    project_dir,
-    id_col='uid',
-    sequence_col='sequence',
-    altall_cutoff=0.2,
-    aaRatefile='lg',
-    **kwargs
-    ):
+def run(df,
+        project_dir,
+        id_col='uid',
+        sequence_col='sequence',
+        altall_cutoff=0.2,
+        aaRatefile='lg',
+        **kwargs):
     """
     Run ancestral sequence reconstruction powered by PAML.
     """
