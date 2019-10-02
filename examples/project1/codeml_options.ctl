@@ -1,0 +1,16 @@
+seqfile = ali-to-reconstruct.phy
+outfile = results.txt
+treefile = tree-to-reconstruct.phy
+noisy = 3
+verbose = 9
+runmode = 0
+seqtype = 2
+aaRatefile = lg.dat
+model = 3
+fix_alpha = 1
+ncatG = 8
+RateAncestor = 2
+Small_Diff = 1e-06
+cleandata = 0
+fix_blength = 2
+method = 0
