@@ -10,34 +10,36 @@ Phylogenetics is a minimal Python API for doing phylogenetics. It manages the an
 aspects of phylogenetics (i.e. file conversion) for you and lets you focus on exploring
 and interpreting the data.
 
+Development goals
+-----------------
+
++ docs:
+    + installation
+    + specific cases
+        + long branches
+        + what does branch support mean?
+        + sequence quality control
+        + alignment quality
+        + ancestors, posterior probabilities
+        + how do I come up with an answerable evolutionary question?
+    + design philosophy
+        + why do we need another package?
+        + as little low-level crap as possible (use Biopython, dendropy, etc.),
+          let users interact simply via familiar csv and pandas df
++ to implement:
+    + phylopandas (critical):
+        + uid/csv awareness
+        + tree/align integration (Zach)
+    + species correction
+    + datatype awareness (dna, rna, protein, codon)
+    + phylobot mk 2?
+
+
+
 Basic Example
 -------------
 
-The main object in phylogenetics is the ``PhylogeneticsProject``. Start by initializing the ``PhylogeneticsProject``
-object, pointing to a directory where you'd like to store all the phylogenetic data/output.
-
-.. code-block:: python
-
-  # Imports
-  from phylogenetics import PhylogeneticsProject
-
-  # Initialize a project class
-  project = PhylogeneticsProject(project_dir='project')
-
-Then, add an alignment (using any file schema you'd like). These sequences will be the
-tips of your tree. You can now begin building trees and reconstructing ancestral sequences.
-
-.. code-block:: python
-
-  project.read_data(dtype='tips', path='alignment.fasta', schema='fasta')
-
-  # Run PhyML to construct a phylogenetic
-  # tree by maximum likelihood.
-  project.run_tree()
-
-  # Reconstruct ancestral sequences using default settings.
-  project.run_reconstruction()
-
+TO DO
 
 .. image:: _images/jlab.png
   :align: center
