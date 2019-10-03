@@ -60,3 +60,6 @@ target/
 
 # Jupyter notebooks
 *.ipynb_checkpoints/
+
+# macOS
+*.DS_Store
